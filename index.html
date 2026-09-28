@@ -32,6 +32,7 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid
 </nav>
 
 <section id="daily" class="panel active">
+<div class="card no-print" id="cycleCard" style="margin-bottom:14px"><div class="row"><div><h3 style="margin:0 0 6px">متابعة دورة الاحتياط</h3><div id="cycleSummary" class="muted"></div></div><div style="min-width:220px"><div id="cyclePct" class="stat">0%</div><div style="height:10px;background:#e7edf2;border-radius:99px;overflow:hidden"><div id="cycleBar" style="height:100%;width:0;background:var(--p2)"></div></div></div></div><div id="cycleAlert" style="margin-top:10px"></div></div>
 <div class="print-head"><h2>سجل حصص الاحتياط اليومي</h2><p>مدرسة سعد بن معاذ للتعليم الأساسي</p><p id="printMeta"></p></div>
 <div class="grid">
 <div class="card span4 daily-meta"><h3>بيانات اليوم</h3><div class="row"><div><label>اليوم</label><select id="day"></select></div><div><label>التاريخ</label><input id="date" type="date"></div></div>
@@ -56,7 +57,7 @@ const MASTER_SCHEDULE={"سرحان الريسي":{"الأحد":{"2":"3/6","3":"4
 const baseNames=MASTER_TEACHERS.map(x=>x.name);
 const totals=MASTER_TEACHERS.map(x=>x.base);
 const special={};
-const K='reserveSchoolV8';
+const K='reserveSchoolV9';
 let old=JSON.parse(localStorage.getItem(K)||'null');
 let S=old||{teachers:MASTER_TEACHERS,schedule:MASTER_SCHEDULE,records:[]};
 S.teachers=MASTER_TEACHERS;
@@ -101,6 +102,30 @@ function eligibleByDailyLoad(name,d,p){
  if(adjacentToFourBlock(name,d,p))return false; // لا حصة قبل/بعد 4 حصص متتالية
  return true;
 }
+function hardBlocked(t,r){
+ if(!S.schedule?.[t.name]?.[r.day])return 'لا يوجد جدول معتمد';
+ if(t.name===r.absent)return 'المعلم غائب';
+ if(isBusy(t.name,r.day,r.period))return 'لديه حصة أصلية';
+ if(adjusted(t)>=25)return 'أكمل نصاب الدورة';
+ return '';
+}
+function exceptionalCandidates(r){
+ return S.teachers.map(t=>({t,reason:hardBlocked(t,r)})).filter(x=>!x.reason).map(x=>{
+  const reasons=[];
+  if(recForDate().some(z=>z.reserve===x.t.name&&z.id!==r.id))reasons.push('لديه احتياط اليوم');
+  if(dayPeriods(x.t.name,r.day).length>=5)reasons.push('لديه 5 حصص');
+  if(adjacentToFourBlock(x.t.name,r.day,r.period))reasons.push('ملاصقة لأربع حصص متتالية');
+  if(+r.period===8 && !(isBusy(x.t.name,r.day,7)&&!isBusy(x.t.name,r.day,8)))reasons.push('لا يحقق شرط الحصة الثامنة');
+  return {t:x.t,reasons};
+ }).filter(x=>x.reasons.length);
+}
+function cycleStats(){
+ const total=S.teachers.reduce((s,t)=>s+Math.max(0,25-(+t.base||0)-(+t.extra||0)),0);
+ const done=S.records.filter(r=>r.reserve).length;
+ const pct=total?Math.min(100,done/total*100):0;
+ const completed=S.teachers.filter(t=>adjusted(t)>=25).length;
+ return {total,done,pct,completed};
+}
 function candidates(r){
  return S.teachers.filter(t=>{
    if(!S.schedule?.[t.name]?.[r.day])return false;
@@ -128,10 +153,14 @@ function render(){
  dailyBody.innerHTML=rs.length?rs.map((r,i)=>{
  let cand=candidates({...r,reserve:null}); let allowed=cand.map(x=>x.t); if(r.reserve&&!allowed.some(t=>t.name===r.reserve)){let cur=S.teachers.find(t=>t.name===r.reserve);if(cur)allowed.unshift(cur)} let choices=['<option value="">— اختر —</option>',...allowed.map(t=>`<option ${r.reserve===t.name?'selected':''}>${t.name}</option>`)].join('');
  let tt=S.teachers.find(t=>t.name===r.reserve), total=tt?adjusted(tt):'—';
- return `<tr><td>${i+1}</td><td>${r.absent}</td><td>${r.period}</td><td>${r.className||'—'}</td><td><select class="reserveSel no-print" data-id="${r.id}">${choices}</select><span class="print-only">${r.reserve||'—'}</span></td><td>${total}</td><td class="no-print">${r.reserve?'<span class="badge ok">مسندة</span>':'<span class="badge warn">بانتظار التوزيع</span>'}</td><td class="sig"></td><td class="no-print"><button class="danger del" data-id="${r.id}">×</button></td></tr>`
+ let ex=exceptionalCandidates(r); let exBtn=!cand.length&&ex.length?`<button class="secondary exceptionBtn" data-id="${r.id}" style="margin-top:5px;padding:6px 9px">خيارات استثنائية</button>`:''; 
+ return `<tr><td>${i+1}</td><td>${r.absent}</td><td>${r.period}</td><td><input class="classEdit no-print" data-id="${r.id}" value="${r.className||''}" style="min-width:75px;padding:6px"><span class="print-only">${r.className||'—'}</span></td><td><select class="reserveSel no-print" data-id="${r.id}">${choices}</select>${exBtn}<span class="print-only">${r.reserve||'—'}</span></td><td>${total}</td><td class="no-print">${r.reserve?'<span class="badge ok">مسندة</span>':cand.length?'<span class="badge warn">بانتظار التوزيع</span>':'<span class="badge off">يحتاج تدخلاً</span>'}</td><td class="sig"></td><td class="no-print"><button class="danger del" data-id="${r.id}">×</button></td></tr>`
  }).join(''):`<tr><td colspan="9" class="empty">لا توجد حصص غياب مضافة لهذا اليوم.</td></tr>`;
- document.querySelectorAll('.reserveSel').forEach(s=>s.onchange=()=>{let r=S.records.find(x=>x.id==s.dataset.id);r.reserve=s.value;save();render()});
+ document.querySelectorAll('.reserveSel').forEach(s=>s.onchange=()=>{let r=S.records.find(x=>x.id==s.dataset.id);r.reserve=s.value;r.exceptional=false;save();render()});
+ document.querySelectorAll('.classEdit').forEach(x=>x.onchange=()=>{let r=S.records.find(z=>z.id==x.dataset.id);r.className=x.value.trim();save();render()});
+ document.querySelectorAll('.exceptionBtn').forEach(b=>b.onclick=()=>{let r=S.records.find(x=>x.id==b.dataset.id),ex=exceptionalCandidates(r);if(!ex.length){alert('لا توجد خيارات استثنائية آمنة.');return}let msg='الحالة الاستثنائية — اختر رقم المعلم:\n'+ex.map((x,i)=>`${i+1}) ${x.t.name} — ${x.reasons.join('، ')}`).join('\n');let n=+prompt(msg);if(n>=1&&n<=ex.length){if(confirm(`سيتم إسناد الحصة استثنائيًا إلى ${ex[n-1].t.name}.\nالسبب: ${ex[n-1].reasons.join('، ')}\nمتابعة؟`)){r.reserve=ex[n-1].t.name;r.exceptional=true;save();render()}}});
  document.querySelectorAll('.del').forEach(b=>b.onclick=()=>{S.records=S.records.filter(x=>x.id!=b.dataset.id);save();render()});
+ let cs=cycleStats();cyclePct.textContent=cs.pct.toFixed(1)+'%';cycleBar.style.width=cs.pct+'%';cycleSummary.textContent=`المنفذ ${cs.done} من ${cs.total} حصة مستهدفة — أكمل النصاب ${cs.completed} من ${S.teachers.length} معلمًا`;cycleAlert.innerHTML=cs.pct>=95?'<span class="badge off">تنبيه 95%: يوصى بمراجعة إنهاء الدورة وبدء دورة جديدة بقرار المسؤول.</span>':cs.pct>=90?'<span class="badge warn">تنبيه 90%: الدورة قاربت الاكتمال، راجع العبء قبل الاستمرار.</span>':'<span class="badge ok">الدورة ضمن النطاق الطبيعي</span>';
  teachersBody.innerHTML=S.teachers.map(t=>{let rc=reserveCount(t.name),a=t.base+t.extra+rc,rem=Math.max(0,25-a);return `<tr><td>${t.name}</td><td>${t.base}</td><td>${t.extra}</td><td>${rc}</td><td><b>${a}</b></td><td>${rem}</td><td>${a>=25?'<span class="badge off">معفى</span>':'<span class="badge ok">متاح</span>'}</td></tr>`}).join('');
 }
 function extractAbsentLessons(){
@@ -147,7 +176,7 @@ function extractAbsentLessons(){
 loadAbsent.onclick=extractAbsentLessons;
 absent.onchange=extractAbsentLessons;
 addAbs.onclick=()=>{if(S.records.some(r=>r.date===date.value&&r.absent===absent.value&&r.period===+period.value)){alert('هذه الحصة مضافة مسبقًا لهذا المعلم.');return;}S.records.push({id:Date.now()+Math.random(),date:date.value,day:day.value,absent:absent.value,period:+period.value,className:className.value.trim(),reserve:''});save();render()};
-auto.onclick=()=>{let rs=recForDate().filter(r=>r.day===day.value).sort((a,b)=>a.period-b.period);rs.forEach(r=>{if(!r.reserve){let c=candidates(r);if(c.length)r.reserve=c[0].t.name}});save();render()};
+auto.onclick=()=>{let rs=recForDate().filter(r=>r.day===day.value).sort((a,b)=>a.period-b.period);let unresolved=0;rs.forEach(r=>{if(!r.reserve){let c=candidates(r);if(c.length){r.reserve=c[0].t.name;r.exceptional=false}else unresolved++}});save();render();if(unresolved)alert('تعذر التوزيع الطبيعي لعدد '+unresolved+' حصة. ظهرت لها حالة «يحتاج تدخلاً» ويمكن فتح الخيارات الاستثنائية دون تجاوز التعارضات القطعية.');};
 clearDay.onclick=()=>{if(confirm('مسح سجل هذا اليوم؟')){S.records=S.records.filter(r=>!(r.date===date.value&&r.day===day.value));save();render()}};
 resetAll.onclick=()=>{if(confirm('سيتم حذف كل البيانات المحلية والعودة للوضع الأولي. متابعة؟')){localStorage.removeItem(K);location.reload()}};
 approveCloud.onclick=approveDay;
