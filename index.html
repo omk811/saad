@@ -56,12 +56,13 @@ const MASTER_SCHEDULE={"سرحان الريسي":{"الأحد":{"2":"3/6","3":"4
 const baseNames=MASTER_TEACHERS.map(x=>x.name);
 const totals=MASTER_TEACHERS.map(x=>x.base);
 const special={};
-const K='reserveSchoolV5';
+const K='reserveSchoolV6';
 let old=JSON.parse(localStorage.getItem(K)||'null');
 let S=old||{teachers:MASTER_TEACHERS,schedule:MASTER_SCHEDULE,records:[]};
 S.teachers=MASTER_TEACHERS;
 S.schedule=MASTER_SCHEDULE;
 const save=()=>localStorage.setItem(K,JSON.stringify(S));
+// قاعدة البيانات السحابية هي المرجع الأول؛ التخزين المحلي نسخة مؤقتة فقط.
 async function apiPost(payload){const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});const j=await r.json();if(!j.ok)throw new Error(j.error||'تعذر الاتصال بقاعدة البيانات');return j}
 async function syncCloud(){try{const r=await fetch(API_URL+'?action=bootstrap');const j=await r.json();if(!j.ok)throw new Error(j.error||'تعذر تحميل البيانات');if(Array.isArray(j.teachers)&&j.teachers.length)S.teachers=j.teachers.map(t=>({name:t.name,base:+t.base||0,extra:0}));if(Array.isArray(j.timetable)&&j.timetable.length){S.schedule={};j.timetable.forEach(x=>{S.schedule[x.teacher]??={};S.schedule[x.teacher][x.day]??={};Object.entries(x.periods||{}).forEach(([p,v])=>{if(v)S.schedule[x.teacher][x.day][p]=v})})}if(Array.isArray(j.records))S.records=j.records.map(r=>({id:r.id,date:r.date,day:r.day,absent:r.absent,period:+r.period,className:r.className||'',reserve:r.reserve||''}));save();fillTeachers();render();setCloud('متصل بقاعدة Google Sheets','ok')}catch(e){setCloud('تعذر الاتصال — يعمل مؤقتًا من هذا الجهاز','warn')}}
 function setCloud(txt,cls){const x=document.getElementById('cloudState');if(x){x.textContent=txt;x.className='badge '+cls}}
