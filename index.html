@@ -37,8 +37,8 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid
 <div class="card span4 daily-meta"><h3>بيانات اليوم</h3><div class="row"><div><label>اليوم</label><select id="day"></select></div><div><label>التاريخ</label><input id="date" type="date"></div></div>
 <label>المعلم الغائب</label><select id="absent"></select>
 <div class="row"><div><label>الحصة</label><select id="period"></select></div><div><label>الصف / الشعبة</label><input id="className" placeholder="مثال: 5/1"></div></div>
-<div class="actions"><button class="primary" id="addAbs">إضافة حصة غياب</button></div>
-<p class="muted">أضف حصص المعلم الغائب، وسيطبق النظام تلقائيًا قواعد الجدول والنصاب قبل اقتراح معلم الاحتياط.</p></div>
+<div class="actions"><button class="primary" id="loadAbsent">استخراج حصص الغائب</button><button class="secondary" id="addAbs">إضافة حصة يدويًا</button></div>
+<p class="muted">عند اختيار المعلم الغائب تُستخرج حصصه تلقائيًا من الجدول المعتمد لليوم المحدد، ويمكن بعدها الحذف أو الإضافة والتعديل يدويًا.</p></div>
 <div class="card span8"><div class="row"><div><h3 class="screen-title">جدول الاحتياط المقترح</h3><span id="cloudState" class="badge warn no-print">جارٍ الاتصال...</span></div><div class="no-print actions"><button class="primary" id="auto">توزيع آلي</button><button class="primary" id="approveCloud">اعتماد وحفظ</button><button class="secondary" onclick="window.print()">طباعة A4</button><button class="danger" id="clearDay">مسح اليوم</button></div></div>
 <div class="tablewrap"><table><thead><tr><th>م</th><th>المعلم الغائب</th><th>الحصة</th><th>الصف/الشعبة</th><th>معلم الاحتياط</th><th>النصاب بعد الاحتياط</th><th class="no-print">الحالة</th><th>التوقيع</th><th class="no-print">حذف</th></tr></thead><tbody id="dailyBody"></tbody></table></div></div>
 </div></section>
@@ -56,7 +56,7 @@ const MASTER_SCHEDULE={"سرحان الريسي":{"الأحد":{"2":"3/6","3":"4
 const baseNames=MASTER_TEACHERS.map(x=>x.name);
 const totals=MASTER_TEACHERS.map(x=>x.base);
 const special={};
-const K='reserveSchoolV7';
+const K='reserveSchoolV8';
 let old=JSON.parse(localStorage.getItem(K)||'null');
 let S=old||{teachers:MASTER_TEACHERS,schedule:MASTER_SCHEDULE,records:[]};
 S.teachers=MASTER_TEACHERS;
@@ -134,12 +134,24 @@ function render(){
  document.querySelectorAll('.del').forEach(b=>b.onclick=()=>{S.records=S.records.filter(x=>x.id!=b.dataset.id);save();render()});
  teachersBody.innerHTML=S.teachers.map(t=>{let rc=reserveCount(t.name),a=t.base+t.extra+rc,rem=Math.max(0,25-a);return `<tr><td>${t.name}</td><td>${t.base}</td><td>${t.extra}</td><td>${rc}</td><td><b>${a}</b></td><td>${rem}</td><td>${a>=25?'<span class="badge off">معفى</span>':'<span class="badge ok">متاح</span>'}</td></tr>`}).join('');
 }
+function extractAbsentLessons(){
+ const name=absent.value,d=day.value,ds=S.schedule?.[name]?.[d];
+ if(!ds){alert('لا يوجد جدول معتمد لهذا المعلم في هذا اليوم.');return}
+ const lessons=Object.entries(ds).filter(([p,c])=>c).map(([p,c])=>({period:+p,className:c})).sort((a,b)=>a.period-b.period);
+ if(!lessons.length){alert('لا توجد حصص أصلية للمعلم في هذا اليوم.');return}
+ let added=0;
+ lessons.forEach(x=>{if(!S.records.some(r=>r.date===date.value&&r.day===d&&r.absent===name&&r.period===x.period)){S.records.push({id:Date.now()+Math.random(),date:date.value,day:d,absent:name,period:x.period,className:x.className,reserve:''});added++}});
+ save();render();
+ if(!added)alert('حصص هذا المعلم مضافة بالفعل لهذا اليوم.');
+}
+loadAbsent.onclick=extractAbsentLessons;
+absent.onchange=extractAbsentLessons;
 addAbs.onclick=()=>{if(S.records.some(r=>r.date===date.value&&r.absent===absent.value&&r.period===+period.value)){alert('هذه الحصة مضافة مسبقًا لهذا المعلم.');return;}S.records.push({id:Date.now()+Math.random(),date:date.value,day:day.value,absent:absent.value,period:+period.value,className:className.value.trim(),reserve:''});save();render()};
 auto.onclick=()=>{let rs=recForDate().filter(r=>r.day===day.value).sort((a,b)=>a.period-b.period);rs.forEach(r=>{if(!r.reserve){let c=candidates(r);if(c.length)r.reserve=c[0].t.name}});save();render()};
 clearDay.onclick=()=>{if(confirm('مسح سجل هذا اليوم؟')){S.records=S.records.filter(r=>!(r.date===date.value&&r.day===day.value));save();render()}};
 resetAll.onclick=()=>{if(confirm('سيتم حذف كل البيانات المحلية والعودة للوضع الأولي. متابعة؟')){localStorage.removeItem(K);location.reload()}};
 approveCloud.onclick=approveDay;
-day.onchange=render;date.onchange=render;
+day.onchange=()=>{render();};date.onchange=render;
 const st=document.createElement('style');st.textContent='.print-only{display:none}@media print{.print-only{display:inline}.reserveSel{display:none!important}}';document.head.appendChild(st);
 render();syncCloud();
 </script></body></html>
