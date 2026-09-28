@@ -57,7 +57,7 @@ const MASTER_SCHEDULE={"سرحان الريسي":{"الأحد":{"2":"3/6","3":"4
 const baseNames=MASTER_TEACHERS.map(x=>x.name);
 const totals=MASTER_TEACHERS.map(x=>x.base);
 const special={};
-const K='reserveSchoolV11';
+const K='reserveSchoolV12';
 let old=JSON.parse(localStorage.getItem(K)||'null');
 let S=old||{teachers:MASTER_TEACHERS,schedule:MASTER_SCHEDULE,records:[]};
 S.teachers=MASTER_TEACHERS;
@@ -154,6 +154,22 @@ function candidates(r){
    return {t,score};
  }).sort((a,b)=>b.score-a.score||a.t.name.localeCompare(b.t.name,'ar'));
 }
+function explainChoice(r,name){
+ const t=S.teachers.find(x=>x.name===name); if(!t)return [];
+ const reasons=[];
+ if(!isBusy(name,r.day,r.period))reasons.push('متفرغ في الحصة '+r.period);
+ const taught=taughtClasses(name).map(x=>String(x||'').trim()), cls=String(r.className||'').trim(), grade=cls.split('/')[0].trim();
+ if(cls&&taught.includes(cls))reasons.push('يدرّس الشعبة نفسها '+cls);
+ else if(grade&&taught.some(x=>x.split('/')[0].trim()===grade))reasons.push('يدرّس الصف نفسه');
+ reasons.push('نصابه الحالي '+adjusted(t)+' من 25');
+ if(!recForDate().some(x=>x.reserve===name&&x.id!==r.id))reasons.push('لم يُسند إليه احتياط آخر اليوم');
+ const dp=dayPeriods(name,r.day);
+ if(dp.length<5)reasons.push('لديه '+dp.length+' حصص أصلية فقط اليوم');
+ let prev=new Date(r.date+'T12:00:00');prev.setDate(prev.getDate()-1);let pd=prev.toISOString().slice(0,10);
+ if(!S.records.some(x=>x.reserve===name&&x.date===pd))reasons.push('لم يأخذ احتياطًا في اليوم السابق');
+ if(+r.period>=7&&dp.length&&Math.max(...dp)>=6)reasons.push('جدوله يمتد إلى الحصص المتأخرة');
+ return reasons;
+}
 function render(){
  document.getElementById('printMeta').textContent=`اليوم: ${day.value} — التاريخ: ${date.value}`;
  let rs=recForDate().filter(r=>r.day===day.value).sort((a,b)=>a.period-b.period);
@@ -161,9 +177,10 @@ function render(){
  let cand=candidates({...r,reserve:null}); let allowed=cand.map(x=>x.t); if(r.reserve&&!allowed.some(t=>t.name===r.reserve)){let cur=S.teachers.find(t=>t.name===r.reserve);if(cur)allowed.unshift(cur)} let choices=['<option value="">— اختر —</option>',...allowed.map(t=>`<option ${r.reserve===t.name?'selected':''}>${t.name}</option>`)].join('');
  let tt=S.teachers.find(t=>t.name===r.reserve), total=tt?adjusted(tt):'—';
  let ex=exceptionalCandidates(r); let exBtn=!cand.length&&ex.length?`<button class="secondary exceptionBtn" data-id="${r.id}" style="margin-top:5px;padding:6px 9px">خيارات استثنائية</button>`:''; 
- return `<tr><td>${i+1}</td><td>${r.absent}</td><td>${r.period}</td><td><input class="classEdit no-print" data-id="${r.id}" value="${r.className||''}" style="min-width:75px;padding:6px"><span class="print-only">${r.className||'—'}</span></td><td><select class="reserveSel no-print" data-id="${r.id}">${choices}</select>${exBtn}<span class="print-only">${r.reserve||'—'}</span></td><td>${total}</td><td class="no-print">${r.reserve?'<span class="badge ok">مسندة</span>':cand.length?'<span class="badge warn">بانتظار التوزيع</span>':'<span class="badge off">يحتاج تدخلاً</span>'}</td><td class="sig"></td><td class="no-print"><button class="danger del" data-id="${r.id}">×</button></td></tr>`
+ return `<tr><td>${i+1}</td><td>${r.absent}</td><td>${r.period}</td><td><input class="classEdit no-print" data-id="${r.id}" value="${r.className||''}" style="min-width:75px;padding:6px"><span class="print-only">${r.className||'—'}</span></td><td><select class="reserveSel no-print" data-id="${r.id}">${choices}</select>${exBtn}<span class="print-only">${r.reserve||'—'}</span></td><td>${total}</td><td class="no-print">${r.reserve?'<span class="badge ok">مسندة</span><br><button class="secondary whyBtn" data-id="'+r.id+'" style="margin-top:5px;padding:6px 9px">لماذا اختاره النظام؟</button>':cand.length?'<span class="badge warn">بانتظار التوزيع</span>':'<span class="badge off">يحتاج تدخلاً</span>'}</td><td class="sig"></td><td class="no-print"><button class="danger del" data-id="${r.id}">×</button></td></tr>`
  }).join(''):`<tr><td colspan="9" class="empty">لا توجد حصص غياب مضافة لهذا اليوم.</td></tr>`;
  document.querySelectorAll('.reserveSel').forEach(s=>s.onchange=()=>{let r=S.records.find(x=>x.id==s.dataset.id);r.reserve=s.value;r.exceptional=false;save();render()});
+ document.querySelectorAll('.whyBtn').forEach(b=>b.onclick=()=>{let r=S.records.find(x=>x.id==b.dataset.id);if(!r||!r.reserve)return;let reasons=explainChoice(r,r.reserve);alert('سبب اختيار '+r.reserve+':\n\n• '+reasons.join('\n• '));});
  document.querySelectorAll('.classEdit').forEach(x=>x.onchange=()=>{let r=S.records.find(z=>z.id==x.dataset.id);r.className=x.value.trim();save();render()});
  document.querySelectorAll('.exceptionBtn').forEach(b=>b.onclick=()=>{let r=S.records.find(x=>x.id==b.dataset.id),ex=exceptionalCandidates(r);if(!ex.length){alert('لا توجد خيارات استثنائية آمنة.');return}let msg='الحالة الاستثنائية — اختر رقم المعلم:\n'+ex.map((x,i)=>`${i+1}) ${x.t.name} — ${x.reasons.join('، ')}`).join('\n');let n=+prompt(msg);if(n>=1&&n<=ex.length){if(confirm(`سيتم إسناد الحصة استثنائيًا إلى ${ex[n-1].t.name}.\nالسبب: ${ex[n-1].reasons.join('، ')}\nمتابعة؟`)){r.reserve=ex[n-1].t.name;r.exceptional=true;save();render()}}});
  document.querySelectorAll('.del').forEach(b=>b.onclick=()=>{S.records=S.records.filter(x=>x.id!=b.dataset.id);save();render()});
