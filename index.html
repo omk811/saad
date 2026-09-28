@@ -45,7 +45,7 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid
 
 <section id="teachers" class="panel"><div class="card"><h3>المعلمون والأنصبة</h3><p class="muted">النصاب المعدّل = الحصص الأساسية + الإضافة الخاصة + حصص الاحتياط المسندة. أصحاب 25 حصة معفون آليًا.</p><div class="tablewrap"><table><thead><tr><th>المعلم</th><th>الأساسي</th><th>إضافة إدارية</th><th>احتياط</th><th>الإجمالي</th><th>المتبقي إلى 25</th><th>الحالة</th></tr></thead><tbody id="teachersBody"></tbody></table></div></div></section>
 
-<section id="setup" class="panel"><div class="grid"><div class="card span4"><h3>ضبط حصة أصلية</h3><label>المعلم</label><select id="setupTeacher"></select><div class="row"><div><label>اليوم</label><select id="setupDay"></select></div><div><label>الحصة</label><select id="setupPeriod"></select></div></div><label>الصف / الشعبة</label><input id="setupClass" placeholder="مثال: 7/3"><div class="actions"><button class="secondary" type="button" disabled>الجدول معتمد من قاعدة المدرسة</button></div></div>
+<section id="setup" class="panel"><div class="grid"><div class="card span4"><h3>ضبط حصة أصلية</h3><label>المعلم</label><select id="setupTeacher"></select><div class="row"><div><label>اليوم</label><select id="setupDay"></select></div><div><label>الحصة</label><select id="setupPeriod"></select></div></div><label>الصف / الشعبة</label><input id="setupClass" placeholder="مثال: 7/3"><div class="actions"><button class="secondary" type="button" disabled>الجدول الجديد 29-9-2026 معتمد من قاعدة المدرسة</button></div></div>
 <div class="card span8"><h3>قواعد التوزيع المفعلة</h3><p>حصة احتياط واحدة للمعلم في اليوم، وتجنب التكليف يومين متتاليين قدر المستطاع، والحد الأقصى للنصاب 25. الحصة الثامنة تُسند فقط لمعلم لديه الحصة السابعة ومتفرغ في الثامنة. من لديه 5 حصص تدريسية في اليوم لا يُكلّف بالاحتياط، ومن لديه 4 حصص متتالية لا يُعطى حصة احتياط ملاصقة لها قبلها أو بعدها. وتُراعى أولوية الأقل نصابًا والصفوف التي يدرسها المعلم.</p><p class="muted">الجدول الأسبوعي والأنصبة مدمجان في هذه النسخة من قاعدة المدرسة. سجل الاحتياط يحفظ محليًا مؤقتًا إلى حين تفعيل الربط المباشر مع Google Sheets.</p><div class="actions"><button class="danger" id="resetAll">إعادة ضبط كل البيانات المحلية</button></div></div></div></section>
 </main>
 <script>
@@ -56,7 +56,7 @@ const MASTER_SCHEDULE={"سرحان الريسي":{"الأحد":{"2":"3/6","3":"4
 const baseNames=MASTER_TEACHERS.map(x=>x.name);
 const totals=MASTER_TEACHERS.map(x=>x.base);
 const special={};
-const K='reserveSchoolV6';
+const K='reserveSchoolV7';
 let old=JSON.parse(localStorage.getItem(K)||'null');
 let S=old||{teachers:MASTER_TEACHERS,schedule:MASTER_SCHEDULE,records:[]};
 S.teachers=MASTER_TEACHERS;
