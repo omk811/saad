@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>نظام توزيع حصص الاحتياط</title>
+<style>
+:root{--p:#123b5d;--p2:#1d638c;--bg:#f4f7fa;--card:#fff;--line:#dbe4ea;--ok:#176b45;--warn:#a65d00;--bad:#a52a2a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#17232c;font-family:Tahoma,Arial,sans-serif}
+.app{max-width:1500px;margin:auto;padding:18px}.hero{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;padding:22px;border-radius:20px;box-shadow:0 10px 30px #123b5d22}
+.hero h1{margin:0 0 6px;font-size:clamp(24px,3vw,38px)}.hero p{margin:0;opacity:.9}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.tab,button{border:0;border-radius:12px;padding:11px 16px;font:inherit;font-weight:700;cursor:pointer}.tab{background:#e5edf3;color:var(--p)}.tab.active,.primary{background:var(--p);color:#fff}.secondary{background:#e8f1f6;color:var(--p)}.danger{background:#fbe8e8;color:var(--bad)}
+.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 5px 18px #123b5d0c}.span4{grid-column:span 4}.span8{grid-column:span 8}.span12{grid-column:span 12}
+label{font-weight:700;display:block;margin:7px 0}input,select{width:100%;padding:11px;border:1px solid #cbd7df;border-radius:10px;background:#fff;font:inherit}
+.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.row>*{flex:1;min-width:150px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid var(--line);padding:9px;text-align:center}th{background:#edf4f8;color:var(--p)}.tablewrap{overflow:auto;border-radius:12px}
+.badge{display:inline-block;padding:4px 9px;border-radius:99px;font-size:12px;font-weight:700}.ok{background:#e3f5ec;color:var(--ok)}.off{background:#fbe8e8;color:var(--bad)}.warn{background:#fff1d7;color:var(--warn)}
+.stat{font-size:28px;font-weight:800;color:var(--p)}.muted{color:#647481;font-size:13px}.empty{padding:30px;text-align:center;color:#71808a}
+.print-head{display:none}.sig{height:42px}
+@media(max-width:900px){.span4,.span8{grid-column:span 12}.app{padding:10px}.card{padding:12px}th,td{padding:7px;font-size:13px}}
+@page{size:A4 portrait;margin:10mm}
+@media print{
+ body{background:#fff}.app{max-width:none;padding:0}.hero,.tabs,.no-print,#setup,#teachers{display:none!important}#daily{display:block!important}.card{border:0;box-shadow:none;padding:0}.print-head{display:block;text-align:center;margin-bottom:10px}.print-head h2{margin:0 0 4px;font-size:18pt}.print-head p{margin:3px;font-size:10pt}
+ table{table-layout:fixed}th,td{border:1px solid #000!important;padding:7px 4px;font-size:10pt;color:#000}th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.sig{height:38px}
+ .daily-meta{display:none!important}.screen-title{display:none}
+}
+</style>
+</head>
+<body><main class="app">
+<section class="hero"><h1>نظام توزيع حصص الاحتياط</h1><p>مدرسة سعد بن معاذ للتعليم الأساسي — توزيع آلي، تعديل يدوي، وطباعة A4</p></section>
+<nav class="tabs no-print">
+<button class="tab active" data-tab="daily">التوزيع اليومي</button><button class="tab" data-tab="teachers">المعلمون والأنصبة</button><button class="tab" data-tab="setup">إعداد الجدول</button>
+</nav>
+
+<section id="daily" class="panel active">
+<div class="print-head"><h2>سجل حصص الاحتياط اليومي</h2><p>مدرسة سعد بن معاذ للتعليم الأساسي</p><p id="printMeta"></p></div>
+<div class="grid">
+<div class="card span4 daily-meta"><h3>بيانات اليوم</h3><div class="row"><div><label>اليوم</label><select id="day"></select></div><div><label>التاريخ</label><input id="date" type="date"></div></div>
+<label>المعلم الغائب</label><select id="absent"></select>
+<div class="row"><div><label>الحصة</label><select id="period"></select></div><div><label>الصف / الشعبة</label><input id="className" placeholder="مثال: 5/1"></div></div>
+<div class="actions"><button class="primary" id="addAbs">إضافة حصة غياب</button></div>
+<p class="muted">أضف كل حصة للمعلم الغائب. سيستبعد النظام من لديه حصة أصلية في الوقت نفسه بعد ضبط الجدول في صفحة «إعداد الجدول».</p></div>
+<div class="card span8"><div class="row"><div><h3 class="screen-title">جدول الاحتياط المقترح</h3></div><div class="no-print actions"><button class="primary" id="auto">توزيع آلي</button><button class="secondary" onclick="window.print()">طباعة A4</button><button class="danger" id="clearDay">مسح اليوم</button></div></div>
+<div class="tablewrap"><table><thead><tr><th>م</th><th>المعلم الغائب</th><th>الحصة</th><th>الصف/الشعبة</th><th>معلم الاحتياط</th><th>النصاب بعد الاحتياط</th><th class="no-print">الحالة</th><th>التوقيع</th><th class="no-print">حذف</th></tr></thead><tbody id="dailyBody"></tbody></table></div></div>
+</div></section>
+
+<section id="teachers" class="panel"><div class="card"><h3>المعلمون والأنصبة</h3><p class="muted">النصاب المعدّل = الحصص الأساسية + الإضافة الخاصة + حصص الاحتياط المسندة. أصحاب 25 حصة معفون آليًا.</p><div class="tablewrap"><table><thead><tr><th>المعلم</th><th>الأساسي</th><th>إضافة إدارية</th><th>احتياط</th><th>الإجمالي</th><th>المتبقي إلى 25</th><th>الحالة</th></tr></thead><tbody id="teachersBody"></tbody></table></div></div></section>
+
+<section id="setup" class="panel"><div class="grid"><div class="card span4"><h3>ضبط حصة أصلية</h3><label>المعلم</label><select id="setupTeacher"></select><div class="row"><div><label>اليوم</label><select id="setupDay"></select></div><div><label>الحصة</label><select id="setupPeriod"></select></div></div><label>الصف / الشعبة</label><input id="setupClass" placeholder="مثال: 7/3"><div class="actions"><button class="primary" id="saveSlot">حفظ</button><button class="danger" id="removeSlot">تفريغ الحصة</button></div></div>
+<div class="card span8"><h3>قواعد التوزيع المفعلة</h3><p>حصة احتياط واحدة للمعلم في اليوم، وتجنب التكليف يومين متتاليين قدر المستطاع، والحد الأقصى للنصاب 25. الحصة الثامنة تُسند فقط لمعلم لديه الحصة السابعة ومتفرغ في الثامنة. من لديه 5 حصص تدريسية في اليوم لا يُكلّف بالاحتياط، ومن لديه 4 حصص متتالية لا يُعطى حصة احتياط ملاصقة لها قبلها أو بعدها. وتُراعى أولوية الأقل نصابًا والصفوف التي يدرسها المعلم.</p><p class="muted">البيانات تحفظ محليًا في هذا المتصفح فقط. دقة قواعد الحصة الثامنة، والخمس حصص اليومية، والأربع المتتالية تعتمد على إدخال الجدول الأسبوعي للمعلمين في هذه الصفحة.</p><div class="actions"><button class="danger" id="resetAll">إعادة ضبط كل البيانات المحلية</button></div></div></div></section>
+</main>
+<script>
+const DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس'];
+const baseNames=["خليل ابراهيم", "سرحان الريسي", "احمد الخزيمي", "سعيد العبري", "خليفة قناص", "سالم المعمري", "احمد الشرقي", "محمد سليمان", "ناصر الخزيمي", "علي المعمري", "مصعب العوضي", "خليل البلوشي", "جمعه البلوشي", "سعيد الحضرمي", "احمد الكعبي", "حمد السعدي", "محمد ابراهيم", "طارق المزروعي", "محمد الخزيمي", "فيصل القمشوعي", "اسماعيل البلوشي", "خميس المزروعي", "مصطفى", "راشد المزروعي", "خليفة", "عبدالرحيم", "محمود", "كريم سعيد", "علي السعدي", "علي العبري", "خليفة حمدان", "راشد الكعبي", "يونس الكعبي", "عبدالله المعمري", "وليد الريسي", "خليفة سعيد", "ابراهيم الهاشمي", "ناصر بريك", "علي ميران", "معاذ الريسي", "احمد مسعود", "عبدالله الشرقي", "جمعة المعمري", "راشد المعمري", "عبدالله المقبالي", "علي المقبالي"];
+const totals=[14, 20, 20, 20, 20, 17, 18, 19, 18, 14, 21, 21, 21, 19, 24, 24, 24, 18, 18, 24, 14, 19, 21, 21, 21, 21, 21, 21, 19, 20, 18, 16, 15, 18, 18, 21, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16];
+const special={};
+const K='reserveSchoolV3';
+let S=JSON.parse(localStorage.getItem(K)||'null')||{teachers:baseNames.map((n,i)=>({name:n,base:totals[i]??0,extra:special[n]||0})),schedule:{},records:[]};
+const save=()=>localStorage.setItem(K,JSON.stringify(S));
+function opts(el,arr){el.innerHTML=arr.map(x=>`<option>${x}</option>`).join('')}
+opts(day,DAYS);opts(setupDay,DAYS);opts(period,[1,2,3,4,5,6,7,8]);opts(setupPeriod,[1,2,3,4,5,6,7,8]);
+function fillTeachers(){const names=S.teachers.map(t=>t.name);opts(absent,names);opts(setupTeacher,names)}
+fillTeachers(); date.value=new Date().toISOString().slice(0,10);
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');render()});
+const recForDate=()=>S.records.filter(r=>r.date===date.value);
+function reserveCount(name){return S.records.filter(r=>r.reserve===name).length}
+function adjusted(t){return t.base+t.extra+reserveCount(t.name)}
+function isBusy(name,d,p){return !!S.schedule?.[name]?.[d]?.[p]}
+function taughtClasses(name){let a=[];Object.values(S.schedule?.[name]||{}).forEach(ds=>Object.values(ds).forEach(v=>v&&a.push(v)));return a}
+function yesterday(d){let i=DAYS.indexOf(d);return i>0?DAYS[i-1]:null}
+function dayPeriods(name,d){
+ const ds=S.schedule?.[name]?.[d]||{};
+ return Object.keys(ds).filter(k=>ds[k]).map(Number).sort((a,b)=>a-b);
+}
+function hasFourConsecutive(arr){
+ for(let i=0;i<=arr.length-4;i++) if(arr[i+1]===arr[i]+1&&arr[i+2]===arr[i]+2&&arr[i+3]===arr[i]+3)return true;
+ return false;
+}
+function adjacentToFourBlock(name,d,p){
+ const a=dayPeriods(name,d);
+ for(let i=0;i<=a.length-4;i++){
+   if(a[i+1]===a[i]+1&&a[i+2]===a[i]+2&&a[i+3]===a[i]+3){
+     if(p===a[i]-1 || p===a[i+3]+1)return true;
+   }
+ }
+ return false;
+}
+function eligibleByDailyLoad(name,d,p){
+ const a=dayPeriods(name,d);
+ if(a.length>=5)return false;                 // من لديه 5 حصص في اليوم لا يعطى احتياط
+ if(adjacentToFourBlock(name,d,p))return false; // لا حصة قبل/بعد 4 حصص متتالية
+ return true;
+}
+function candidates(r){
+ return S.teachers.filter(t=>{
+   if(t.name===r.absent || adjusted(t)>=25 || isBusy(t.name,r.day,r.period))return false;
+   if(recForDate().some(x=>x.reserve===t.name))return false;
+   if(!eligibleByDailyLoad(t.name,r.day,r.period))return false;
+   // الحصة الثامنة: المرشح يجب أن تكون لديه السابعة ومفرغًا في الثامنة.
+   if(+r.period===8 && !(isBusy(t.name,r.day,7) && !isBusy(t.name,r.day,8)))return false;
+   return true;
+ }).map(t=>{
+   let score=(25-adjusted(t))*100;
+   if(taughtClasses(t.name).includes(r.className))score+=35;
+   let prev=new Date(r.date+'T12:00:00'); prev.setDate(prev.getDate()-1);
+   let prevDate=prev.toISOString().slice(0,10);
+   if(S.records.some(x=>x.reserve===t.name&&x.date===prevDate))score-=1000;
+   // للحصص المتأخرة فضّل من جدولُه قريب منها، وتجنب إحضار من انتهى مبكرًا.
+   const ps=dayPeriods(t.name,r.day), last=ps.length?Math.max(...ps):0;
+   if(+r.period>=7){ if(last>=6)score+=120; else score-=500; }
+   return {t,score};
+ }).sort((a,b)=>b.score-a.score||a.t.name.localeCompare(b.t.name,'ar'));
+}
+function render(){
+ document.getElementById('printMeta').textContent=`اليوم: ${day.value} — التاريخ: ${date.value}`;
+ let rs=recForDate().filter(r=>r.day===day.value).sort((a,b)=>a.period-b.period);
+ dailyBody.innerHTML=rs.length?rs.map((r,i)=>{
+ let cand=candidates({...r,reserve:null}); let allowed=cand.map(x=>x.t); if(r.reserve&&!allowed.some(t=>t.name===r.reserve)){let cur=S.teachers.find(t=>t.name===r.reserve);if(cur)allowed.unshift(cur)} let choices=['<option value="">— اختر —</option>',...allowed.map(t=>`<option ${r.reserve===t.name?'selected':''}>${t.name}</option>`)].join('');
+ let tt=S.teachers.find(t=>t.name===r.reserve), total=tt?adjusted(tt):'—';
+ return `<tr><td>${i+1}</td><td>${r.absent}</td><td>${r.period}</td><td>${r.className||'—'}</td><td><select class="reserveSel no-print" data-id="${r.id}">${choices}</select><span class="print-only">${r.reserve||'—'}</span></td><td>${total}</td><td class="no-print">${r.reserve?'<span class="badge ok">مسندة</span>':'<span class="badge warn">بانتظار التوزيع</span>'}</td><td class="sig"></td><td class="no-print"><button class="danger del" data-id="${r.id}">×</button></td></tr>`
+ }).join(''):`<tr><td colspan="9" class="empty">لا توجد حصص غياب مضافة لهذا اليوم.</td></tr>`;
+ document.querySelectorAll('.reserveSel').forEach(s=>s.onchange=()=>{let r=S.records.find(x=>x.id==s.dataset.id);r.reserve=s.value;save();render()});
+ document.querySelectorAll('.del').forEach(b=>b.onclick=()=>{S.records=S.records.filter(x=>x.id!=b.dataset.id);save();render()});
+ teachersBody.innerHTML=S.teachers.map(t=>{let rc=reserveCount(t.name),a=t.base+t.extra+rc,rem=Math.max(0,25-a);return `<tr><td>${t.name}</td><td>${t.base}</td><td>${t.extra}</td><td>${rc}</td><td><b>${a}</b></td><td>${rem}</td><td>${a>=25?'<span class="badge off">معفى</span>':'<span class="badge ok">متاح</span>'}</td></tr>`}).join('');
+}
+addAbs.onclick=()=>{if(S.records.some(r=>r.date===date.value&&r.absent===absent.value&&r.period===+period.value)){alert('هذه الحصة مضافة مسبقًا لهذا المعلم.');return;}S.records.push({id:Date.now()+Math.random(),date:date.value,day:day.value,absent:absent.value,period:+period.value,className:className.value.trim(),reserve:''});save();render()};
+auto.onclick=()=>{let rs=recForDate().filter(r=>r.day===day.value).sort((a,b)=>a.period-b.period);rs.forEach(r=>{if(!r.reserve){let c=candidates(r);if(c.length)r.reserve=c[0].t.name}});save();render()};
+clearDay.onclick=()=>{if(confirm('مسح سجل هذا اليوم؟')){S.records=S.records.filter(r=>!(r.date===date.value&&r.day===day.value));save();render()}};
+saveSlot.onclick=()=>{let n=setupTeacher.value,d=setupDay.value,p=setupPeriod.value;S.schedule[n]??={};S.schedule[n][d]??={};S.schedule[n][d][p]=setupClass.value.trim()||'مشغول';save();alert('تم حفظ الحصة الأصلية')};
+removeSlot.onclick=()=>{let n=setupTeacher.value,d=setupDay.value,p=setupPeriod.value;if(S.schedule?.[n]?.[d])delete S.schedule[n][d][p];save();alert('تم تفريغ الحصة')};
+resetAll.onclick=()=>{if(confirm('سيتم حذف كل البيانات المحلية والعودة للوضع الأولي. متابعة؟')){localStorage.removeItem(K);location.reload()}};
+day.onchange=render;date.onchange=render;
+const st=document.createElement('style');st.textContent='.print-only{display:none}@media print{.print-only{display:inline}.reserveSel{display:none!important}}';document.head.appendChild(st);
+render();
+</script></body></html>
