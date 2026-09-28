@@ -102,6 +102,7 @@ function eligibleByDailyLoad(name,d,p){
 }
 function candidates(r){
  return S.teachers.filter(t=>{
+   if(!S.schedule?.[t.name]?.[r.day])return false;
    if(t.name===r.absent || adjusted(t)>=25 || isBusy(t.name,r.day,r.period))return false;
    if(recForDate().some(x=>x.reserve===t.name))return false;
    if(!eligibleByDailyLoad(t.name,r.day,r.period))return false;
