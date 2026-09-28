@@ -57,7 +57,7 @@ const MASTER_SCHEDULE={"سرحان الريسي":{"الأحد":{"2":"3/6","3":"4
 const baseNames=MASTER_TEACHERS.map(x=>x.name);
 const totals=MASTER_TEACHERS.map(x=>x.base);
 const special={};
-const K='reserveSchoolV10';
+const K='reserveSchoolV11';
 let old=JSON.parse(localStorage.getItem(K)||'null');
 let S=old||{teachers:MASTER_TEACHERS,schedule:MASTER_SCHEDULE,records:[]};
 S.teachers=MASTER_TEACHERS;
@@ -137,7 +137,14 @@ function candidates(r){
    return true;
  }).map(t=>{
    let score=(25-adjusted(t))*100;
-   if(taughtClasses(t.name).includes(r.className))score+=35;
+   // أولوية الصفوف: الشعبة نفسها أولاً، ثم الصف نفسه، ثم بقية المرشحين.
+   const cls=String(r.className||'').trim();
+   const taught=taughtClasses(t.name).map(x=>String(x||'').trim());
+   if(cls && taught.includes(cls)) score+=90;
+   else if(cls){
+     const grade=cls.split('/')[0].trim();
+     if(grade && taught.some(x=>x.split('/')[0].trim()===grade)) score+=45;
+   }
    let prev=new Date(r.date+'T12:00:00'); prev.setDate(prev.getDate()-1);
    let prevDate=prev.toISOString().slice(0,10);
    if(S.records.some(x=>x.reserve===t.name&&x.date===prevDate))score-=1000;
