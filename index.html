@@ -32,7 +32,7 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid
 </nav>
 
 <section id="daily" class="panel active">
-<div class="card no-print" id="cycleCard" style="margin-bottom:14px"><div class="row"><div><h3 style="margin:0 0 6px">متابعة دورة الاحتياط</h3><div id="cycleSummary" class="muted"></div></div><div style="min-width:220px"><div id="cyclePct" class="stat">0%</div><div style="height:10px;background:#e7edf2;border-radius:99px;overflow:hidden"><div id="cycleBar" style="height:100%;width:0;background:var(--p2)"></div></div></div></div><div id="cycleAlert" style="margin-top:10px"></div></div>
+<div class="card no-print" id="cycleCard" style="margin-bottom:14px"><div class="row"><div><h3 style="margin:0 0 6px">متابعة دورة الاحتياط</h3><div id="cycleSummary" class="muted"></div></div><div style="min-width:220px"><div id="cyclePct" class="stat">0%</div><div style="height:10px;background:#e7edf2;border-radius:99px;overflow:hidden"><div id="cycleBar" style="height:100%;width:0;background:var(--p2)"></div></div></div></div><div id="cycleAlert" style="margin-top:10px"></div><div class="actions"><button class="secondary" id="startCycleBtn">بدء دورة جديدة</button></div></div>
 <div class="print-head"><h2>سجل حصص الاحتياط اليومي</h2><p>مدرسة سعد بن معاذ للتعليم الأساسي</p><p id="printMeta"></p></div>
 <div class="grid">
 <div class="card span4 daily-meta"><h3>بيانات اليوم</h3><div class="row"><div><label>اليوم</label><select id="day"></select></div><div><label>التاريخ</label><input id="date" type="date"></div></div>
@@ -65,7 +65,7 @@ S.schedule=MASTER_SCHEDULE;
 const save=()=>localStorage.setItem(K,JSON.stringify(S));
 // قاعدة البيانات السحابية هي المرجع الأول؛ التخزين المحلي نسخة مؤقتة فقط.
 async function apiPost(payload){const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});const j=await r.json();if(!j.ok)throw new Error(j.error||'تعذر الاتصال بقاعدة البيانات');return j}
-async function syncCloud(){try{const r=await fetch(API_URL+'?action=bootstrap');const j=await r.json();if(!j.ok)throw new Error(j.error||'تعذر تحميل البيانات');if(Array.isArray(j.teachers)&&j.teachers.length)S.teachers=j.teachers.map(t=>({name:t.name,base:+t.base||0,extra:0}));if(Array.isArray(j.timetable)&&j.timetable.length){S.schedule={};j.timetable.forEach(x=>{S.schedule[x.teacher]??={};S.schedule[x.teacher][x.day]??={};Object.entries(x.periods||{}).forEach(([p,v])=>{if(v)S.schedule[x.teacher][x.day][p]=v})})}if(Array.isArray(j.records))S.records=j.records.map(r=>({id:r.id,date:r.date,day:r.day,absent:r.absent,period:+r.period,className:r.className||'',reserve:r.reserve||''}));save();fillTeachers();render();setCloud('متصل بقاعدة Google Sheets','ok')}catch(e){setCloud('تعذر الاتصال — يعمل مؤقتًا من هذا الجهاز','warn')}}
+async function syncCloud(){try{const r=await fetch(API_URL+'?action=bootstrap');const j=await r.json();if(!j.ok)throw new Error(j.error||'تعذر تحميل البيانات');if(Array.isArray(j.teachers)&&j.teachers.length)S.teachers=j.teachers.map(t=>({name:t.name,base:+t.base||0,extra:0}));if(Array.isArray(j.timetable)&&j.timetable.length){S.schedule={};j.timetable.forEach(x=>{S.schedule[x.teacher]??={};S.schedule[x.teacher][x.day]??={};Object.entries(x.periods||{}).forEach(([p,v])=>{if(v)S.schedule[x.teacher][x.day][p]=v})})}if(Array.isArray(j.records))S.records=j.records.map(r=>({id:r.id,date:r.date,day:r.day,absent:r.absent,period:+r.period,className:r.className||'',reserve:r.reserve||'',exceptional:(r.notes||'').includes('استثنائي')}));if(Array.isArray(j.cycles)){let ac=j.cycles.find(x=>x.status==='نشطة');if(ac)S.cycleStart=ac.start}save();fillTeachers();render();setCloud('متصل بقاعدة Google Sheets','ok')}catch(e){setCloud('تعذر الاتصال — يعمل مؤقتًا من هذا الجهاز','warn')}}
 function setCloud(txt,cls){const x=document.getElementById('cloudState');if(x){x.textContent=txt;x.className='badge '+cls}}
 async function approveDay(){const rows=recForDate().filter(r=>r.day===day.value);if(!rows.length){alert('لا توجد حصص لاعتمادها.');return}if(rows.some(r=>!r.reserve)){alert('أكمل توزيع جميع حصص الاحتياط أولًا.');return}try{setCloud('جارٍ الحفظ...','warn');const j=await apiPost({action:'saveDay',date:date.value,day:day.value,records:rows});S.records=(j.records||[]).map(r=>({id:r.id,date:r.date,day:r.day,absent:r.absent,period:+r.period,className:r.className||'',reserve:r.reserve||''}));save();render();setCloud('تم الحفظ في Google Sheets','ok');alert('تم اعتماد جدول الاحتياط وحفظه في Google Sheets.')}catch(e){setCloud('فشل الحفظ','off');alert(e.message)}}
 function opts(el,arr){el.innerHTML=arr.map(x=>`<option>${x}</option>`).join('')}
@@ -74,7 +74,7 @@ function fillTeachers(){const names=S.teachers.map(t=>t.name);opts(absent,names)
 fillTeachers(); date.value=new Date().toISOString().slice(0,10);
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');render()});
 const recForDate=()=>S.records.filter(r=>r.date===date.value);
-function reserveCount(name){return S.records.filter(r=>r.reserve===name).length}
+function reserveCount(name){return S.records.filter(r=>r.reserve===name&&(!S.cycleStart||r.date>=S.cycleStart)).length}
 function adjusted(t){return t.base+t.extra+reserveCount(t.name)}
 function isBusy(name,d,p){return !!S.schedule?.[name]?.[d]?.[p]}
 function taughtClasses(name){let a=[];Object.values(S.schedule?.[name]||{}).forEach(ds=>Object.values(ds).forEach(v=>v&&a.push(v)));return a}
@@ -121,7 +121,7 @@ function exceptionalCandidates(r){
 }
 function cycleStats(){
  const total=S.teachers.reduce((s,t)=>s+Math.max(0,25-(+t.base||0)-(+t.extra||0)),0);
- const done=S.records.filter(r=>r.reserve).length;
+ const done=S.records.filter(r=>r.reserve&&(!S.cycleStart||r.date>=S.cycleStart)).length;
  const pct=total?Math.min(100,done/total*100):0;
  const completed=S.teachers.filter(t=>adjusted(t)>=25).length;
  return {total,done,pct,completed};
@@ -181,6 +181,7 @@ auto.onclick=()=>{let rs=recForDate().filter(r=>r.day===day.value).sort((a,b)=>a
 clearDay.onclick=()=>{if(confirm('مسح سجل هذا اليوم؟')){S.records=S.records.filter(r=>!(r.date===date.value&&r.day===day.value));save();render()}};
 resetAll.onclick=()=>{if(confirm('سيتم حذف كل البيانات المحلية والعودة للوضع الأولي. متابعة؟')){localStorage.removeItem(K);location.reload()}};
 addTeacherCloud.onclick=async()=>{let name=newTeacherName.value.trim(),base=+newTeacherBase.value;if(!name||base<0||base>25){alert('أدخل اسمًا ونصابًا صحيحًا.');return}try{await apiPost({action:'updateTeacher',name,base,eligible:true,create:true});S.teachers.push({name,base,extra:0});save();fillTeachers();render();newTeacherName.value='';newTeacherBase.value='';alert('تمت إضافة المعلم. لن يدخل التوزيع الآلي حتى يضاف جدوله الأسبوعي.')}catch(e){alert('تعذر إضافة المعلم سحابيًا. حدّث Apps Script إلى الإصدار الجديد.')}};
+startCycleBtn.onclick=async()=>{let cs=cycleStats();if(!confirm(`سيتم إغلاق الدورة الحالية عند ${cs.pct.toFixed(1)}% وبدء دورة جديدة، وسيعاد عد الاحتياط للدورة من الصفر مع بقاء السجل التاريخي. متابعة؟`))return;try{let j=await apiPost({action:'startCycle',notes:'بدء بقرار مسؤول الاحتياط'});let ac=(j.cycles||[]).find(x=>x.status==='نشطة');S.cycleStart=ac?.start||date.value;save();render();alert('تم بدء دورة جديدة وحفظ الدورة السابقة في الأرشيف.')}catch(e){alert('يلزم تحديث Apps Script إلى الإصدار V2 قبل استخدام بدء الدورة الجديدة.')}};
 approveCloud.onclick=approveDay;
 day.onchange=()=>{render();};date.onchange=render;
 const st=document.createElement('style');st.textContent='.print-only{display:none}@media print{.print-only{display:inline}.reserveSel{display:none!important}}';document.head.appendChild(st);
