@@ -57,7 +57,7 @@ const MASTER_SCHEDULE={"سرحان الريسي":{"الأحد":{"2":"3/6","3":"4
 const baseNames=MASTER_TEACHERS.map(x=>x.name);
 const totals=MASTER_TEACHERS.map(x=>x.base);
 const special={};
-const K='reserveSchoolV13';
+const K='reserveSchoolV14';
 let old=JSON.parse(localStorage.getItem(K)||'null');
 let S=old||{teachers:MASTER_TEACHERS,schedule:MASTER_SCHEDULE,records:[]};
 S.teachers=MASTER_TEACHERS;
@@ -70,7 +70,12 @@ function setCloud(txt,cls){const x=document.getElementById('cloudState');if(x){x
 async function approveDay(){const rows=recForDate().filter(r=>r.day===day.value);if(!rows.length){alert('لا توجد حصص لاعتمادها.');return}if(rows.some(r=>!r.reserve)){alert('أكمل توزيع جميع حصص الاحتياط أولًا.');return}try{setCloud('جارٍ الحفظ...','warn');const j=await apiPost({action:'saveDay',date:date.value,day:day.value,records:rows});S.records=(j.records||[]).map(r=>({id:r.id,date:r.date,day:r.day,absent:r.absent,period:+r.period,className:r.className||'',reserve:r.reserve||''}));save();render();setCloud('تم الحفظ في Google Sheets','ok');alert('تم اعتماد جدول الاحتياط وحفظه في Google Sheets.')}catch(e){setCloud('فشل الحفظ','off');alert(e.message)}}
 function opts(el,arr){el.innerHTML=arr.map(x=>`<option>${x}</option>`).join('')}
 opts(day,DAYS);opts(setupDay,DAYS);opts(period,[1,2,3,4,5,6,7,8]);opts(setupPeriod,[1,2,3,4,5,6,7,8]);
-function fillTeachers(){const names=S.teachers.map(t=>t.name);opts(absent,names);opts(setupTeacher,names)}
+function fillTeachers(){
+ const eligible=S.teachers.map(t=>t.name);
+ const allTimetable=Object.keys(S.schedule||{}).sort((a,b)=>a.localeCompare(b,'ar'));
+ opts(absent,allTimetable.length?allTimetable:eligible);
+ opts(setupTeacher,allTimetable.length?allTimetable:eligible);
+}
 fillTeachers();
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');render()});
 const recForDate=()=>S.records.filter(r=>r.date===date.value);
