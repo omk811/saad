@@ -57,7 +57,7 @@ const MASTER_SCHEDULE={"سرحان الريسي":{"الأحد":{"2":"3/6","3":"4
 const baseNames=MASTER_TEACHERS.map(x=>x.name);
 const totals=MASTER_TEACHERS.map(x=>x.base);
 const special={};
-const K='reserveSchoolV14';
+const K='reserveSchoolV15';
 let old=JSON.parse(localStorage.getItem(K)||'null');
 let S=old||{teachers:MASTER_TEACHERS,schedule:MASTER_SCHEDULE,records:[]};
 S.teachers=MASTER_TEACHERS;
@@ -107,9 +107,13 @@ function eligibleByDailyLoad(name,d,p){
  if(adjacentToFourBlock(name,d,p))return false; // لا حصة قبل/بعد 4 حصص متتالية
  return true;
 }
+function absentNamesForDay(){
+ return new Set(recForDate().filter(x=>x.day===day.value&&x.absent).map(x=>x.absent));
+}
+function isAbsentToday(name){return absentNamesForDay().has(name)}
 function hardBlocked(t,r){
  if(!S.schedule?.[t.name]?.[r.day])return 'لا يوجد جدول معتمد';
- if(t.name===r.absent)return 'المعلم غائب';
+ if(isAbsentToday(t.name))return 'المعلم غائب اليوم';
  if(isBusy(t.name,r.day,r.period))return 'لديه حصة أصلية';
  if(adjusted(t)>=25)return 'أكمل نصاب الدورة';
  return '';
@@ -134,7 +138,7 @@ function cycleStats(){
 function candidates(r){
  return S.teachers.filter(t=>{
    if(!S.schedule?.[t.name]?.[r.day])return false;
-   if(t.name===r.absent || adjusted(t)>=25 || isBusy(t.name,r.day,r.period))return false;
+   if(isAbsentToday(t.name) || adjusted(t)>=25 || isBusy(t.name,r.day,r.period))return false;
    if(recForDate().some(x=>x.reserve===t.name))return false;
    if(!eligibleByDailyLoad(t.name,r.day,r.period))return false;
    // الحصة الثامنة: المرشح يجب أن تكون لديه السابعة ومفرغًا في الثامنة.
@@ -161,6 +165,7 @@ function candidates(r){
 }
 function explainChoice(r,name){
  const t=S.teachers.find(x=>x.name===name); if(!t)return [];
+ if(isAbsentToday(name))return ['هذا المعلم مسجل غائبًا اليوم ولا يجوز تكليفه بالاحتياط'];
  const reasons=[];
  if(!isBusy(name,r.day,r.period))reasons.push('متفرغ في الحصة '+r.period);
  const taught=taughtClasses(name).map(x=>String(x||'').trim()), cls=String(r.className||'').trim(), cp=cls.split('/'), grade=(cp[1]||cp[0]).trim();
