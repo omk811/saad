@@ -266,3 +266,54 @@ tbody tr:hover td{background:#edf7ef}
  .lookup-subject-line{background:#fff!important;border:1px solid #ddd!important}
  .lookup-subject-name{font-size:14pt!important;color:#222!important}
 }
+
+/* الجداول الأسبوعية المطوّرة: المعلم والطالب */
+#weeklyTimetable .heading,#studentClassTimetable .heading{padding-bottom:16px;border-bottom:1px solid #e2ece5;margin-bottom:19px}
+#weeklyTimetable .heading h2,#studentClassTimetable .heading h2{color:#174c43}
+#weeklyTimetable .weekly,#studentClassTimetable .weekly{border:1px solid #d4e6da;border-radius:18px;box-shadow:0 6px 24px #1552410b;background:#fff}
+#weeklyTimetable table,#studentClassTimetable table{width:100%;min-width:950px;border-spacing:0;table-layout:fixed}
+#weeklyTimetable thead th,#studentClassTimetable thead th{position:sticky;top:0;z-index:2;background:#185d56;color:#fff;border-color:#327a6c;font-weight:800;padding:17px 7px;font-size:clamp(.89rem,.8vw,1.06rem);white-space:nowrap}
+#weeklyTimetable thead th:first-child,#studentClassTimetable thead th:first-child{width:12.5%;right:0;z-index:3}
+#weeklyTimetable tbody th,#studentClassTimetable tbody th{position:sticky;right:0;z-index:1;background:#eaf4ec;color:#1f5a4d;font-weight:800;border-inline-end:2px solid #c9e1d2;font-size:clamp(.93rem,.9vw,1.15rem)}
+#weeklyTimetable tbody td,#studentClassTimetable tbody td{height:106px;background:#fff;vertical-align:middle;padding:10px 6px;border-bottom:1px solid #e1eae5;border-inline-end:1px solid #e9f0ea;direction:rtl!important;text-align:center}
+#weeklyTimetable tbody tr:nth-child(even) td,#studentClassTimetable tbody tr:nth-child(even) td{background:#f6faf7}
+#weeklyTimetable tbody tr:hover td,#studentClassTimetable tbody tr:hover td{background:#eef7f0}
+#weeklyTimetable .weekly-lesson{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;line-height:1.5}
+#weeklyTimetable .weekly-class{display:inline-flex;align-items:center;justify-content:center;border-radius:10px;padding:4px 12px;min-width:52px;background:#e4f1e9;color:#174e45;font-size:clamp(1.05rem,1.25vw,1.45rem);font-weight:800;direction:ltr;font-variant-numeric:tabular-nums}
+#weeklyTimetable .weekly-subject{color:#385e52;font-size:clamp(.8rem,.76vw,1.02rem);font-weight:700;line-height:1.5;overflow-wrap:anywhere}
+#studentClassTimetable .student-lesson{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;line-height:1.5}
+#studentClassTimetable .student-lesson b{font-size:clamp(.88rem,.93vw,1.12rem);font-weight:800;color:#185e4c;overflow-wrap:anywhere}
+#studentClassTimetable .student-lesson small{font-size:clamp(.75rem,.72vw,.92rem);font-weight:700;color:#536d69;overflow-wrap:anywhere}
+#studentClassTimetable .student-lesson em{font-size:.76rem;color:#a26430}
+#weeklyTimetable .empty-dash,#studentClassTimetable .empty-dash{color:#9cadab;font-size:1.35rem;font-weight:400}
+#weeklyTimetable .empty-lesson,#studentClassTimetable .empty-lesson{background:#f5f8f6!important}
+@media(min-width:1500px){
+ #weeklyTimetable table,#studentClassTimetable table{min-width:0}
+ #weeklyTimetable tbody td,#studentClassTimetable tbody td{height:130px}
+}
+@media(max-width:900px){
+ #weeklyTimetable .weekly,#studentClassTimetable .weekly{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+ #weeklyTimetable tbody td,#studentClassTimetable tbody td{height:100px}
+ #weeklyTimetable table,#studentClassTimetable table{min-width:920px}
+}
+@media print{
+ body[data-print-target="weeklyTimetable"] #weeklyTimetable,
+ body[data-print-target="studentClassTimetable"] #studentClassTimetable{padding:0!important;margin:0!important}
+ #weeklyTimetable .heading,#studentClassTimetable .heading{padding:0 0 3mm!important;margin-bottom:4mm!important;border-bottom:1px solid #888!important}
+ #weeklyTimetable .weekly,#studentClassTimetable .weekly{box-shadow:none!important;border:1px solid #888!important;border-radius:0!important;overflow:visible!important}
+ #weeklyTimetable table,#studentClassTimetable table{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important}
+ #weeklyTimetable thead th,#studentClassTimetable thead th{position:static!important;z-index:auto!important;background:#e7eee9!important;color:#111!important;border:1px solid #999!important;padding:3mm .7mm!important;font-size:9pt!important}
+ #weeklyTimetable tbody th,#studentClassTimetable tbody th{position:static!important;z-index:auto!important;background:#f0f4f1!important;color:#111!important;border:1px solid #aaa!important;padding:3mm 1mm!important;font-size:9pt!important}
+ #weeklyTimetable tbody td,#studentClassTimetable tbody td{background:white!important;border:1px solid #bbb!important;height:24mm!important;padding:2mm 1mm!important;vertical-align:middle!important;break-inside:avoid!important}
+ #weeklyTimetable tbody tr,#studentClassTimetable tbody tr{break-inside:avoid!important;page-break-inside:avoid!important}
+ #weeklyTimetable .weekly-lesson,#studentClassTimetable .student-lesson{gap:1mm!important;line-height:1.4!important}
+ #weeklyTimetable .weekly-class{font-size:11pt!important;padding:1mm 2mm!important;background:none!important;color:#111!important;min-width:0!important}
+ #weeklyTimetable .weekly-subject{font-size:8.5pt!important;color:#222!important}
+ #studentClassTimetable .student-lesson b{font-size:9.2pt!important;color:#111!important}
+ #studentClassTimetable .student-lesson small{font-size:8pt!important;color:#333!important}
+ #studentClassTimetable .student-lesson em{font-size:6.6pt!important}
+ #weeklyTimetable .empty-lesson,#studentClassTimetable .empty-lesson{background:#fafafa!important}
+ #weeklyTimetable .empty-dash,#studentClassTimetable .empty-dash{font-size:11pt!important}
+ body[data-print-target="weeklyTimetable"] .print-meta,
+ body[data-print-target="studentClassTimetable"] .print-meta{display:block!important;font-size:10pt!important;margin:3mm 0!important;text-align:center}
+}
