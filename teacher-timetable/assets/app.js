@@ -13,10 +13,15 @@ const DATA={"خليل اسلامية":{"الأحد":["","","","","","","",""],"�
  document.querySelectorAll('main>section.print-selected').forEach(x=>x.classList.remove('print-selected'));
  section.classList.add('print-selected');
  document.body.dataset.printTarget=id;
+ const oldPageRule=document.getElementById('timetablePrintPageRule');if(oldPageRule)oldPageRule.remove();
+ if(id==='weeklyTimetable'||id==='studentClassTimetable'){
+  const landscape=document.createElement('style');landscape.id='timetablePrintPageRule';landscape.textContent='@page{size:A4 landscape;margin:10mm}';document.head.appendChild(landscape);
+ }
  window.print();
 }
 window.addEventListener('afterprint',()=>{
  delete document.body.dataset.printTarget;
+ const pageRule=document.getElementById('timetablePrintPageRule');if(pageRule)pageRule.remove();
  document.querySelectorAll('main>section.print-selected').forEach(x=>x.classList.remove('print-selected'));
 });
 const DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس'];const teacher=document.getElementById('teacher'),day=document.getElementById('day');const names=Object.keys(DATA).sort((a,b)=>a.localeCompare(b,'ar'));teacher.innerHTML=names.map(n=>'<option value="'+n+'">'+n+'</option>').join('');const prev=localStorage.getItem('saad-timetable-teacher');if(prev&&DATA[prev])teacher.value=prev;const weekday=new Intl.DateTimeFormat('ar-OM',{weekday:'long',timeZone:'Asia/Muscat'}).format(new Date());if(DAYS.includes(weekday))day.value=weekday;function render(){
@@ -35,7 +40,7 @@ const DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء',
  document.getElementById('weekBody').innerHTML=DAYS.map(wd=>{
    const a=DATA[name]?.[wd]||Array(8).fill('');
    total+=a.filter(Boolean).length;
-   return '<tr><th>'+wd+'</th>'+a.map(c=>'<td>'+(c?c+(getSub(c)?'<div class="sub">'+getSub(c)+'</div>':''):'—')+'</td>').join('')+'</tr>';
+   return '<tr><th scope="row">'+wd+'</th>'+a.map(c=>{const sub=c?getSub(c):'';return '<td class="'+(c?'has-lesson':'empty-lesson')+'">'+(c?'<div class="weekly-lesson"><strong class="weekly-class">'+c+'</strong><span class="weekly-subject">'+(sub||'المادة غير محددة')+'</span></div>':'<span class="empty-dash">—</span>')+'</td>'}).join('')+'</tr>';
  }).join('');
  document.getElementById('weekTotal').textContent='مجموع الحصص الأسبوعية: '+total;
 }const ld=document.getElementById('lookupDay'),lp=document.getElementById('lookupPeriod'),lc=document.getElementById('lookupClass'),lr=document.getElementById('lookupResult');ld.innerHTML=DAYS.map(d=>'<option>'+d+'</option>').join('');ld.value=day.value;lp.innerHTML=Array.from({length:8},(_,i)=>'<option value="'+(i+1)+'">الحصة '+(i+1)+'</option>').join('');const cls=[...new Set(Object.values(DATA).flatMap(v=>Object.values(v).flat().filter(Boolean)))].sort((a,b)=>{const x=a.split('/').map(Number),y=b.split('/').map(Number);return x[1]-y[1]||x[0]-y[0]});lc.innerHTML='<option value="">اختر الصف والشعبة</option>'+cls.map(c=>'<option value="'+c+'">الصف '+c.split('/')[1]+' - الشعبة '+c.split('/')[0]+'</option>').join('');function searchLesson(){
@@ -88,9 +93,9 @@ function renderStudentTimetable(){
  let count=0,conflicts=0,missing=0;
  body.innerHTML=DAYS.map(d=>'<tr><th>'+d+'</th>'+Array.from({length:8},(_,p)=>{
  const found=Object.keys(DATA).filter(n=>(DATA[n][d]||[])[p]===c);
- if(!found.length)return '<td>—</td>';
+ if(!found.length)return '<td class="empty-lesson"><span class="empty-dash">—</span></td>';
  count++;if(found.length>1)conflicts++;
- return '<td>'+found.map((n,index)=>{
+ return '<td class="has-lesson">'+found.map((n,index)=>{
  const subject=lookupSubject(n,c);
  if(!subject)missing++;
  return '<div class="student-lesson"><b>'+escStudent(subject||'المادة غير محددة')+'</b><small>'+escStudent(n)+'</small>'+(found.length>1&&index===0?'<em>تعدد المعلمين — تحقق</em>':'')+'</div>';
