@@ -245,3 +245,24 @@ tbody tr:hover td{background:#edf7ef}
 @media print{
  body[data-view] main>section.panel:not(.print-selected){display:none!important}
 }
+
+/* بطاقة المعلم في نتائج البحث */
+#lookupResult{padding:clamp(14px,2vw,25px)!important;background:#f1f8f4!important;border:1px solid #d6e8dc!important}
+.lookup-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:15px}
+.lookup-teacher-card{position:relative;padding:clamp(22px,2.6vw,35px);background:#fff;border:1px solid #cee4d8;border-radius:20px;text-align:center;box-shadow:0 10px 24px #164c3510;overflow:hidden}
+.lookup-teacher-card::before{content:"";position:absolute;top:0;right:12%;left:12%;height:5px;background:linear-gradient(90deg,#cba15e,#258877);border-radius:0 0 10px 10px}
+.lookup-kicker{font-weight:700;color:#56766a;font-size:clamp(.9rem,.75vw,1.1rem);margin-bottom:9px}
+.lookup-teacher-name{font-size:clamp(1.7rem,2.6vw,3rem);font-weight:800;line-height:1.55;color:#174e46;overflow-wrap:anywhere}
+.lookup-subject-line{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:9px 16px;margin:17px auto 0;padding:12px 15px;background:#eaf5ed;border-radius:13px}
+.lookup-subject-label{font-size:clamp(.85rem,.75vw,1rem);color:#426658;font-weight:700}
+.lookup-subject-name{color:#215c51;font-size:clamp(1.08rem,1.2vw,1.5rem);font-weight:800}
+.lookup-empty{text-align:center;padding:18px;color:#536f64;font-weight:700}
+@media(max-width:520px){.lookup-teacher-card{padding:23px 14px}.lookup-teacher-name{font-size:clamp(1.55rem,6vw,2.1rem)}}
+@media print{
+ #lookupResult{padding:5mm!important;background:#fff!important;border:0!important}
+ .lookup-teacher-card{box-shadow:none!important;border:1px solid #999!important;break-inside:avoid;padding:7mm 4mm!important}
+ .lookup-teacher-card::before{display:none!important}
+ .lookup-teacher-name{font-size:23pt!important;color:#111!important}
+ .lookup-subject-line{background:#fff!important;border:1px solid #ddd!important}
+ .lookup-subject-name{font-size:14pt!important;color:#222!important}
+}
