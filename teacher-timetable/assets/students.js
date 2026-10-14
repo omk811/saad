@@ -14,7 +14,7 @@ async function api(action,fields={}){
 }
 function draw(){
  el('studentTotal').textContent='('+students.length+' طالب)';
- el('studentRows').innerHTML=students.length?students.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+safe(x.name)+'</td><td>'+safe(x.section)+'</td><td>'+safe(x.schoolId)+'</td><td>'+safe(x.phone)+'</td><td class="actions-col"><button data-i="'+i+'">تعديل الجوال</button></td></tr>').join(''):'<tr><td colspan="6">لا توجد سجلات مطابقة.</td></tr>';
+ el('studentRows').innerHTML=students.length?students.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+safe(x.name)+'</td><td>'+safe(x.section)+'</td><td>'+safe(x.schoolId)+'</td><td>'+safe(x.area||'—')+'</td><td>'+safe(x.phone)+'</td><td class="actions-col"><button data-i="'+i+'">تعديل الجوال</button></td></tr>').join(''):'<tr><td colspan="7">لا توجد سجلات مطابقة.</td></tr>';
 }
 async function refresh(){
  el('studentStatus').textContent='جارٍ جلب السجلات...';
