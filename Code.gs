@@ -5,7 +5,7 @@ function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMim
 function ss(){return SpreadsheetApp.openById(SPREADSHEET_ID)}
 function sheet(n){const s=ss().getSheetByName(n);if(!s)throw Error('الورقة غير موجودة: '+n);return s}
 function doGet(e){try{const a=(e.parameter.action||'bootstrap');if(a==='ping')return out({ok:true});if(a==='subjects')return out({ok:true,subjects:getSubjects()});if(a==='now')return out({ok:true,...serverNow()});if(a==='teachers')return out({ok:true,teachers:getTeachers()});if(a==='timetable')return out({ok:true,timetable:getTimetable()});if(a==='records')return out({ok:true,records:getRecords()});if(a==='bootstrap')return out({ok:true,teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()});return out({ok:false,error:'إجراء غير معروف'})}catch(x){return out({ok:false,error:x.message})}}
-function doPost(e){const lock=LockService.getScriptLock();lock.waitLock(20000);try{const d=JSON.parse(e.postData.contents||'{}');let r;if(d.action==='saveDay')r=saveDay(d);else if(d.action==='saveSubject'){verifySubjectAdmin_(d);r=saveSubject(d);}else if(d.action==='saveSubjectAll'){verifySubjectAdmin_(d);r=saveSubjectAll(d);}else if(d.action==='updateTeacher')r=updateTeacher(d);else if(d.action==='startCycle')r=startCycle(d);else throw Error('إجراء غير معروف');SpreadsheetApp.flush();return out({ok:true,...r})}catch(x){return out({ok:false,error:x.message})}finally{lock.releaseLock()}}
+function doPost(e){const lock=LockService.getScriptLock();lock.waitLock(20000);try{const d=JSON.parse(e.postData.contents||'{}');let r;if(d.action==='saveDay')r=saveDay(d);else if(d.action==='saveSubject'){verifySubjectAdmin_(d);r=saveSubject(d);}else if(d.action==='saveSubjectAll'){verifySubjectAdmin_(d);r=saveSubjectAll(d);}else if(d.action==='studentsQuery'){verifySubjectAdmin_(d);r=studentsQuery_(d);}else if(d.action==='studentUpdate'){verifySubjectAdmin_(d);r=studentUpdate_(d);}else if(d.action==='updateTeacher')r=updateTeacher(d);else if(d.action==='startCycle')r=startCycle(d);else throw Error('إجراء غير معروف');SpreadsheetApp.flush();return out({ok:true,...r})}catch(x){return out({ok:false,error:x.message})}finally{lock.releaseLock()}}
 function serverNow(){const n=new Date(),date=Utilities.formatDate(n,TZ,'yyyy-MM-dd'),dow=+Utilities.formatDate(n,TZ,'u');const days={1:'الإثنين',2:'الثلاثاء',3:'الأربعاء',4:'الخميس',5:'الجمعة',6:'السبت',7:'الأحد'};return{date,day:days[dow],time:Utilities.formatDate(n,TZ,'HH:mm:ss'),timezone:TZ}}
 function getTeachers(){const v=sheet(SH.teachers).getDataRange().getValues();return v.slice(1).filter(r=>r[0]).map(r=>({name:String(r[0]),base:+r[1]||0,reserveCount:+r[2]||0,currentLoad:+r[3]||(+r[1]||0),remaining:+r[4]||0,lastReserve:fmt(r[5]),status:String(r[6]||''),eligible:String(r[7]||'نعم')!=='لا',scheduleName:String(r[8]||r[0])}))}
 function getTimetable(){const v=sheet(SH.timetable).getDataRange().getValues();return v.slice(1).filter(r=>r[0]&&r[1]).map(r=>({teacher:String(r[0]),day:String(r[1]),periods:Object.fromEntries([1,2,3,4,5,6,7,8].map((p,i)=>[p,String(r[i+2]||'')])),dailyCount:+r[10]||0}))}
@@ -37,4 +37,31 @@ function saveSubjectAll(d){
  });
  if(pending.length)sh.getRange(sh.getLastRow()+1,1,pending.length,4).setValues(pending);
  return{subjects:getSubjects(),updatedClasses:classes.length}
+}
+
+/* سجل الطلاب الخاص: لا يوفر doGet أي بيانات شخصية */
+const STUDENTS_PRIVATE_SPREADSHEET_ID='1bv2nIKMcu9-I5_dAC7q8-dfcZlCj38fqJbMvyv1An2g';
+function studentsSheet_(){
+ const sh=SpreadsheetApp.openById(STUDENTS_PRIVATE_SPREADSHEET_ID).getSheetByName('الطلاب');
+ if(!sh)throw Error('ورقة الطلاب غير موجودة');
+ return sh;
+}
+function studentsQuery_(d){
+ const sh=studentsSheet_(),v=sh.getDataRange().getDisplayValues();
+ const q=String(d.query||'').trim().toLowerCase().slice(0,100);
+ const section=String(d.section||'').trim();
+ if(section&&!/^[1-6]$/.test(section))throw Error('الشعبة غير صالحة');
+ const rows=v.slice(1).filter(r=>r[0]&&r[1]).filter(r=>(!section||String(r[3])===section)&&(!q||String(r[1]).toLowerCase().includes(q)||String(r[0]).includes(q)));
+ return{students:rows.slice(0,250).map(r=>({schoolId:String(r[0]),name:String(r[1]),grade:String(r[2]),section:String(r[3]),phone:String(r[4]),status:String(r[5]),area:String(r[6])})),total:rows.length};
+}
+function studentUpdate_(d){
+ const id=String(d.schoolId||'').trim(),phone=String(d.phone||'').trim();
+ if(!id||id.length>40)throw Error('الرقم المدرسي مطلوب');
+ if(!/^[+0-9  -]{5,20}$/.test(phone))throw Error('رقم الجوال غير صالح');
+ const sh=studentsSheet_(),v=sh.getRange(1,1,Math.max(1,sh.getLastRow()),5).getDisplayValues();
+ const ix=v.findIndex((r,i)=>i>0&&String(r[0])===id);
+ if(ix<0)throw Error('الطالب غير موجود');
+ sh.getRange(ix+1,5).setValue(phone);
+ sh.getRange(ix+1,8).setValue(new Date());
+ return{updated:true};
 }
