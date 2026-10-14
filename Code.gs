@@ -46,18 +46,23 @@ function studentsSheet_(){
  if(!sh)throw Error('ورقة الطلاب غير موجودة');
  return sh;
 }
+
+/* البحث الإداري: لا توجد استجابة عامة بأسماء الطلاب */
 function studentsQuery_(d){
- const sh=studentsSheet_(),v=sh.getDataRange().getDisplayValues();
- const q=String(d.query||'').trim().toLowerCase().slice(0,100);
+ const grade=String(d.grade||'الخامس').trim();
+ if(!['الخامس','السادس','السابع','الثامن'].includes(grade))throw Error('الصف غير صالح');
  const section=String(d.section||'').trim();
- if(section&&!/^[1-6]$/.test(section))throw Error('الشعبة غير صالحة');
- const rows=v.slice(1).filter(r=>r[0]&&r[1]).filter(r=>(!section||String(r[3])===section)&&(!q||String(r[1]).toLowerCase().includes(q)||String(r[0]).includes(q)));
- return{students:rows.slice(0,250).map(r=>({schoolId:String(r[0]),name:String(r[1]),grade:String(r[2]),section:String(r[3]),phone:String(r[4]),status:String(r[5]),area:String(r[6])})),total:rows.length};
+ if(section&&!/^[1-7]$/.test(section))throw Error('الشعبة غير صالحة');
+ const q=String(d.query||'').trim().toLowerCase().slice(0,100);
+ const sh=studentsSheet_(),v=sh.getDataRange().getDisplayValues();
+ const matches=v.slice(1).filter(r=>r[0]&&r[1]&&String(r[2])===grade)
+  .filter(r=>(!section||String(r[3])===section)&&(!q||String(r[1]).toLowerCase().includes(q)||String(r[0]).includes(q)));
+ return{students:matches.slice(0,250).map(r=>({schoolId:String(r[0]),name:String(r[1]),grade:String(r[2]),section:String(r[3]),phone:String(r[4]),status:String(r[5]),area:String(r[6])})),total:matches.length};
 }
 function studentUpdate_(d){
  const id=String(d.schoolId||'').trim(),phone=String(d.phone||'').trim();
- if(!id||id.length>40)throw Error('الرقم المدرسي مطلوب');
- if(!/^[+0-9  -]{5,20}$/.test(phone))throw Error('رقم الجوال غير صالح');
+ if(!id||id.length>50)throw Error('معرف السجل مطلوب');
+ if(!/^[+0-9 -]{5,20}$/.test(phone))throw Error('رقم الجوال غير صالح');
  const sh=studentsSheet_(),v=sh.getRange(1,1,Math.max(1,sh.getLastRow()),5).getDisplayValues();
  const ix=v.findIndex((r,i)=>i>0&&String(r[0])===id);
  if(ix<0)throw Error('الطالب غير موجود');
@@ -65,25 +70,29 @@ function studentUpdate_(d){
  sh.getRange(ix+1,8).setValue(new Date());
  return{updated:true};
 }
-
 function studentsImport_(d){
  const incoming=d.students;
- if(!Array.isArray(incoming)||incoming.length<1||incoming.length>500)throw Error('ملف الطلاب غير صالح أو كبير');
- const seen=new Set(),rows=[];
+ if(!Array.isArray(incoming)||incoming.length<1||incoming.length>900)throw Error('عدد سجلات الاستيراد غير صالح');
+ const seen=new Set(),incomingRows=[],importedGrades=new Set();
+ const validGrades=['الخامس','السادس','السابع','الثامن'];
  incoming.forEach(rec=>{
   const id=String(rec.schoolId||'').trim(),name=String(rec.name||'').trim();
-  const section=String(rec.section||'').trim(),phone=String(rec.phone||'').trim();
-  if(!id||id.length>40||!name||name.length>160||! /^[1-6]$/.test(section))throw Error('بيانات طالب ناقصة أو شعبة غير صالحة');
-  if(seen.has(id))throw Error('رقم مدرسي مكرر في الملف');
-  seen.add(id);
-  const check=[id,name,'الخامس',section,phone,String(rec.status||''),String(rec.area||'')];
-  if(check.some(v=>/^[=+@]/.test(v)&&v!==phone))throw Error('قيمة غير آمنة في ملف الطلاب');
-  rows.push([...check,new Date()]);
+  const grade=String(rec.grade||'الخامس').trim(),section=String(rec.section||'').trim();
+  const phone=String(rec.phone||'').trim(),status=String(rec.status||'').trim(),area=String(rec.area||'').trim();
+  if(!id||id.length>50||!name||name.length>160||!validGrades.includes(grade)||!/^[1-7]$/.test(section))throw Error('سجل غير مكتمل: الاسم أو معرف السجل أو الشعبة');
+  if(grade!=='السابع'&&section==='7')throw Error('الشعبة السابعة متاحة للصف السابع فقط');
+  if(seen.has(id))throw Error('معرف مكرر في ملف الاستيراد');
+  if([id,name,grade,section,phone,status,area].some(v=>/^[=+@]/.test(v)))throw Error('قيمة غير آمنة في ملف الاستيراد');
+  seen.add(id);importedGrades.add(grade);
+  incomingRows.push([id,name,grade,section,phone,status,area,new Date()]);
  });
- const sh=studentsSheet_();
- const last=sh.getLastRow();
+ const sh=studentsSheet_(),last=sh.getLastRow();
+ const existing=last>1?sh.getRange(2,1,last-1,8).getValues():[];
+ const keep=existing.filter(r=>r[0]&&r[1]&&!importedGrades.has(String(r[2])));
+ const all=keep.concat(incomingRows);
+ const allIds=new Set();
+ all.forEach(r=>{const id=String(r[0]);if(allIds.has(id))throw Error('معرف مكرر بين الصفوف');allIds.add(id);});
  if(last>1)sh.getRange(2,1,last-1,8).clearContent();
- sh.getRange(2,1,rows.length,8).setNumberFormat('@');
- sh.getRange(2,1,rows.length,8).setValues(rows);
- return{imported:rows.length};
+ if(all.length){sh.getRange(2,1,all.length,8).setNumberFormat('@');sh.getRange(2,1,all.length,8).setValues(all);}
+ return{imported:incomingRows.length,retained:keep.length,total:all.length,grades:[...importedGrades]};
 }
