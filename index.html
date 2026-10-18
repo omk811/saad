@@ -112,7 +112,7 @@ function absentNamesForDay(){
 }
 function isAbsentToday(name){return absentNamesForDay().has(name)}
 const TRAINING_EXCLUSIONS=[{name:'خليل اسلامية',day:'الأحد',reason:'ارتباط بالتدريب يوم الأحد'}];
-const FIRST_TEACHERS=new Set([]); // أضف أسماء المعلمين الأوائل بعد اعتماد القائمة
+const FIRST_TEACHERS=new Set(["خليفة قناص","خليفة سعيد","اسماعيل البلوشي","خليل اسلامية","سعيد الحضرمي","ابراهيم الهاشمي"]); // المعلمون الأوائل والقائم بأعمال المعلم الأول: آخر المرشحين للاحتياط
 function trainingReason(name,dayName){const x=TRAINING_EXCLUSIONS.find(p=>p.name===name&&p.day===dayName);return x?x.reason:'';}
 function isFirstTeacher(name){return FIRST_TEACHERS.has(name);}
 function hardBlocked(t,r){
@@ -172,6 +172,7 @@ function explainChoice(r,name){
  const t=S.teachers.find(x=>x.name===name); if(!t)return [];
  if(isAbsentToday(name))return ['هذا المعلم مسجل غائبًا اليوم ولا يجوز تكليفه بالاحتياط'];
  const reasons=[];
+ if(isFirstTeacher(name))reasons.push('معلم أول أو قائم بأعمال المعلم الأول؛ يُرتب بعد بقية المعلمين المؤهلين');
  if(!isBusy(name,r.day,r.period))reasons.push('متفرغ في الحصة '+r.period);
  const taught=taughtClasses(name).map(x=>String(x||'').trim()), cls=String(r.className||'').trim(), cp=cls.split('/'), grade=(cp[1]||cp[0]).trim();
  if(cls&&taught.includes(cls))reasons.push('يدرّس الشعبة نفسها '+cls);
