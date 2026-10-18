@@ -111,7 +111,12 @@ function absentNamesForDay(){
  return new Set(recForDate().filter(x=>x.day===day.value&&x.absent).map(x=>x.absent));
 }
 function isAbsentToday(name){return absentNamesForDay().has(name)}
+const TRAINING_EXCLUSIONS=[{name:'خليل اسلامية',day:'الأحد',reason:'ارتباط بالتدريب يوم الأحد'}];
+const FIRST_TEACHERS=new Set([]); // أضف أسماء المعلمين الأوائل بعد اعتماد القائمة
+function trainingReason(name,dayName){const x=TRAINING_EXCLUSIONS.find(p=>p.name===name&&p.day===dayName);return x?x.reason:'';}
+function isFirstTeacher(name){return FIRST_TEACHERS.has(name);}
 function hardBlocked(t,r){
+ const training=trainingReason(t.name,r.day);if(training)return training;
  if(!S.schedule?.[t.name]?.[r.day])return 'لا يوجد جدول معتمد';
  if(isAbsentToday(t.name))return 'المعلم غائب اليوم';
  if(isBusy(t.name,r.day,r.period))return 'لديه حصة أصلية';
@@ -137,7 +142,7 @@ function cycleStats(){
 }
 function candidates(r){
  return S.teachers.filter(t=>{
-   if(!S.schedule?.[t.name]?.[r.day])return false;
+   if(!S.schedule?.[t.name]?.[r.day]||trainingReason(t.name,r.day))return false;
    if(isAbsentToday(t.name) || adjusted(t)>=25 || isBusy(t.name,r.day,r.period))return false;
    if(recForDate().some(x=>x.reserve===t.name))return false;
    if(!eligibleByDailyLoad(t.name,r.day,r.period))return false;
@@ -160,8 +165,8 @@ function candidates(r){
    // للحصص المتأخرة فضّل من جدولُه قريب منها، وتجنب إحضار من انتهى مبكرًا.
    const ps=dayPeriods(t.name,r.day), last=ps.length?Math.max(...ps):0;
    if(+r.period>=7){ if(last>=6)score+=120; else score-=500; }
-   return {t,score};
- }).sort((a,b)=>b.score-a.score||a.t.name.localeCompare(b.t.name,'ar'));
+   return {t,score,first:isFirstTeacher(t.name)};
+ }).sort((a,b)=>Number(a.first)-Number(b.first)||b.score-a.score||a.t.name.localeCompare(b.t.name,'ar'));
 }
 function explainChoice(r,name){
  const t=S.teachers.find(x=>x.name===name); if(!t)return [];
