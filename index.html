@@ -115,10 +115,8 @@ function eligibleByDailyLoad(name,d,p){
  return true;
 }
 function absentNamesForDay(){
- const names=new Set(recForDate().filter(x=>x.day===day.value&&x.absent).map(x=>x.absent));
- // حتى لو لم تُستخرج حصص الغائب المحدد بعد، لا يُعرض مرشحًا للاحتياط.
- if(absent.value)names.add(absent.value);
- return names;
+ // المعلم الغائب هو من أُدرجت حصصه بالفعل لهذا اليوم، لا الاسم المعروض افتراضيًا في الاختيار.
+ return new Set(recForDate().filter(x=>x.day===day.value&&x.absent).map(x=>x.absent));
 }
 function isAbsentToday(name){return absentNamesForDay().has(name)}
 const TRAINING_EXCLUSIONS=[{name:'خليل اسلامية',day:'الأحد',reason:'ارتباط بالتدريب يوم الأحد'}];
