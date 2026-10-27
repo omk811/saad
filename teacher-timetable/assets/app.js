@@ -93,17 +93,17 @@ function renderStudentTimetable(){
  let count=0,conflicts=0,missing=0;
  body.innerHTML=DAYS.map(d=>'<tr><th>'+d+'</th>'+Array.from({length:8},(_,p)=>{
  const found=Object.keys(DATA).filter(n=>(DATA[n][d]||[])[p]===c);
- if(!found.length)return '<td class="empty-lesson"><span class="empty-dash">—</span></td>';
+ if(!found.length)return '<td class="empty-lesson" title="لا توجد حصة مسجلة لهذه الشعبة في البيانات الحالية"><span class="empty-dash">غير مسجلة</span></td>';
  count++;if(found.length>1)conflicts++;
  return '<td class="has-lesson">'+found.map((n,index)=>{
  const subject=lookupSubject(n,c);
  if(!subject)missing++;
- return '<div class="student-lesson"><b>'+escStudent(subject||'المادة غير محددة')+'</b><small>'+escStudent(n)+'</small>'+(found.length>1&&index===0?'<em>تعدد المعلمين — تحقق</em>':'')+'</div>';
+ return '<div class="student-lesson"><b>'+escStudent(subject||'المادة غير محددة')+'</b><small>'+escStudent(n)+'</small>'+(found.length>1&&index===0?'<em>تعارض بالجدول: يلزم مراجعة التكليفين</em>':'')+'</div>';
  }).join('')+'</td>';
  }).join('')+'</tr>').join('');
  const label='الصف '+c.split('/')[1]+' — الشعبة '+c.split('/')[0];
  document.getElementById('studentPrintMeta').textContent='جدول الطالب — '+label+' — العام الدراسي 2026/2027';
- document.getElementById('studentScheduleStatus').textContent=label+' | الحصص: '+count+(conflicts?' | تعارضات: '+conflicts:'')+(missing?' | مواد تحتاج تحديدًا':'');
+ document.getElementById('studentScheduleStatus').textContent=label+' | الحصص: '+count+(conflicts?' | تعارضات تحتاج مراجعة: '+conflicts:'')+(missing?' | مواد تحتاج تحديدًا':'');
 }
 studentClassSelect.addEventListener('change',renderStudentTimetable);
 renderStudentTimetable();
