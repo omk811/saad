@@ -30,6 +30,23 @@ body.reserve-locked main.app{display:none!important}
 #reserveGate[hidden]{display:none!important}#reserveGate .gate-card{width:min(100%,430px);padding:28px;background:white;border:1px solid #dce5ec;border-radius:18px;box-shadow:0 12px 42px #1833481a;text-align:right}
 #reserveGate h2{margin:0 0 12px;font-size:1.4rem}#reserveGate p{line-height:1.8;color:#526676}#reserveGate input{display:block;width:100%;margin:12px 0;border-radius:10px;border:1px solid #b8c8d6;padding:13px;font-size:1rem}#reserveGate button{width:100%;border:0;border-radius:10px;padding:13px;background:#155779;color:white;font-size:1rem;cursor:pointer}#reserveGate .gate-error{min-height:24px;color:#a32626;margin-top:12px}
 @media(max-width:480px){#reserveGate .gate-card{padding:19px}}@media print{#reserveGate{display:none!important}}
+</style><style id="reserve-print-20261029">
+@media print{
+ @page{size:A4 landscape;margin:7mm}
+ html,body{width:100%!important;margin:0!important;padding:0!important;font-size:9pt!important}
+ .app{width:100%!important;max-width:none!important;padding:0!important;margin:0!important}
+ .print-head{margin:0 0 3mm!important}
+ .print-head h2{font-size:14pt!important;line-height:1.2!important;margin:0 0 1mm!important}
+ .print-head p{font-size:9pt!important;margin:1mm 0!important}
+ #daily,#daily .card,#daily .tablewrap{overflow:visible!important;max-height:none!important;margin:0!important;padding:0!important;box-shadow:none!important}
+ #daily table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;font-size:8pt!important}
+ #daily th,#daily td{padding:1.4mm .7mm!important;font-size:8pt!important;line-height:1.2!important;vertical-align:middle!important;overflow-wrap:anywhere!important}
+ #daily th{background:#e5f0ef!important;color:#173e46!important;font-weight:700!important}
+ #daily td.sig{height:9mm!important}
+ #daily tbody tr{break-inside:avoid!important}
+ #daily thead{display:table-header-group!important}
+ .print-head{display:block!important}
+}
 </style></head>
 <body class="reserve-locked"><div id="reserveGate" role="dialog" aria-modal="true" aria-label="دخول إدارة حصص الاحتياط"><form id="reserveLoginForm" class="gate-card"><h2>إدارة حصص الاحتياط</h2><p>هذه الصفحة مخصصة للمسؤولين. أدخل <strong>رمز الإدارة نفسه المستخدم في إدارة مواد المعلمين</strong>.</p><label for="reserveAdminPassword">رمز الإدارة</label><input type="password" id="reserveAdminPassword" autocomplete="current-password" required><button id="reserveLoginButton" type="submit">دخول آمن</button><div id="reserveLoginError" class="gate-error" role="alert"></div></form></div><main class="app">
 <section class="hero"><span class="brand-label">مدرسة سعد بن معاذ · إدارة اليوم الدراسي</span><h1>نظام توزيع حصص الاحتياط</h1><p>خطّط للاحتياط، راجع التكليفات، واعتمد جدول اليوم من مكان واحد.</p><nav class="hero-nav" aria-label="خدمات المدرسة"><a href="teacher-timetable/index.html">البوابة المدرسية ↗</a><a href="teacher-timetable/emergency.html">خطة الطوارئ ↗</a><a href="teacher-timetable/weekly.html">جداول المعلمين ↗</a></nav></section><div class="summary-strip no-print" aria-label="ملخص جدول اليوم"><div class="summary-item"><strong data-summary>0</strong><span>حصص الغياب</span></div><div class="summary-item"><strong data-summary>0</strong><span>حصص أُسندت</span></div><div class="summary-item"><strong data-summary>0</strong><span>بانتظار الإسناد</span></div></div>
