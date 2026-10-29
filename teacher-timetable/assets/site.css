@@ -317,3 +317,35 @@ tbody tr:hover td{background:#edf7ef}
  body[data-print-target="weeklyTimetable"] .print-meta,
  body[data-print-target="studentClassTimetable"] .print-meta{display:block!important;font-size:10pt!important;margin:3mm 0!important;text-align:center}
 }
+
+/* إصدار الطباعة المضغوط — صفحة A4 واحدة للجدول المختار */
+@media print{
+ @page{size:A4 landscape;margin:7mm}
+ html,body{font-size:10pt!important;line-height:1.3!important}
+ body[data-print-target] main>section.print-selected{break-inside:auto!important;page-break-inside:auto!important}
+ body[data-print-target] main>section.print-selected::before{font-size:11pt!important;line-height:1.3!important;padding:0 0 2mm!important;margin:0 0 2mm!important;border-bottom:1.5px solid #22746a!important}
+ body[data-print-target] .panel h2{font-size:12pt!important;margin:0 0 2mm!important;line-height:1.35!important}
+ body[data-print-target] .heading{margin:0 0 2mm!important;padding:0!important}
+ body[data-print-target] .print-meta{font-size:9pt!important;margin:1mm 0 2mm!important}
+ body[data-print-target] .sub{font-size:8pt!important;line-height:1.3!important;margin:0 0 2mm!important}
+ body[data-print-target] table{border-collapse:collapse!important;width:100%!important;table-layout:fixed!important;font-size:8pt!important}
+ body[data-print-target] th,body[data-print-target] td{padding:1.2mm .8mm!important;line-height:1.25!important;overflow-wrap:anywhere!important;word-break:normal!important}
+ body[data-print-target] #weeklyTimetable tbody td,body[data-print-target] #studentClassTimetable tbody td{height:13mm!important;padding:1mm .6mm!important;vertical-align:middle!important}
+ body[data-print-target] #weeklyTimetable tbody th,body[data-print-target] #studentClassTimetable tbody th{padding:1mm!important;font-size:8.5pt!important}
+ body[data-print-target] .weekly-lesson,body[data-print-target] .student-lesson{gap:.2mm!important;line-height:1.15!important;margin:0!important;padding:0!important}
+ body[data-print-target] .weekly-class{font-size:9pt!important;padding:0!important}
+ body[data-print-target] .weekly-subject{font-size:7pt!important;line-height:1.15!important}
+ body[data-print-target] .student-lesson b{font-size:8.2pt!important;line-height:1.2!important}
+ body[data-print-target] .student-lesson small{font-size:7pt!important;line-height:1.15!important}
+ body[data-print-target] .student-lesson em{font-size:6pt!important}
+ body[data-print-target] .periods{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:2mm!important;margin-top:2mm!important}
+ body[data-print-target] .period{min-height:19mm!important;padding:2mm 1mm!important}
+ body[data-print-target] .period strong{font-size:10pt!important;margin:1mm 0!important}
+ body[data-print-target] .period .num{font-size:8pt!important}
+ body[data-print-target] .controls,body[data-print-target] button,body[data-print-target] .section-print{display:none!important}
+ body[data-print-target] #classTeacherResult>div,body[data-print-target] #lookupResult{padding:2mm!important;margin:1mm 0!important;box-shadow:none!important;break-inside:avoid!important}
+ body[data-print-target] #classTeacherResult,body[data-print-target] #lookupResult{font-size:9pt!important;line-height:1.3!important}
+ body[data-print-target] #studentClassTimetable .tablewrap,body[data-print-target] #weeklyTimetable .weekly{max-height:none!important;overflow:visible!important}
+ body[data-print-target] table thead{display:table-header-group!important}
+ body[data-print-target] table tr{break-inside:avoid!important}
+}
