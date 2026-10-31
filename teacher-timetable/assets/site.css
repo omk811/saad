@@ -349,3 +349,18 @@ tbody tr:hover td{background:#edf7ef}
  body[data-print-target] table thead{display:table-header-group!important}
  body[data-print-target] table tr{break-inside:avoid!important}
 }
+
+/* بطاقات البحث عن جميع الشعب في الحصة */
+.lookup-class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:14px;margin-top:16px;direction:rtl}
+.lookup-class-card{border:1px solid #cfe3dc;border-radius:16px;background:#fff;overflow:hidden;box-shadow:0 5px 18px #143e3310;break-inside:avoid}
+.lookup-class-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 14px;background:#e7f4ee;color:#174b3c;font-weight:800}
+.lookup-class-head strong{font-size:1.13rem}.lookup-class-info{padding:14px;line-height:1.6}
+.lookup-class-teacher{font-weight:800;font-size:1.1rem;color:#123d4c}
+.lookup-class-subject{margin-top:5px;font-size:.92rem;color:#42665b}
+.lookup-class-warning{padding:8px 12px;background:#fff0e6;color:#983e14;font-size:.8rem;font-weight:700}
+.lookup-class-card.has-conflict{border-color:#dfa47c}
+.lesson-lookup-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#edf6f3;border-radius:12px;padding:12px 16px;color:#235749}
+.lesson-lookup-summary strong{font-size:1.05rem}
+@media(max-width:600px){.lookup-class-grid{grid-template-columns:1fr 1fr;gap:9px}.lookup-class-head{padding:9px;flex-wrap:wrap}.lookup-class-info{padding:10px}.lookup-class-teacher{font-size:.96rem}}
+@media(max-width:370px){.lookup-class-grid{grid-template-columns:1fr}}
+@media print{body[data-print-target="lookup"] .lookup-class-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:2mm!important}body[data-print-target="lookup"] .lookup-class-card{border:1px solid #b9cfc7!important;box-shadow:none!important;border-radius:3mm!important}body[data-print-target="lookup"] .lookup-class-head{padding:1.5mm 2mm!important;font-size:8pt!important}body[data-print-target="lookup"] .lookup-class-head strong{font-size:9pt!important}body[data-print-target="lookup"] .lookup-class-info{padding:2mm!important}body[data-print-target="lookup"] .lookup-class-teacher{font-size:9pt!important}body[data-print-target="lookup"] .lookup-class-subject{font-size:8pt!important}body[data-print-target="lookup"] .lesson-lookup-summary{padding:2mm!important;margin:0 0 2mm!important}body[data-print-target="lookup"] .lookup-class-warning{font-size:7pt!important;padding:1mm!important}}
