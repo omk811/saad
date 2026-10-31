@@ -44,19 +44,24 @@ const DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء',
  }).join('');
  document.getElementById('weekTotal').textContent='مجموع الحصص الأسبوعية: '+total;
 }const ld=document.getElementById('lookupDay'),lp=document.getElementById('lookupPeriod'),lc=document.getElementById('lookupClass'),lr=document.getElementById('lookupResult');ld.innerHTML=DAYS.map(d=>'<option>'+d+'</option>').join('');ld.value=day.value;lp.innerHTML=Array.from({length:8},(_,i)=>'<option value="'+(i+1)+'">الحصة '+(i+1)+'</option>').join('');const cls=[...new Set(Object.values(DATA).flatMap(v=>Object.values(v).flat().filter(Boolean)))].sort((a,b)=>{const x=a.split('/').map(Number),y=b.split('/').map(Number);return x[1]-y[1]||x[0]-y[0]});lc.innerHTML='<option value="">اختر الصف والشعبة</option>'+cls.map(c=>'<option value="'+c+'">الصف '+c.split('/')[1]+' - الشعبة '+c.split('/')[0]+'</option>').join('');function searchLesson(){
- const c=lc.value,d=ld.value,p=+lp.value;
- if(!c){lr.innerHTML='<div class="lookup-empty">اختر الصف والشعبة لعرض المعلم والمادة الدراسية.</div>';return}
- const found=Object.entries(DATA).filter(([n,days])=>(days[d]||[])[p-1]===c).map(([n])=>n);
- if(!found.length){lr.innerHTML='<div class="lookup-empty">لا يوجد معلم مسجل لهذه الشعبة في الحصة المحددة.</div>';return}
- const safe=v=>String(v==null?'':v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
- lr.innerHTML='<div class="lookup-results">'+found.map(name=>{
-   const subject=typeof lookupSubject==='function'?lookupSubject(name,c):'';
-   return '<article class="lookup-teacher-card"><div class="lookup-kicker">المعلم المسؤول عن الحصة</div>'+
-   '<div class="lookup-teacher-name">'+safe(name)+'</div>'+
-   '<div class="lookup-subject-line"><span class="lookup-subject-label">المادة الدراسية</span><strong class="lookup-subject-name">'+safe(subject||'غير محددة بعد')+'</strong></div>'+
-   '</article>';
- }).join('')+'</div>';
-}[ld,lp,lc].forEach(el=>el.addEventListener('change',searchLesson));searchLesson();document.getElementById('openSubjectAdmin').addEventListener('click',()=>{const panel=document.getElementById('subjectsAdmin');panel.hidden=!panel.hidden;panel.style.display=panel.hidden?'none':'block';if(!panel.hidden)panel.scrollIntoView({behavior:'smooth'});});const SUBJECT_API='https://script.google.com/macros/s/AKfycbxaE54AYPy3XPTl7JUUw_nVEjA466BJqwZvwHfwPObBAxUuP_tfSZWgmbbne2xMsnxh/exec';const KEY_SUB='saad-subjects-v1';let subjectMap={};try{subjectMap=JSON.parse(localStorage.getItem(KEY_SUB)||'{}')||{}}catch(e){}const et=document.getElementById('editTeacher'),ec=document.getElementById('editClass'),es=document.getElementById('editSubject'),st=document.getElementById('subjectStatus');et.innerHTML=teacher.innerHTML;function editClasses(){const cs=[...new Set(Object.values(DATA[et.value]||{}).flat().filter(Boolean))];ec.innerHTML=cs.map(c=>'<option value="'+c+'">الصف '+c.split('/')[1]+' - الشعبة '+c.split('/')[0]+'</option>').join('');editValue()}function editValue(){const mode=document.getElementById('subjectApplyMode').value;es.value=mode==='one'?(subjectMap[et.value]?.[ec.value]||''):'';ec.disabled=mode==='all';document.getElementById('saveSubject').textContent=mode==='all'?'حفظ المادة لجميع الشعب':'حفظ تعديل الشعبة'}document.getElementById('subjectApplyMode').addEventListener('change',editValue);et.addEventListener('change',editClasses);ec.addEventListener('change',editValue);function storeSubjects(){localStorage.setItem(KEY_SUB,JSON.stringify(subjectMap));showClassTeachers();render();searchLesson();if(typeof renderStudentTimetable==='function')renderStudentTimetable()}document.getElementById('saveSubject').addEventListener('click',async()=>{
+ const d=ld.value,p=Number(lp.value),groups=new Map();
+ for(const [name,days] of Object.entries(DATA)){
+  const c=(days[d]||[])[p-1];if(!c)continue;
+  if(!groups.has(c))groups.set(c,[]);
+  groups.get(c).push(name);
+ }
+ const safe=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+ const ordered=[...groups].sort(([a],[b])=>{const aa=a.split('/').map(Number),bb=b.split('/').map(Number);return aa[1]-bb[1]||aa[0]-bb[0]});
+ const conflicts=ordered.filter(([,names])=>names.length>1).length;
+ const summary='<div class="lesson-lookup-summary" role="status"><strong>'+ordered.length+' شعبة لديها حصة</strong><span>'+safe(d)+' — الحصة '+p+(conflicts?' | '+conflicts+' تعارض يحتاج مراجعة':'')+'</span></div>';
+ lr.innerHTML=summary+(ordered.length?'<div class="lookup-class-grid">'+ordered.map(([c,names])=>
+  '<article class="lookup-class-card'+(names.length>1?' has-conflict':'')+'">'+
+  '<div class="lookup-class-head"><span>الصف '+safe(c.split('/')[1])+'</span><strong>الشعبة '+safe(c.split('/')[0])+'</strong></div>'+
+  names.map(name=>'<div class="lookup-class-info"><div class="lookup-class-teacher">'+safe(name)+'</div><div class="lookup-class-subject">'+safe(typeof lookupSubject==='function'?(lookupSubject(name,c)||'المادة غير محددة'):'المادة غير محددة')+'</div></div>').join('')+
+  (names.length>1?'<div class="lookup-class-warning">تعارض: أكثر من معلم لهذه الشعبة في الحصة نفسها</div>':'')+
+  '</article>').join('')+'</div>':'<div class="lookup-empty">لا توجد شعب مسجلة في هذا اليوم والحصة.</div>');
+}
+[ld,lp].forEach(el=>el.addEventListener('change',searchLesson));searchLesson();document.getElementById('openSubjectAdmin').addEventListener('click',()=>{const panel=document.getElementById('subjectsAdmin');panel.hidden=!panel.hidden;panel.style.display=panel.hidden?'none':'block';if(!panel.hidden)panel.scrollIntoView({behavior:'smooth'});});const SUBJECT_API='https://script.google.com/macros/s/AKfycbxaE54AYPy3XPTl7JUUw_nVEjA466BJqwZvwHfwPObBAxUuP_tfSZWgmbbne2xMsnxh/exec';const KEY_SUB='saad-subjects-v1';let subjectMap={};try{subjectMap=JSON.parse(localStorage.getItem(KEY_SUB)||'{}')||{}}catch(e){}const et=document.getElementById('editTeacher'),ec=document.getElementById('editClass'),es=document.getElementById('editSubject'),st=document.getElementById('subjectStatus');et.innerHTML=teacher.innerHTML;function editClasses(){const cs=[...new Set(Object.values(DATA[et.value]||{}).flat().filter(Boolean))];ec.innerHTML=cs.map(c=>'<option value="'+c+'">الصف '+c.split('/')[1]+' - الشعبة '+c.split('/')[0]+'</option>').join('');editValue()}function editValue(){const mode=document.getElementById('subjectApplyMode').value;es.value=mode==='one'?(subjectMap[et.value]?.[ec.value]||''):'';ec.disabled=mode==='all';document.getElementById('saveSubject').textContent=mode==='all'?'حفظ المادة لجميع الشعب':'حفظ تعديل الشعبة'}document.getElementById('subjectApplyMode').addEventListener('change',editValue);et.addEventListener('change',editClasses);ec.addEventListener('change',editValue);function storeSubjects(){localStorage.setItem(KEY_SUB,JSON.stringify(subjectMap));showClassTeachers();render();searchLesson();if(typeof renderStudentTimetable==='function')renderStudentTimetable()}document.getElementById('saveSubject').addEventListener('click',async()=>{
  const all=document.getElementById('subjectApplyMode').value==='all';
  const teacherName=et.value,subject=es.value.trim();
  const classes=all?[...new Set(Object.values(DATA[teacherName]||{}).flat().filter(Boolean))]:[ec.value];
