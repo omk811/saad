@@ -8,7 +8,7 @@ let students=[];
 function safe(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 async function api(action,fields={}){
  const adminKey=el('studentPassword').value;
- if(!adminKey)throw Error('رمز الإدارة مطلوب');
+ if(!adminKey)throw Error('أدخل رمز قسم الطلاب');
  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,adminKey,...fields})});
  if(!r.ok)throw Error('تعذر الاتصال بالخدمة');
  const j=await r.json();if(!j.ok)throw Error(j.error||'تعذر تنفيذ الطلب');
