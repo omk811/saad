@@ -1,305 +1,70 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>نظام توزيع حصص الاحتياط</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#123e45">
+<meta name="description" content="الواجهة الرئيسية للبوابة المدرسية الرقمية لمدرسة سعد بن معاذ: دفتر الاحتياط اليومي وبوابة الطلاب والمعلمين.">
+<title>البوابة الرئيسية | مدرسة سعد بن معاذ</title>
 <style>
-:root{--p:#123b5d;--p2:#1d638c;--bg:#f4f7fa;--card:#fff;--line:#dbe4ea;--ok:#176b45;--warn:#a65d00;--bad:#a52a2a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#17232c;font-family:Tahoma,Arial,sans-serif}
-.app{max-width:1500px;margin:auto;padding:18px}.hero{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;padding:22px;border-radius:20px;box-shadow:0 10px 30px #123b5d22}
-.hero h1{margin:0 0 6px;font-size:clamp(24px,3vw,38px)}.hero p{margin:0;opacity:.9}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.tab,button{border:0;border-radius:12px;padding:11px 16px;font:inherit;font-weight:700;cursor:pointer}.tab{background:#e5edf3;color:var(--p)}.tab.active,.primary{background:var(--p);color:#fff}.secondary{background:#e8f1f6;color:var(--p)}.danger{background:#fbe8e8;color:var(--bad)}
-.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 5px 18px #123b5d0c}.span4{grid-column:span 4}.span8{grid-column:span 8}.span12{grid-column:span 12}
-label{font-weight:700;display:block;margin:7px 0}input,select{width:100%;padding:11px;border:1px solid #cbd7df;border-radius:10px;background:#fff;font:inherit}
-.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.row>*{flex:1;min-width:150px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid var(--line);padding:9px;text-align:center}th{background:#edf4f8;color:var(--p)}.tablewrap{overflow:auto;border-radius:12px}
-.badge{display:inline-block;padding:4px 9px;border-radius:99px;font-size:12px;font-weight:700}.ok{background:#e3f5ec;color:var(--ok)}.off{background:#fbe8e8;color:var(--bad)}.warn{background:#fff1d7;color:var(--warn)}
-.stat{font-size:28px;font-weight:800;color:var(--p)}.muted{color:#647481;font-size:13px}.empty{padding:30px;text-align:center;color:#71808a}
-.print-head{display:none}.sig{height:42px}
-@media(max-width:900px){.span4,.span8{grid-column:span 12}.app{padding:10px}.card{padding:12px}th,td{padding:7px;font-size:13px}}
-@page{size:A4 portrait;margin:10mm}
-@media print{
- body{background:#fff}.app{max-width:none;padding:0}.hero,.tabs,.no-print,#setup,#teachers{display:none!important}#daily{display:block!important}.card{border:0;box-shadow:none;padding:0}.print-head{display:block;text-align:center;margin-bottom:10px}.print-head h2{margin:0 0 4px;font-size:18pt}.print-head p{margin:3px;font-size:10pt}
- table{table-layout:fixed}th,td{border:1px solid #000!important;padding:7px 4px;font-size:10pt;color:#000}th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.sig{height:38px}
- .daily-meta{display:none!important}.screen-title{display:none}
-}
+:root{color-scheme:light;--ink:#1c3b40;--muted:#566e73;--line:#dbe8e7;--deep:#123e45;--teal:#146d68;--amber:#bb813d;--bg:#f3f8f7}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100dvh;font-family:Tahoma,"Noto Sans Arabic",Arial,sans-serif;color:var(--ink);background:radial-gradient(circle at 86% 8%,#d9eeeb 0,transparent 31%),radial-gradient(circle at 10% 85%,#e8eef6 0,transparent 28%),var(--bg);line-height:1.7}
+a{color:inherit}
+.shell{width:min(1120px,calc(100% - 36px));margin-inline:auto}
+.hero{position:relative;overflow:hidden;background:linear-gradient(118deg,#123c45,#17695f 76%,#218274);color:white;padding:clamp(35px,6vw,72px) 0 clamp(72px,9vw,112px)}
+.hero::before,.hero::after{content:"";position:absolute;border:1px solid #ffffff20;border-radius:50%;pointer-events:none}
+.hero::before{width:360px;height:360px;left:-160px;top:-190px}
+.hero::after{width:280px;height:280px;right:-140px;bottom:-190px}
+.hero-content{position:relative;z-index:1;text-align:center}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid #ffffff36;background:#ffffff18;border-radius:99px;padding:5px 16px;font-size:clamp(.77rem,1.5vw,.92rem);font-weight:700}
+.hero h1{margin:15px 0 8px;font-size:clamp(1.65rem,3.6vw,2.65rem);line-height:1.45;letter-spacing:0}
+.hero p{margin:0 auto;max-width:680px;color:#e4f4ef;font-size:clamp(.94rem,1.5vw,1.1rem)}
+main{position:relative;margin-top:-58px;padding-bottom:30px}
+.intro{text-align:center;margin:0 auto 23px;position:relative;z-index:1}
+.intro h2{font-size:clamp(1.13rem,2.5vw,1.55rem);color:var(--ink);margin:0 0 4px}
+.intro p{color:var(--muted);margin:0;font-size:.94rem}
+.panel{background:white;border:1px solid var(--line);box-shadow:0 18px 48px #123d4111;border-radius:26px;padding:clamp(20px,4vw,34px);position:relative}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.service{position:relative;display:flex;flex-direction:column;text-decoration:none;min-width:0;min-height:290px;padding:clamp(22px,3.2vw,32px);border:1px solid #d6e4e1;background:linear-gradient(160deg,#fbfefd,#f2f8f5);border-radius:21px;box-shadow:0 5px 16px #183e3d0a;transition:transform .18s,box-shadow .18s,border-color .18s;overflow:hidden}
+.service::after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;left:-95px;bottom:-100px;background:#167b6812;pointer-events:none}
+.service.portal{background:linear-gradient(155deg,#fcfdff,#f2f6fb);border-color:#d9e5ec}
+.service.portal::after{background:#386fa412}
+.service:hover,.service:focus-visible{transform:translateY(-4px);box-shadow:0 14px 32px #123e4520;border-color:#75aaa0;outline:none}
+.service.portal:hover,.service.portal:focus-visible{border-color:#8daecc}
+.service-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.service-icon{width:65px;height:65px;flex:none;border-radius:17px;display:grid;place-items:center;background:#e0f0e9;color:#17685b}
+.portal .service-icon{background:#e3edf8;color:#275e92}
+.service-icon svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.access{font-size:.75rem;font-weight:700;color:#506d64;background:#e8f2ed;border-radius:50px;padding:6px 11px}
+.portal .access{background:#e8eff7;color:#426c8c}
+.service h3{font-size:clamp(1.27rem,2.3vw,1.55rem);margin:21px 0 8px;color:#183f40}
+.service p{color:#536b6d;margin:0;font-size:clamp(.91rem,1.3vw,1rem);line-height:1.9}
+.open{position:relative;margin-top:auto;padding-top:18px;display:inline-flex;align-items:center;gap:9px;font-weight:800;color:#17695d}
+.portal .open{color:#255d91}
+.open svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transform:rotate(180deg)}
+.note{margin:21px 0 0;border-top:1px solid #e3ecea;padding-top:16px;color:#5a7072;font-size:.85rem;text-align:center}
+footer{text-align:center;color:#637a7b;font-size:.85rem;padding:5px 20px 24px}
+@media(max-width:670px){.shell{width:min(100% - 24px,520px)}.hero{padding:36px 0 83px}.hero h1{font-size:1.62rem}.panel{padding:16px;border-radius:20px}.cards{grid-template-columns:1fr;gap:13px}.service{min-height:220px;padding:20px;border-radius:16px}.service-icon{width:53px;height:53px}.service-icon svg{width:29px;height:29px}.service h3{margin:13px 0 6px}.intro{margin-bottom:18px}.note{font-size:.79rem}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
+@media print{body{background:white}.hero{background:white;color:#123e45;padding:10px 0 35px}.hero p{color:#444}.panel,.service{box-shadow:none}.service{min-height:210px}main{margin-top:0}}
 </style>
-<link rel="stylesheet" href="teacher-timetable/assets/refresh.css?v=20261024-1"><style>
-body.reserve-locked main.app{display:none!important}
-#reserveGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:#eef3f8;direction:rtl}
-#reserveGate[hidden]{display:none!important}#reserveGate .gate-card{width:min(100%,430px);padding:28px;background:white;border:1px solid #dce5ec;border-radius:18px;box-shadow:0 12px 42px #1833481a;text-align:right}
-#reserveGate h2{margin:0 0 12px;font-size:1.4rem}#reserveGate p{line-height:1.8;color:#526676}#reserveGate input{display:block;width:100%;margin:12px 0;border-radius:10px;border:1px solid #b8c8d6;padding:13px;font-size:1rem}#reserveGate button{width:100%;border:0;border-radius:10px;padding:13px;background:#155779;color:white;font-size:1rem;cursor:pointer}#reserveGate .gate-error{min-height:24px;color:#a32626;margin-top:12px}
-@media(max-width:480px){#reserveGate .gate-card{padding:19px}}@media print{#reserveGate{display:none!important}}
-</style><style id="reserve-print-20261029">
-@media print{
- @page{size:A4 landscape;margin:7mm}
- html,body{width:100%!important;margin:0!important;padding:0!important;font-size:9pt!important}
- .app{width:100%!important;max-width:none!important;padding:0!important;margin:0!important}
- .print-head{margin:0 0 3mm!important}
- .print-head h2{font-size:14pt!important;line-height:1.2!important;margin:0 0 1mm!important}
- .print-head p{font-size:9pt!important;margin:1mm 0!important}
- #daily,#daily .card,#daily .tablewrap{overflow:visible!important;max-height:none!important;margin:0!important;padding:0!important;box-shadow:none!important}
- #daily table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;font-size:8pt!important}
- #daily th,#daily td{padding:1.4mm .7mm!important;font-size:8pt!important;line-height:1.2!important;vertical-align:middle!important;overflow-wrap:anywhere!important}
- #daily th{background:#e5f0ef!important;color:#173e46!important;font-weight:700!important}
- #daily td.sig{height:9mm!important}
- #daily tbody tr{break-inside:avoid!important}
- #daily thead{display:table-header-group!important}
- .print-head{display:block!important}
-}
-</style></head>
-<body class="reserve-locked"><div id="reserveGate" role="dialog" aria-modal="true" aria-label="دخول إدارة حصص الاحتياط"><form id="reserveLoginForm" class="gate-card"><h2>إدارة حصص الاحتياط</h2><p>هذه الصفحة مخصصة للمسؤولين. أدخل <strong>رمز الإدارة نفسه المستخدم في إدارة مواد المعلمين</strong>.</p><label for="reserveAdminPassword">رمز الإدارة</label><input type="password" id="reserveAdminPassword" autocomplete="current-password" required><button id="reserveLoginButton" type="submit">دخول آمن</button><div id="reserveLoginError" class="gate-error" role="alert"></div></form></div><main class="app">
-<section class="hero"><span class="brand-label">مدرسة سعد بن معاذ · إدارة اليوم الدراسي</span><h1>نظام توزيع حصص الاحتياط</h1><p>خطّط للاحتياط، راجع التكليفات، واعتمد جدول اليوم من مكان واحد.</p><nav class="hero-nav" aria-label="خدمات المدرسة"><a href="teacher-timetable/index.html">البوابة المدرسية ↗</a><a href="teacher-timetable/emergency.html">خطة الطوارئ ↗</a><a href="teacher-timetable/weekly.html">جداول المعلمين ↗</a></nav></section><div class="summary-strip no-print" aria-label="ملخص جدول اليوم"><div class="summary-item"><strong data-summary>0</strong><span>حصص الغياب</span></div><div class="summary-item"><strong data-summary>0</strong><span>حصص أُسندت</span></div><div class="summary-item"><strong data-summary>0</strong><span>بانتظار الإسناد</span></div></div>
-<nav class="tabs no-print">
-<button class="tab active" data-tab="daily">التوزيع اليومي</button><button class="tab" data-tab="teachers">المعلمون والأنصبة</button><button class="tab" data-tab="setup">إعداد الجدول</button>
+</head>
+<body>
+<header class="hero"><div class="shell hero-content"><div class="eyebrow">مدرسة سعد بن معاذ للتعليم الأساسي</div><h1>البوابة المدرسية الرئيسية</h1><p>وصول منظم وسريع إلى خدمات إدارة اليوم الدراسي، والجداول والخدمات الرقمية للطلاب والمعلمين.</p></div></header>
+<main class="shell"><section class="panel" aria-labelledby="choices-title"><div class="intro"><h2 id="choices-title">اختر الخدمة المطلوبة</h2><p>بوابتان مستقلتان للوصول إلى خدمات المدرسة</p></div>
+<nav class="cards" aria-label="الخدمات الرئيسية">
+<a class="service reserve" href="reserve.html" aria-label="فتح دفتر الاحتياط اليومي المحمي برمز الإدارة">
+<div class="service-head"><div class="service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="16" rx="2"/><path d="M7 3v4M13 3v4M6 11h8M6 15h5"/><rect x="15" y="13" width="7" height="8" rx="1.5"/><path d="M17.5 13v-2a1 1 0 0 1 2 0v2"/></svg></div><span class="access">للمشرف فقط · محمي برمز</span></div>
+<h3>دفتر الاحتياط اليومي</h3><p>إعداد جدول الاحتياط، وتوزيع حصص الغياب على المعلمين المتاحين، ومراجعة التكليفات واعتمادها وطباعتها.</p><span class="open">الدخول إلى دفتر الاحتياط <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7"/></svg></span>
+</a>
+<a class="service portal" href="teacher-timetable/index.html" aria-label="فتح بوابة المدرسة الرقمية للطلاب والمعلمين">
+<div class="service-head"><div class="service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10 12 4l9 6v10H3z"/><path d="M9 20v-6h6v6M3 10h18M8 8h.01M12 8h.01M16 8h.01"/></svg></div><span class="access">للطلاب والمعلمين</span></div>
+<h3>بوابة المدرسة الرقمية</h3><p>الجداول الدراسية اليومية والأسبوعية، وجداول الشعب والطلاب، والبحث عن الحصص والخدمات المدرسية.</p><span class="open">الدخول إلى بوابة المدرسة <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7"/></svg></span>
+</a>
 </nav>
-
-<section id="daily" class="panel active">
-<div class="card no-print" id="cycleCard" style="margin-bottom:14px"><div class="row"><div><h3 style="margin:0 0 6px">متابعة دورة الاحتياط</h3><div id="cycleSummary" class="muted"></div></div><div style="min-width:220px"><div id="cyclePct" class="stat">0%</div><div style="height:10px;background:#e7edf2;border-radius:99px;overflow:hidden"><div id="cycleBar" style="height:100%;width:0;background:var(--p2)"></div></div></div></div><div id="cycleAlert" style="margin-top:10px"></div><div class="actions"><button class="secondary" id="startCycleBtn">بدء دورة جديدة</button></div></div>
-<div class="print-head"><h2>سجل حصص الاحتياط اليومي</h2><p>مدرسة سعد بن معاذ للتعليم الأساسي</p><p id="printMeta"></p></div>
-<div class="grid">
-<div class="card span4 daily-meta"><h3>بيانات اليوم</h3><div class="row"><div><label>اليوم</label><select id="day"></select></div><div><label>التاريخ</label><input id="date" type="date"></div></div>
-<label>المعلم الغائب</label><select id="absent"></select>
-<div class="row"><div><label>الحصة</label><select id="period"></select></div><div><label>الصف / الشعبة</label><input id="className" placeholder="مثال: 5/1"></div></div>
-<div class="actions"><button class="primary" id="loadAbsent">استخراج حصص الغائب</button><button class="secondary" id="addAbs">إضافة حصة يدويًا</button></div>
-<p class="muted">عند اختيار المعلم الغائب تُستخرج حصصه تلقائيًا من الجدول المعتمد لليوم المحدد، ويمكن بعدها الحذف أو الإضافة والتعديل يدويًا.</p></div>
-<div class="card span8"><div class="row"><div><h3 class="screen-title">جدول الاحتياط المقترح</h3><span id="cloudState" class="badge warn no-print">جارٍ الاتصال...</span></div><div class="no-print actions"><button class="primary" id="auto">توزيع آلي</button><button class="primary" id="approveCloud">اعتماد وحفظ</button><button class="secondary" onclick="window.print()">طباعة A4</button><button class="danger" id="clearDay">مسح اليوم</button></div></div>
-<div class="tablewrap"><table><thead><tr><th>م</th><th>المعلم الغائب</th><th>الحصة</th><th>الصف/الشعبة</th><th>معلم الاحتياط</th><th>النصاب بعد الاحتياط</th><th class="no-print">الحالة</th><th>التوقيع</th><th class="no-print">حذف</th></tr></thead><tbody id="dailyBody"></tbody></table></div></div>
-</div></section>
-
-<section id="teachers" class="panel"><div class="card"><h3>إدارة المعلمين والأنصبة</h3><div class="row no-print"><div><label>اسم المعلم</label><input id="newTeacherName" placeholder="اسم المعلم"></div><div><label>الحصص التدريسية</label><input id="newTeacherBase" type="number" min="0" max="25"></div><div><button class="primary" id="addTeacherCloud">إضافة معلم مؤهل</button></div></div><p class="muted">يمكن تعديل الحصص التدريسية مباشرة من الجدول أدناه. تظهر صفة المعلم وتكليفه الإداري تحت اسمه. إضافة معلم جديد تجعله مؤهلًا، لكنه لا يدخل التوزيع الآلي حتى يوجد له جدول أسبوعي معتمد.</p><p class="muted">النصاب المحتسب = الحصص التدريسية + الحصص الإدارية + الاحتياط المسند في الدورة الحالية. الإدارية ثابتة، والاحتياط يُعدّ من سجله ولا يُحتسب مرتين. من بلغ 25 حصة لا يرشّح للاحتياط.</p><p id="adminLoadSummary" class="muted" role="status"></p><p class="muted">«غير مسجلة» تعني أن عدد حصص التكليف لم يُحدَّد؛ لا تدخل قيمة تقديرية في الحساب.</p><div class="tablewrap"><table><thead><tr><th>المعلم والتكليف</th><th>التدريسية</th><th>الإدارية</th><th>احتياط الدورة</th><th>الإجمالي المحتسب</th><th>المتبقي إلى 25</th><th>الحالة</th></tr></thead><tbody id="teachersBody"></tbody></table></div></div></section>
-
-<section id="setup" class="panel"><div class="grid"><div class="card span4"><h3>ضبط حصة أصلية</h3><label>المعلم</label><select id="setupTeacher"></select><div class="row"><div><label>اليوم</label><select id="setupDay"></select></div><div><label>الحصة</label><select id="setupPeriod"></select></div></div><label>الصف / الشعبة</label><input id="setupClass" placeholder="مثال: 7/3"><div class="actions"><button class="secondary" type="button" disabled>الجدول الجديد 29-9-2026 معتمد من قاعدة المدرسة</button></div></div>
-<div class="card span8"><h3>قواعد التوزيع المفعلة</h3><p>يتم إسناد حصص الاحتياط بحسب توفر المعلمين، ولا يُشترط تغطية جميع حصص الغياب إذا لم يوجد مرشح متاح. حصة احتياط واحدة للمعلم في اليوم، وتجنب التكليف يومين متتاليين قدر المستطاع، والحد الأقصى للنصاب 25. الحصة الثامنة تُسند فقط لمعلم لديه الحصة السابعة ومتفرغ في الثامنة. من لديه 5 حصص تدريسية في اليوم لا يُكلّف بالاحتياط، ومن لديه 4 حصص متتالية لا يُعطى حصة احتياط ملاصقة لها قبلها أو بعدها. وتُراعى أولوية الأقل نصابًا والصفوف التي يدرسها المعلم.</p><p class="muted">الجدول الأسبوعي والأنصبة مدمجان في هذه النسخة من قاعدة المدرسة. سجل الاحتياط يحفظ محليًا مؤقتًا إلى حين تفعيل الربط المباشر مع Google Sheets.</p><div class="actions"><button class="danger" id="resetAll">إعادة ضبط كل البيانات المحلية</button></div></div></div></section>
-<footer class="credit no-print">إعداد وتطوير: الأستاذ خليل البلوشي · مدرسة سعد بن معاذ</footer></main>
-<script>
-const API_URL='https://script.google.com/macros/s/AKfycbxaE54AYPy3XPTl7JUUw_nVEjA466BJqwZvwHfwPObBAxUuP_tfSZWgmbbne2xMsnxh/exec';
-let reserveAdminKey=sessionStorage.getItem('saad-reserve-admin-session')||'';
-const DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس'];
-const MASTER_TEACHERS=[{"name":"خليل اسلامية","base":10,"extra":0},{"name":"سرحان الريسي","base":20,"extra":0},{"name":"احمد الخزيمي","base":25,"extra":0},{"name":"أحمد البلوشي","base":20,"extra":0},{"name":"ياسر الذهلي","base":25,"extra":0},{"name":"سعيد العبري","base":20,"extra":0},{"name":"خليفة قناص","base":12,"extra":0},{"name":"سالم المعمري","base":12,"extra":0},{"name":"احمد الشرقي","base":18,"extra":0},{"name":"محمد سليمان","base":19,"extra":0},{"name":"ناصر الخزيمي","base":18,"extra":0},{"name":"علي المعمري","base":14,"extra":0},{"name":"مصعب العوضي","base":21,"extra":0},{"name":"خليل عربي","base":21,"extra":0},{"name":"جمعه البلوشي","base":21,"extra":0},{"name":"سعيد الحضرمي","base":12,"extra":0},{"name":"احمد الكعبي","base":24,"extra":0},{"name":"حمد السعدي","base":24,"extra":0},{"name":"محمد ابراهيم","base":24,"extra":0},{"name":"طارق المزروعي","base":18,"extra":0},{"name":"محمد الخزيمي","base":18,"extra":0},{"name":"فيصل القمشوعي","base":24,"extra":0},{"name":"اسماعيل البلوشي","base":7,"extra":0},{"name":"خميس المزروعي","base":14,"extra":0},{"name":"محمد المعمري","base":21,"extra":0},{"name":"مصطفى","base":21,"extra":0},{"name":"راشد المزروعي","base":21,"extra":0},{"name":"خليفة شلتوت","base":21,"extra":0},{"name":"عبدالرحيم طلعت","base":21,"extra":0},{"name":"محمود","base":21,"extra":0},{"name":"كريم سعيد","base":21,"extra":0},{"name":"علي السعدي","base":20,"extra":0},{"name":"علي العبري","base":15,"extra":0},{"name":"خليفة حمدان","base":16,"extra":0},{"name":"راشد الكعبي","base":15,"extra":0},{"name":"يونس الكعبي","base":18,"extra":0},{"name":"عبدالله المعمري","base":18,"extra":0},{"name":"وليد الريسي","base":18,"extra":0},{"name":"خليفة سعيد","base":12,"extra":0},{"name":"ابراهيم الهاشمي","base":16,"extra":0},{"name":"ناصر بريك","base":16,"extra":0},{"name":"علي ميران","base":16,"extra":0},{"name":"معاذ الريسي","base":16,"extra":0},{"name":"سعيد المخمري","base":16,"extra":0},{"name":"احمد مسعود","base":16,"extra":0},{"name":"عبدالله الشرقي","base":16,"extra":0},{"name":"جمعة المعمري","base":16,"extra":0},{"name":"راشد المعمري","base":16,"extra":0},{"name":"عبدالله المقبالي","base":11,"extra":0},{"name":"علي المقبالي","base":13,"extra":0},{"name":"خالد المقبالي","base":24,"extra":0},{"name":"محمد الهنائي","base":24,"extra":0},{"name":"عبدالله حسن","base":17,"extra":0},{"name":"عمر البلوشي","base":7,"extra":0}];
-const MASTER_SCHEDULE={"خليل اسلامية":{"الأحد":{},"الإثنين":{"1":"2/7","3":"1/7"},"الثلاثاء":{"5":"1/7","6":"2/7"},"الأربعاء":{"1":"1/7","7":"1/7","8":"2/7"},"الخميس":{"4":"2/7","7":"2/7","8":"1/7"}},"سرحان الريسي":{"الأحد":{"2":"4/6","3":"3/6","5":"1/6","6":"2/6"},"الإثنين":{"3":"1/6","4":"4/6","5":"3/6","6":"2/6"},"الثلاثاء":{"3":"1/6","4":"3/6","7":"4/6","8":"2/6"},"الأربعاء":{"2":"2/6","3":"1/6","5":"4/6","6":"3/6"},"الخميس":{"2":"4/6","4":"3/6","7":"1/6","8":"2/6"}},"احمد الخزيمي":{"الأحد":{"1":"2/8","2":"1/8","4":"3/8","5":"4/8","6":"5/8"},"الإثنين":{"2":"2/8","4":"3/8","5":"5/8","7":"1/8","8":"4/8"},"الثلاثاء":{"1":"5/8","2":"1/8","4":"3/8","5":"4/8","6":"2/8"},"الأربعاء":{"1":"1/8","2":"3/8","4":"4/8","5":"2/8","6":"5/8"},"الخميس":{"3":"5/8","4":"3/8","5":"4/8","7":"1/8","8":"2/8"}},"أحمد البلوشي":{"الأحد":{"4":"3/5","5":"4/5","6":"2/5","8":"1/5"},"الإثنين":{"3":"4/5","4":"2/5","5":"1/5","8":"3/5"},"الثلاثاء":{"3":"2/5","4":"1/5","6":"3/5","7":"4/5"},"الأربعاء":{"1":"1/5","2":"4/5","5":"2/5","6":"3/5"},"الخميس":{"1":"1/5","2":"4/5","4":"3/5","5":"2/5"}},"ياسر الذهلي":{"الأحد":{"1":"6/7","3":"3/7","4":"5/7","5":"7/7","6":"4/7"},"الإثنين":{"1":"6/7","2":"5/7","4":"4/7","5":"7/7","7":"3/7"},"الثلاثاء":{"1":"6/7","4":"5/7","5":"7/7","7":"4/7","8":"3/7"},"الأربعاء":{"2":"3/7","3":"4/7","5":"6/7","6":"7/7","7":"5/7"},"الخميس":{"1":"7/7","3":"6/7","4":"5/7","5":"4/7","6":"3/7"}},"سعيد العبري":{"الأحد":{"1":"5/6","2":"5/5","6":"6/5","8":"6/6"},"الإثنين":{"3":"5/6","5":"6/6","6":"6/5","8":"5/5"},"الثلاثاء":{"3":"6/6","4":"5/5","6":"5/6","7":"6/5"},"الأربعاء":{"2":"5/6","4":"5/5","5":"6/6","6":"6/5"},"الخميس":{"3":"5/6","4":"5/5","6":"6/5","7":"6/6"}},"خليفة قناص":{"الأحد":{"5":"6/7","8":"3/7"},"الإثنين":{"1":"3/7","2":"3/7","8":"6/7"},"الثلاثاء":{"3":"3/7","5":"6/7","6":"6/7"},"الأربعاء":{"1":"3/7","2":"6/7"},"الخميس":{"1":"3/7","5":"6/7"}},"سالم المعمري":{"الأحد":{"7":"1/8","8":"2/8"},"الإثنين":{"2":"1/8","4":"2/8"},"الثلاثاء":{"4":"2/8","5":"1/8","6":"1/8"},"الأربعاء":{"2":"2/8","6":"1/8","7":"2/8"},"الخميس":{"3":"2/8","8":"1/8"}},"احمد الشرقي":{"الأحد":{"1":"5/8","2":"5/8","5":"3/8","8":"4/8"},"الإثنين":{"3":"5/8","4":"4/8","5":"3/8","6":"3/8"},"الثلاثاء":{"2":"3/8","3":"4/8","4":"4/8","5":"5/8"},"الأربعاء":{"3":"3/8","5":"5/8","6":"4/8"},"الخميس":{"3":"4/8","4":"5/8","5":"3/8"}},"محمد سليمان":{"الأحد":{"2":"6/6","4":"4/7","5":"5/7","6":"5/7"},"الإثنين":{"1":"4/7","2":"4/7","3":"5/7","7":"6/6"},"الثلاثاء":{"1":"6/6","2":"6/6","5":"5/7","6":"4/7"},"الأربعاء":{"3":"6/6","7":"4/7","8":"5/7"},"الخميس":{"2":"5/7","5":"6/6","6":"6/6","8":"4/7"}},"ناصر الخزيمي":{"الأحد":{"2":"7/7","3":"7/7","6":"2/7","8":"1/7"},"الإثنين":{"4":"7/7","5":"1/7","6":"2/7","8":"2/7"},"الثلاثاء":{"2":"7/7","4":"1/7","5":"2/7"},"الأربعاء":{"2":"1/7","3":"1/7","7":"2/7","8":"7/7"},"الخميس":{"1":"2/7","2":"7/7","4":"1/7"}},"علي المعمري":{"الأحد":{"3":"1/6","4":"2/6","8":"1/6"},"الإثنين":{"3":"2/6","4":"2/6","7":"1/6"},"الثلاثاء":{"2":"1/6","3":"2/6"},"الأربعاء":{"5":"1/6","7":"1/6","8":"2/6"},"الخميس":{"3":"1/6","4":"2/6","6":"2/6"}},"مصعب العوضي":{"الأحد":{"1":"3/6","3":"5/6","4":"5/6","6":"4/6","7":"4/6"},"الإثنين":{"2":"4/6","3":"4/6","7":"3/6","8":"5/6"},"الثلاثاء":{"2":"3/6","3":"3/6","7":"5/6","8":"4/6"},"الأربعاء":{"1":"4/6","3":"5/6","5":"3/6","7":"3/6"},"الخميس":{"1":"5/6","2":"5/6","3":"4/6","5":"3/6"}},"خليل عربي":{"الأحد":{"3":"2/5","4":"2/5","5":"1/5","8":"3/5"},"الإثنين":{"3":"3/5","4":"3/5","7":"2/5","8":"1/5"},"الثلاثاء":{"2":"3/5","4":"2/5","6":"1/5","7":"1/5"},"الأربعاء":{"1":"3/5","2":"1/5","3":"1/5","6":"2/5"},"الخميس":{"1":"3/5","2":"3/5","3":"2/5","4":"2/5","7":"1/5"}},"جمعه البلوشي":{"الأحد":{"1":"6/5","2":"4/5","5":"5/5","6":"5/5","8":"6/5"},"الإثنين":{"1":"6/5","2":"6/5","6":"4/5","7":"5/5"},"الثلاثاء":{"2":"5/5","3":"5/5","4":"4/5","5":"6/5"},"الأربعاء":{"1":"6/5","3":"4/5","5":"4/5","8":"5/5"},"الخميس":{"1":"6/5","3":"5/5","5":"4/5","6":"4/5"}},"سعيد الحضرمي":{"الأحد":{"2":"3/5","3":"3/5","7":"2/5"},"الإثنين":{"1":"2/5","2":"2/5","5":"3/5"},"الثلاثاء":{"1":"2/5","5":"3/5"},"الأربعاء":{"4":"2/5","8":"3/5"},"الخميس":{"3":"3/5","8":"2/5"}},"احمد الكعبي":{"الأحد":{"3":"2/6","4":"3/6","6":"3/6","7":"1/6","8":"4/6"},"الإثنين":{"1":"4/6","3":"3/6","5":"1/6","6":"1/6","7":"2/6"},"الثلاثاء":{"1":"2/6","2":"2/6","4":"4/6","7":"1/6","8":"3/6"},"الأربعاء":{"1":"3/6","3":"2/6","4":"4/6","6":"1/6"},"الخميس":{"1":"1/6","2":"3/6","3":"2/6","5":"4/6","6":"4/6"}},"حمد السعدي":{"الأحد":{"2":"2/8","3":"2/8","4":"4/8","6":"1/8","7":"3/8"},"الإثنين":{"1":"2/8","3":"4/8","7":"3/8","8":"1/8"},"الثلاثاء":{"1":"2/8","3":"3/8","4":"1/8","6":"4/8","7":"4/8"},"الأربعاء":{"2":"1/8","3":"1/8","4":"3/8","6":"2/8","7":"4/8"},"الخميس":{"1":"2/8","4":"4/8","6":"1/8","7":"3/8","8":"3/8"}},"محمد ابراهيم":{"الأحد":{"3":"4/5","4":"4/5","5":"6/5","7":"1/5","8":"5/5"},"الإثنين":{"2":"4/5","3":"6/5","5":"5/5","6":"5/5","7":"1/5"},"الثلاثاء":{"3":"1/5","4":"6/5","6":"4/5","7":"5/5"},"الأربعاء":{"3":"6/5","4":"4/5","5":"1/5","7":"5/5","8":"6/5"},"الخميس":{"2":"5/5","3":"6/5","5":"1/5","6":"1/5","8":"4/5"}},"طارق المزروعي":{"الأحد":{"4":"5/8","6":"5/6","7":"6/6"},"الإثنين":{"3":"6/6","5":"5/6","6":"5/8","7":"5/8"},"الثلاثاء":{"2":"5/6","4":"6/6","7":"6/6","8":"5/8"},"الأربعاء":{"1":"6/6","2":"5/8","7":"5/6","8":"5/6"},"الخميس":{"4":"5/6","7":"5/8","8":"6/6"}},"محمد الخزيمي":{"الأحد":{"3":"6/7","4":"6/7","7":"7/7","8":"5/7"},"الإثنين":{"3":"7/7","5":"6/7","8":"5/7"},"الثلاثاء":{"2":"5/7","4":"6/7","6":"7/7"},"الأربعاء":{"1":"7/7","3":"6/7","5":"5/7","6":"5/7"},"الخميس":{"3":"7/7","4":"7/7","5":"5/7","8":"6/7"}},"فيصل القمشوعي":{"الأحد":{"3":"4/7","4":"3/7","5":"1/7","7":"2/7","8":"2/7"},"الإثنين":{"2":"2/7","3":"3/7","5":"4/7","6":"1/7","7":"1/7"},"الثلاثاء":{"2":"1/7","3":"4/7","5":"3/7","6":"3/7","7":"2/7"},"الأربعاء":{"2":"2/7","4":"4/7","6":"4/7","7":"3/7","8":"1/7"},"الخميس":{"1":"4/7","2":"1/7","3":"2/7","4":"3/7"}},"اسماعيل البلوشي":{"الأحد":{"1":"7/7"},"الإثنين":{"1":"7/7","8":"7/7"},"الثلاثاء":{"7":"7/7","8":"7/7"},"الأربعاء":{"5":"7/7"},"الخميس":{"7":"7/7"}},"خميس المزروعي":{"الأحد":{"3":"1/8","4":"1/8","6":"2/8"},"الإثنين":{"1":"1/8","6":"2/8","7":"2/8"},"الثلاثاء":{"2":"2/8","3":"2/8","8":"1/8"},"الأربعاء":{"4":"1/8","5":"1/8","8":"2/8"},"الخميس":{"1":"1/8","2":"2/8"}},"محمد المعمري":{"الأحد":{"1":"3/8","5":"5/8","7":"4/8","8":"3/8"},"الإثنين":{"1":"3/8","2":"5/8","5":"4/8","6":"4/8"},"الثلاثاء":{"1":"4/8","2":"5/8","3":"5/8","7":"3/8"},"الأربعاء":{"1":"4/8","2":"4/8","6":"3/8","7":"3/8","8":"5/8"},"الخميس":{"1":"4/8","2":"3/8","5":"5/8","6":"5/8"}},"مصطفى":{"الأحد":{"1":"2/7","2":"2/7","5":"3/7","7":"1/7"},"الإثنين":{"1":"1/7","2":"1/7","5":"2/7","6":"3/7"},"الثلاثاء":{"1":"3/7","2":"2/7","3":"2/7","6":"1/7","7":"1/7"},"الأربعاء":{"3":"2/7","5":"3/7","6":"1/7","8":"3/7"},"الخميس":{"2":"3/7","3":"3/7","7":"1/7","8":"2/7"}},"راشد المزروعي":{"الأحد":{"2":"6/7","3":"5/7","6":"6/7","7":"4/7","8":"4/7"},"الإثنين":{"4":"5/7","6":"6/7","7":"4/7","8":"4/7"},"الثلاثاء":{"4":"4/7","6":"5/7","7":"6/7","8":"6/7"},"الأربعاء":{"1":"5/7","2":"5/7","7":"6/7","8":"4/7"},"الخميس":{"2":"4/7","4":"6/7","6":"5/7","7":"5/7"}},"خليفة شلتوت":{"الأحد":{"1":"2/5","3":"1/5","4":"1/5","6":"3/5"},"الإثنين":{"1":"1/5","2":"1/5","5":"2/5","6":"3/5"},"الثلاثاء":{"1":"3/5","2":"1/5","5":"2/5","6":"2/5","8":"3/5"},"الأربعاء":{"1":"2/5","2":"2/5","7":"3/5","8":"1/5"},"الخميس":{"1":"2/5","4":"1/5","5":"3/5","7":"3/5"}},"عبدالرحيم طلعت":{"الأحد":{"1":"5/5","2":"6/5","3":"6/5","7":"4/5"},"الإثنين":{"2":"5/5","4":"6/5","7":"4/5","8":"4/5"},"الثلاثاء":{"1":"4/5","3":"6/5","5":"5/5","6":"5/5"},"الأربعاء":{"1":"5/5","2":"6/5","6":"4/5","7":"6/5"},"الخميس":{"3":"4/5","4":"4/5","5":"6/5","7":"5/5","8":"5/5"}},"محمود":{"الأحد":{"1":"2/6","2":"2/6","6":"1/6","7":"3/6"},"الإثنين":{"1":"1/6","4":"3/6","6":"3/6","8":"2/6"},"الثلاثاء":{"1":"1/6","5":"2/6","6":"1/6","7":"3/6"},"الأربعاء":{"1":"1/6","4":"3/6","5":"2/6","6":"2/6","8":"1/6"},"الخميس":{"1":"2/6","2":"1/6","7":"3/6","8":"3/6"}},"كريم سعيد":{"الأحد":{"1":"6/6","4":"4/6","6":"6/6","7":"5/6"},"الإثنين":{"1":"5/6","2":"5/6","7":"4/6","8":"6/6"},"الثلاثاء":{"1":"4/6","3":"5/6","4":"5/6","5":"6/6","6":"4/6"},"الأربعاء":{"2":"4/6","3":"4/6","6":"5/6","8":"6/6"},"الخميس":{"2":"6/6","3":"6/6","7":"5/6","8":"4/6"}},"علي السعدي":{"الأحد":{"1":"1/5","2":"2/5","7":"3/5","8":"4/5"},"الإثنين":{"1":"4/5","4":"1/5","7":"3/5","8":"2/5"},"الثلاثاء":{"1":"1/5","2":"4/5","7":"3/5","8":"2/5"},"الأربعاء":{"3":"2/5","4":"3/5","6":"1/5","7":"4/5"},"الخميس":{"2":"2/5","3":"1/5","6":"3/5","7":"4/5"}},"علي العبري":{"الأحد":{"4":"6/5","5":"6/6","7":"5/5"},"الإثنين":{"1":"6/6","3":"5/5","7":"6/5"},"الثلاثاء":{"1":"5/5","6":"6/5","8":"6/6"},"الأربعاء":{"2":"6/6","4":"6/5","6":"5/5"},"الخميس":{"1":"6/6","6":"5/5","8":"6/5"}},"خليفة حمدان":{"الأحد":{"1":"1/6","2":"5/7","7":"5/7","8":"2/6"},"الإثنين":{"1":"5/7","4":"1/6","5":"2/6"},"الثلاثاء":{"1":"5/7","7":"2/6","8":"1/6"},"الأربعاء":{"1":"2/6","2":"1/6","4":"5/7"},"الخميس":{"5":"2/6","6":"1/6","8":"5/7"}},"راشد الكعبي":{"الأحد":{"1":"4/6","2":"5/6","5":"3/6"},"الإثنين":{"1":"3/6","7":"5/6","8":"4/6"},"الثلاثاء":{"2":"4/6","6":"3/6","8":"5/6"},"الأربعاء":{"1":"5/6","7":"4/6","8":"3/6"},"الخميس":{"1":"3/6","6":"5/6","7":"4/6"}},"يونس الكعبي":{"الأحد":{"2":"3/8","4":"2/8","5":"2/8","8":"1/8"},"الإثنين":{"2":"3/8","4":"1/8","5":"2/8","6":"1/8"},"الثلاثاء":{"3":"1/8","7":"2/8","8":"3/8"},"الأربعاء":{"1":"3/8","4":"2/8","7":"1/8","8":"3/8"},"الخميس":{"1":"3/8","2":"1/8","5":"2/8"}},"عبدالله المعمري":{"الأحد":{"4":"7/7","5":"4/7","7":"6/7","8":"7/7"},"الإثنين":{"3":"6/7","4":"6/7","6":"4/7","7":"7/7"},"الثلاثاء":{"1":"7/7","3":"6/7","8":"4/7"},"الأربعاء":{"2":"7/7","5":"4/7","8":"6/7"},"الخميس":{"1":"6/7","3":"4/7","4":"4/7","6":"7/7"}},"وليد الريسي":{"الأحد":{"1":"1/7","4":"1/7","5":"2/7","6":"3/7"},"الإثنين":{"4":"3/7","5":"3/7","7":"2/7","8":"1/7"},"الثلاثاء":{"1":"1/7","2":"3/7","8":"2/7"},"الأربعاء":{"3":"3/7","4":"2/7","5":"1/7","6":"2/7"},"الخميس":{"1":"1/7","2":"2/7","7":"3/7"}},"خليفة سعيد":{"الأحد":{"6":"4/8","7":"5/8"},"الإثنين":{"7":"4/8","8":"5/8"},"الثلاثاء":{"7":"5/8","8":"4/8"},"الأربعاء":{"1":"5/8","7":"5/8","8":"4/8"},"الخميس":{"6":"4/8","7":"4/8","8":"5/8"}},"ابراهيم الهاشمي":{"الأحد":{"1":"4/7","2":"4/7","8":"6/7"},"الإثنين":{"2":"6/7","5":"5/7","6":"5/7"},"الثلاثاء":{"1":"4/7","3":"7/7","4":"7/7","8":"5/7"},"الأربعاء":{"1":"4/7","3":"7/7","4":"7/7"},"الخميس":{"1":"5/7","6":"6/7","7":"6/7"}},"ناصر بريك":{"الأحد":{"2":"1/6","3":"4/6","5":"2/6"},"الإثنين":{"2":"2/6","6":"4/6","8":"3/6"},"الثلاثاء":{"1":"3/6","5":"1/6","6":"2/6"},"الأربعاء":{"2":"3/6","4":"1/6","8":"4/6"},"الخميس":{"2":"2/6","4":"4/6","5":"1/6","6":"3/6"}},"علي ميران":{"الأحد":{"5":"3/5","6":"4/5","8":"2/5"},"الإثنين":{"2":"3/5","3":"2/5","5":"4/5","6":"1/5"},"الثلاثاء":{"4":"3/5","5":"1/5","8":"4/5"},"الأربعاء":{"3":"3/5","4":"1/5","7":"2/5"},"الخميس":{"1":"4/5","6":"2/5","8":"1/5"}},"معاذ الريسي":{"الأحد":{"2":"4/8","3":"3/8","8":"5/8"},"الإثنين":{"1":"4/8","3":"1/8","4":"5/8"},"الثلاثاء":{"1":"1/8","2":"4/8","5":"3/8","6":"5/8"},"الأربعاء":{"3":"5/8","5":"3/8","8":"1/8"},"الخميس":{"5":"1/8","6":"3/8","8":"4/8"}},"سعيد المخمري":{"الأحد":{"1":"3/7","2":"1/7","3":"2/7"},"الإثنين":{"3":"2/8","4":"2/7","8":"3/7"},"الثلاثاء":{"3":"1/7","7":"3/7","8":"2/8"},"الأربعاء":{"1":"2/7","3":"2/8","4":"1/7"},"الخميس":{"3":"1/7","5":"3/7","6":"2/7","7":"2/8"}},"احمد مسعود":{"الأحد":{"3":"6/6","4":"5/5","7":"6/5"},"الإثنين":{"1":"5/5","2":"6/6","6":"5/6","8":"6/5"},"الثلاثاء":{"1":"5/6","6":"6/6","8":"6/5"},"الأربعاء":{"2":"5/5","5":"5/6","6":"6/6"},"الخميس":{"5":"5/5","7":"6/5","8":"5/6"}},"عبدالله الشرقي":{"الأحد":{"5":"5/6","6":"7/7","8":"3/6"},"الإثنين":{"4":"6/6","6":"7/7","8":"1/6"},"الثلاثاء":{"3":"4/6","5":"5/6","8":"1/7"},"الأربعاء":{"3":"3/6","4":"2/6","6":"4/6","7":"6/6"},"الخميس":{"4":"1/6","5":"1/7","7":"2/6"}},"جمعة المعمري":{"الأحد":{"1":"1/8","6":"1/5","7":"2/8"},"الإثنين":{"1":"3/5","4":"4/5","6":"2/5"},"الثلاثاء":{"5":"2/8","7":"1/8","8":"5/5"},"الأربعاء":{"5":"6/5","7":"1/5","8":"4/5"},"الخميس":{"1":"5/5","4":"6/5","7":"2/5","8":"3/5"}},"راشد المعمري":{"الأحد":{"1":"5/7","3":"4/8","7":"3/7"},"الإثنين":{"3":"2/7","7":"6/7","8":"3/8"},"الثلاثاء":{"2":"4/7","4":"5/8","6":"3/8","7":"5/7"},"الأربعاء":{"1":"6/7","4":"5/8","5":"2/7"},"الخميس":{"2":"4/8","6":"4/7","8":"3/7"}},"عبدالله المقبالي":{"الأحد":{"1":"3/5","3":"5/8"},"الإثنين":{"2":"4/8","3":"3/8","8":"2/8"},"الثلاثاء":{"2":"6/5","3":"4/5"},"الأربعاء":{"5":"5/5","8":"2/5"},"الخميس":{"2":"1/5","3":"1/8"}},"علي المقبالي":{"الأحد":{"2":"3/6","6":"1/7","7":"2/6"},"الإثنين":{"6":"6/6","7":"5/7"},"الثلاثاء":{"1":"2/7","4":"3/7","5":"4/6"},"الأربعاء":{"4":"5/6","6":"6/7","7":"7/7"},"الخميس":{"7":"4/7","8":"1/6"}},"خالد المقبالي":{"الأحد":{"1":"4/5","2":"1/5","3":"5/5","4":"1/6","5":"2/5"},"الإثنين":{"1":"2/6","2":"1/6","3":"1/5","4":"5/6","5":"4/6"},"الثلاثاء":{"1":"6/5","2":"2/5","3":"3/5","4":"2/6","5":"3/6"},"الأربعاء":{"1":"4/5","3":"5/5","4":"6/6","5":"3/5"},"الخميس":{"1":"4/6","2":"6/5","3":"3/6","4":"6/6","5":"5/6"}},"محمد الهنائي":{"الأحد":{"1":"4/8","2":"3/7","3":"1/7","4":"2/7","5":"1/8"},"الإثنين":{"1":"5/8","2":"7/7","3":"4/7","4":"1/7","5":"1/8"},"الثلاثاء":{"1":"3/8","2":"6/7","3":"5/7","4":"2/7","5":"4/7"},"الأربعاء":{"1":"2/8","3":"5/7","4":"3/7","5":"4/8"},"الخميس":{"1":"5/8","2":"6/7","3":"3/8","4":"2/8","5":"7/7"}},"عبدالله حسن":{"الأحد":{"4":"6/6","5":"4/6","6":"3/8","8":"5/6"},"الإثنين":{"2":"3/6","4":"5/5","5":"6/5"},"الثلاثاء":{"4":"1/6","5":"4/5","7":"2/5","8":"1/5"},"الأربعاء":{"2":"3/5","3":"4/8","7":"2/6"},"الخميس":{"2":"5/8","4":"1/8","6":"2/8"}},"عمر البلوشي":{"الأحد":{},"الإثنين":{},"الثلاثاء":{},"الأربعاء":{"2":"4/7","4":"6/7","6":"3/7"},"الخميس":{"3":"5/7","5":"2/7","6":"1/7","8":"7/7"}}};
-const baseNames=MASTER_TEACHERS.map(x=>x.name);
-const totals=MASTER_TEACHERS.map(x=>x.base);
-// ثابتة من خلايا التكليف الإداري في جدول المدرسة؛ لا تؤخذ من عداد الاحتياط.
-const ADMIN_ASSIGNMENTS={
- 'خليفة قناص':{periods:7,role:'معلم أول — اللغة العربية'},
- 'خليفة سعيد':{periods:null,role:'معلم أول — العلوم'},
- 'اسماعيل البلوشي':{periods:7,role:'معلم أول — الرياضيات'},
- 'خليل اسلامية':{periods:7,role:'معلم أول — التربية الإسلامية'},
- 'سعيد الحضرمي':{periods:7,role:'معلم أول — اللغة الإنجليزية'},
- 'ابراهيم الهاشمي':{periods:null,role:'قائم بأعمال المعلم الأول — الدراسات الاجتماعية'},
- 'سالم المعمري':{periods:5,role:'تكليف إداري'},
- 'علي المعمري':{periods:5,role:'تكليف إداري'},
- 'خميس المزروعي':{periods:5,role:'تكليف إداري'},
- 'علي العبري':{periods:5,role:'تكليف إداري'},
- 'وليد الريسي':{periods:5,role:'تكليف إداري'}
-};
-function administrativeLoad(t){
- const explicit=t.extra;
- if(explicit!==undefined&&explicit!==null&&explicit!==''&&Number.isFinite(+explicit)&&+explicit>=0)return +explicit;
- return ADMIN_ASSIGNMENTS[t.name]?.periods??0;
-}
-function teacherWithAdministration(t){
- return {...t,base:+t.base||0,extra:administrativeLoad(t),adminUnrecorded:ADMIN_ASSIGNMENTS[t.name]?.periods===null&&(t.extra===undefined||t.extra===null||t.extra==='')};
-}
-const special={};
-const K='reserveSchoolV16';
-let old=null;try{old=JSON.parse(localStorage.getItem(K)||'null');if(old&&(!Array.isArray(old.teachers)||!Array.isArray(old.records)))old=null;}catch(e){}
-let S=old||{teachers:MASTER_TEACHERS,schedule:MASTER_SCHEDULE,records:[]};
-S.teachers=MASTER_TEACHERS.map(t=>teacherWithAdministration({...t,extra:undefined}));
-S.schedule=MASTER_SCHEDULE;
-const save=()=>localStorage.setItem(K,JSON.stringify(S));
-// قاعدة البيانات السحابية هي المرجع الأول؛ التخزين المحلي نسخة مؤقتة فقط.
-async function apiPost(payload){const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...payload,adminKey:reserveAdminKey})});const raw=await r.text();let j;try{j=JSON.parse(raw)}catch(_){throw new Error('الخادم أعاد صفحة HTML بدل بيانات JSON. راجع صلاحية نشر تطبيق ويب الاحتياط ورابطه في Google Apps Script.')}if(!r.ok||!j.ok)throw new Error(j.error||'تعذر الاتصال بقاعدة البيانات');return j}
-async function syncCloud(){try{const j=await apiPost({action:'reserveBootstrap'});if(!j.ok)throw new Error(j.error||'تعذر تحميل البيانات');if(Array.isArray(j.teachers)&&j.teachers.length)S.teachers=j.teachers.filter(t=>t.eligible!==false).map(t=>teacherWithAdministration({name:t.name,base:t.base,extra:t.extra}));if(Array.isArray(j.timetable)&&j.timetable.length){S.schedule={};j.timetable.forEach(x=>{S.schedule[x.teacher]??={};S.schedule[x.teacher][x.day]??={};Object.entries(x.periods||{}).forEach(([p,v])=>{if(v)S.schedule[x.teacher][x.day][p]=v})})}if(Array.isArray(j.records))S.records=j.records.map(r=>({id:r.id,date:r.date,day:r.day,absent:r.absent,period:+r.period,className:r.className||'',reserve:r.reserve||'',exceptional:(r.notes||'').includes('استثنائي')}));if(Array.isArray(j.cycles)){let ac=j.cycles.find(x=>x.status==='نشطة');if(ac)S.cycleStart=ac.start}if(j.serverNow?.date){setWorkingDate(j.serverNow.date);S.serverNow=j.serverNow}save();fillTeachers();render();setCloud('متصل بقاعدة Google Sheets — توقيت عُمان','ok')}catch(e){setCloud('تعذر الاتصال بالخادم','off');throw e}}
-function setCloud(txt,cls){const x=document.getElementById('cloudState');if(x){x.textContent=txt;x.className='badge '+cls}}
-async function approveDay(){const rows=recForDate().filter(r=>r.day===day.value);if(!rows.length){alert('لا توجد حصص لاعتمادها.');return}const uncovered=rows.filter(r=>!r.reserve).length;if(uncovered&&!confirm('يوجد '+uncovered+' حصة بلا معلم احتياط متاح. سيتم اعتماد اليوم مع إبقائها غير مسندة. متابعة؟'))return;try{setCloud('جارٍ الحفظ...','warn');const j=await apiPost({action:'saveDay',date:date.value,day:day.value,records:rows});S.records=(j.records||[]).map(r=>({id:r.id,date:r.date,day:r.day,absent:r.absent,period:+r.period,className:r.className||'',reserve:r.reserve||''}));save();render();setCloud('تم الحفظ في Google Sheets','ok');alert('تم اعتماد جدول الاحتياط وحفظه في Google Sheets.')}catch(e){setCloud('فشل الحفظ','off');alert(e.message)}}
-function opts(el,arr){el.innerHTML=arr.map(x=>`<option>${x}</option>`).join('')}
-opts(day,DAYS);opts(setupDay,DAYS);opts(period,[1,2,3,4,5,6,7,8]);opts(setupPeriod,[1,2,3,4,5,6,7,8]);
-function fillTeachers(){
- const previousAbsent=absent.value, previousSetup=setupTeacher.value;
- // يشمل الغائبين أصحاب الجدول والمعلمين المضافين للإدارة، ولا يقتصر على المؤهلين للاحتياط.
- const allTeachers=[...new Set([
-  ...Object.keys(S.schedule||{}),
-  ...S.teachers.map(t=>t.name),
-  ...S.records.map(r=>r.absent).filter(Boolean)
- ])].sort((a,b)=>a.localeCompare(b,'ar'));
- opts(absent,allTeachers);
- opts(setupTeacher,allTeachers);
- if(allTeachers.includes(previousAbsent))absent.value=previousAbsent;
- if(allTeachers.includes(previousSetup))setupTeacher.value=previousSetup;
-}
-fillTeachers();
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');render()});
-const recForDate=()=>S.records.filter(r=>r.date===date.value);
-function reserveCount(name){return S.records.filter(r=>r.reserve===name&&(!S.cycleStart||r.date>=S.cycleStart)).length}
-function adjusted(t){return t.base+t.extra+reserveCount(t.name)}
-function isBusy(name,d,p){return !!S.schedule?.[name]?.[d]?.[p]}
-function taughtClasses(name){let a=[];Object.values(S.schedule?.[name]||{}).forEach(ds=>Object.values(ds).forEach(v=>v&&a.push(v)));return a}
-function yesterday(d){let i=DAYS.indexOf(d);return i>0?DAYS[i-1]:null}
-function dayPeriods(name,d){
- const ds=S.schedule?.[name]?.[d]||{};
- return Object.keys(ds).filter(k=>ds[k]).map(Number).sort((a,b)=>a-b);
-}
-function hasFourConsecutive(arr){
- for(let i=0;i<=arr.length-4;i++) if(arr[i+1]===arr[i]+1&&arr[i+2]===arr[i]+2&&arr[i+3]===arr[i]+3)return true;
- return false;
-}
-function adjacentToFourBlock(name,d,p){
- const a=dayPeriods(name,d);
- for(let i=0;i<=a.length-4;i++){
-   if(a[i+1]===a[i]+1&&a[i+2]===a[i]+2&&a[i+3]===a[i]+3){
-     if(p===a[i]-1 || p===a[i+3]+1)return true;
-   }
- }
- return false;
-}
-function eligibleByDailyLoad(name,d,p){
- const a=dayPeriods(name,d);
- if(a.length>=5)return false;                 // من لديه 5 حصص في اليوم لا يعطى احتياط
- if(adjacentToFourBlock(name,d,p))return false; // لا حصة قبل/بعد 4 حصص متتالية
- return true;
-}
-function absentNamesForDay(){
- // المعلم الغائب هو من أُدرجت حصصه بالفعل لهذا اليوم، لا الاسم المعروض افتراضيًا في الاختيار.
- return new Set(recForDate().filter(x=>x.day===day.value&&x.absent).map(x=>x.absent));
-}
-function isAbsentToday(name){return absentNamesForDay().has(name)}
-const TRAINING_EXCLUSIONS=[{name:'خليل اسلامية',day:'الأحد',reason:'ارتباط بالتدريب يوم الأحد'}];
-const DEPUTED_TEACHER_ATTENDANCE=new Map([['عمر البلوشي',new Set(['الأربعاء','الخميس'])]]);
-function attendanceExclusion(name,dayName){const days=DEPUTED_TEACHER_ATTENDANCE.get(name);return days&&!days.has(dayName)?'المعلم منتدب ولا يحضر المدرسة في هذا اليوم':'';}
-const FIRST_TEACHERS=new Set(["خليفة قناص","خليفة سعيد","اسماعيل البلوشي","خليل اسلامية","سعيد الحضرمي","ابراهيم الهاشمي"]); // المعلمون الأوائل والقائم بأعمال المعلم الأول: آخر المرشحين للاحتياط
-function trainingReason(name,dayName){const x=TRAINING_EXCLUSIONS.find(p=>p.name===name&&p.day===dayName);return x?x.reason:'';}
-function isFirstTeacher(name){return FIRST_TEACHERS.has(name);}
-function hardBlocked(t,r){
- const absence=attendanceExclusion(t.name,r.day);if(absence)return absence;
- const training=trainingReason(t.name,r.day);if(training)return training;
- if(!S.schedule?.[t.name]?.[r.day])return 'لا يوجد جدول معتمد';
- if(isAbsentToday(t.name))return 'المعلم غائب اليوم';
- if(isBusy(t.name,r.day,r.period))return 'لديه حصة أصلية';
- if(adjusted(t)>=25)return 'أكمل نصاب الدورة';
- return '';
-}
-function exceptionalCandidates(r){
- return S.teachers.map(t=>({t,reason:hardBlocked(t,r)})).filter(x=>!x.reason).map(x=>{
-  const reasons=[];
-  if(recForDate().some(z=>z.reserve===x.t.name&&z.id!==r.id))reasons.push('لديه احتياط اليوم');
-  if(dayPeriods(x.t.name,r.day).length>=5)reasons.push('لديه 5 حصص');
-  if(adjacentToFourBlock(x.t.name,r.day,r.period))reasons.push('ملاصقة لأربع حصص متتالية');
-  if(+r.period===8 && !(isBusy(x.t.name,r.day,7)&&!isBusy(x.t.name,r.day,8)))reasons.push('لا يحقق شرط الحصة الثامنة');
-  return {t:x.t,reasons};
- }).filter(x=>x.reasons.length);
-}
-function cycleStats(){
- const total=S.teachers.reduce((s,t)=>s+Math.max(0,25-(+t.base||0)-(+t.extra||0)),0);
- const done=S.records.filter(r=>r.reserve&&(!S.cycleStart||r.date>=S.cycleStart)).length;
- const pct=total?Math.min(100,done/total*100):0;
- const completed=S.teachers.filter(t=>adjusted(t)>=25).length;
- return {total,done,pct,completed};
-}
-function candidates(r){
- return S.teachers.filter(t=>{
-   if(attendanceExclusion(t.name,r.day)||!S.schedule?.[t.name]?.[r.day]||trainingReason(t.name,r.day))return false;
-   if(isAbsentToday(t.name) || adjusted(t)>=25 || isBusy(t.name,r.day,r.period))return false;
-   if(recForDate().some(x=>x.reserve===t.name))return false;
-   if(!eligibleByDailyLoad(t.name,r.day,r.period))return false;
-   // الحصة الثامنة: المرشح يجب أن تكون لديه السابعة ومفرغًا في الثامنة.
-   if(+r.period===8 && !(isBusy(t.name,r.day,7) && !isBusy(t.name,r.day,8)))return false;
-   return true;
- }).map(t=>{
-   let score=(25-adjusted(t))*100;
-   // أولوية الصفوف: الشعبة نفسها أولاً، ثم الصف نفسه، ثم بقية المرشحين.
-   const cls=String(r.className||'').trim();
-   const taught=taughtClasses(t.name).map(x=>String(x||'').trim());
-   if(cls && taught.includes(cls)) score+=90;
-   else if(cls){
-     const parts=cls.split('/'), grade=(parts[1]||parts[0]).trim();
-     if(grade && taught.some(x=>{const p=x.split('/');return (p[1]||p[0]).trim()===grade})) score+=45;
-   }
-   let prev=new Date(r.date+'T12:00:00'); prev.setDate(prev.getDate()-1);
-   let prevDate=prev.toISOString().slice(0,10);
-   if(S.records.some(x=>x.reserve===t.name&&x.date===prevDate))score-=1000;
-   // للحصص المتأخرة فضّل من جدولُه قريب منها، وتجنب إحضار من انتهى مبكرًا.
-   const ps=dayPeriods(t.name,r.day), last=ps.length?Math.max(...ps):0;
-   if(+r.period>=7){ if(last>=6)score+=120; else score-=500; }
-   return {t,score,first:isFirstTeacher(t.name)};
- }).sort((a,b)=>Number(a.first)-Number(b.first)||b.score-a.score||a.t.name.localeCompare(b.t.name,'ar'));
-}
-function explainChoice(r,name){
- const t=S.teachers.find(x=>x.name===name); if(!t)return [];
- if(isAbsentToday(name))return ['هذا المعلم مسجل غائبًا اليوم ولا يجوز تكليفه بالاحتياط'];
- const reasons=[];
- if(isFirstTeacher(name))reasons.push('معلم أول أو قائم بأعمال المعلم الأول؛ يُرتب بعد بقية المعلمين المؤهلين');
- if(!isBusy(name,r.day,r.period))reasons.push('متفرغ في الحصة '+r.period);
- const taught=taughtClasses(name).map(x=>String(x||'').trim()), cls=String(r.className||'').trim(), cp=cls.split('/'), grade=(cp[1]||cp[0]).trim();
- if(cls&&taught.includes(cls))reasons.push('يدرّس الشعبة نفسها '+cls);
- else if(grade&&taught.some(x=>{const p=x.split('/');return (p[1]||p[0]).trim()===grade}))reasons.push('يدرّس الصف نفسه');
- reasons.push('نصابه الحالي '+adjusted(t)+' من 25');
- if(!recForDate().some(x=>x.reserve===name&&x.id!==r.id))reasons.push('لم يُسند إليه احتياط آخر اليوم');
- const dp=dayPeriods(name,r.day);
- if(dp.length<5)reasons.push('لديه '+dp.length+' حصص أصلية فقط اليوم');
- let prev=new Date(r.date+'T12:00:00');prev.setDate(prev.getDate()-1);let pd=prev.toISOString().slice(0,10);
- if(!S.records.some(x=>x.reserve===name&&x.date===pd))reasons.push('لم يأخذ احتياطًا في اليوم السابق');
- if(+r.period>=7&&dp.length&&Math.max(...dp)>=6)reasons.push('جدوله يمتد إلى الحصص المتأخرة');
- return reasons;
-}
-function render(){
- document.getElementById('printMeta').textContent=`اليوم: ${day.value} — التاريخ: ${date.value}`;
- let rs=recForDate().filter(r=>r.day===day.value).sort((a,b)=>a.period-b.period);
- dailyBody.innerHTML=rs.length?rs.map((r,i)=>{
- let cand=candidates({...r,reserve:null}); let allowed=cand.map(x=>x.t); if(r.reserve&&!allowed.some(t=>t.name===r.reserve)){let cur=S.teachers.find(t=>t.name===r.reserve);if(cur)allowed.unshift(cur)} let choices=['<option value="">— اختر —</option>',...allowed.map(t=>`<option ${r.reserve===t.name?'selected':''}>${t.name}</option>`)].join('');
- let tt=S.teachers.find(t=>t.name===r.reserve), total=tt?adjusted(tt):'—';
- let ex=exceptionalCandidates(r); let exBtn=!cand.length&&ex.length?`<button class="secondary exceptionBtn" data-id="${r.id}" style="margin-top:5px;padding:6px 9px">خيارات استثنائية</button>`:''; 
- return `<tr><td>${i+1}</td><td>${r.absent}</td><td>${r.period}</td><td><input class="classEdit no-print" data-id="${r.id}" value="${r.className||''}" dir="ltr" style="min-width:75px;padding:6px;text-align:center"><span class="print-only">${r.className||'—'}</span></td><td><select class="reserveSel no-print" data-id="${r.id}">${choices}</select>${exBtn}<span class="print-only">${r.reserve||'—'}</span></td><td>${total}</td><td class="no-print">${r.reserve?'<span class="badge ok">مسندة</span><br><button class="secondary whyBtn" data-id="'+r.id+'" style="margin-top:5px;padding:6px 9px">لماذا اختاره النظام؟</button>':cand.length?'<span class="badge warn">بانتظار التوزيع</span>':'<span class="badge off">يحتاج تدخلاً</span>'}</td><td class="sig"></td><td class="no-print"><button class="danger del" data-id="${r.id}">×</button></td></tr>`
- }).join(''):`<tr><td colspan="9" class="empty">لا توجد حصص غياب مضافة لهذا اليوم.</td></tr>`;
- document.querySelectorAll('.reserveSel').forEach(s=>s.onchange=()=>{let r=S.records.find(x=>x.id==s.dataset.id);r.reserve=s.value;r.exceptional=false;save();render()});
- document.querySelectorAll('.whyBtn').forEach(b=>b.onclick=()=>{let r=S.records.find(x=>x.id==b.dataset.id);if(!r||!r.reserve)return;let reasons=explainChoice(r,r.reserve);alert('سبب اختيار '+r.reserve+':\n\n• '+reasons.join('\n• '));});
- document.querySelectorAll('.classEdit').forEach(x=>x.onchange=()=>{let r=S.records.find(z=>z.id==x.dataset.id);r.className=x.value.trim();save();render()});
- document.querySelectorAll('.exceptionBtn').forEach(b=>b.onclick=()=>{let r=S.records.find(x=>x.id==b.dataset.id),ex=exceptionalCandidates(r);if(!ex.length){alert('لا توجد خيارات استثنائية آمنة.');return}let msg='الحالة الاستثنائية — اختر رقم المعلم:\n'+ex.map((x,i)=>`${i+1}) ${x.t.name} — ${x.reasons.join('، ')}`).join('\n');let n=+prompt(msg);if(n>=1&&n<=ex.length){if(confirm(`سيتم إسناد الحصة استثنائيًا إلى ${ex[n-1].t.name}.\nالسبب: ${ex[n-1].reasons.join('، ')}\nمتابعة؟`)){r.reserve=ex[n-1].t.name;r.exceptional=true;save();render()}}});
- document.querySelectorAll('.del').forEach(b=>b.onclick=()=>{S.records=S.records.filter(x=>x.id!=b.dataset.id);save();render()});
- teachersBody.onchange=async(event)=>{const x=event.target.closest('.baseEdit');if(!x)return;let t=S.teachers.find(z=>z.name===x.dataset.name),v=+x.value;if(!t||!Number.isFinite(v)||v<0||v>25)return;let old=t.base;t.base=v;save();render();try{await apiPost({action:'updateTeacher',name:t.name,base:v,eligible:true});setCloud('تم تحديث النصاب في Google Sheets','ok')}catch(e){t.base=old;save();render();alert('تعذر حفظ تعديل النصاب سحابيًا. حدّث Apps Script إلى الإصدار الجديد.')}};
- let cs=cycleStats();cyclePct.textContent=cs.pct.toFixed(1)+'%';cycleBar.style.width=cs.pct+'%';cycleSummary.textContent=`المنفذ ${cs.done} من ${cs.total} حصة مستهدفة — أكمل النصاب ${cs.completed} من ${S.teachers.length} معلمًا`;cycleAlert.innerHTML=cs.pct>=95?'<span class="badge off">تنبيه 95%: يوصى بمراجعة إنهاء الدورة وبدء دورة جديدة بقرار المسؤول.</span>':cs.pct>=90?'<span class="badge warn">تنبيه 90%: الدورة قاربت الاكتمال، راجع العبء قبل الاستمرار.</span>':'<span class="badge ok">الدورة ضمن النطاق الطبيعي</span>';
- const assignedAdmins=S.teachers.filter(t=>t.extra>0);const missingAdmins=S.teachers.filter(t=>t.adminUnrecorded);document.getElementById('adminLoadSummary').textContent=`عدد المعلمين ذوي التكليفات الإدارية المسجلة: ${assignedAdmins.length}، بإجمالي ${assignedAdmins.reduce((n,t)=>n+t.extra,0)} حصة إدارية.${missingAdmins.length?' لم يُسجل عدد إداري لكل من: '+missingAdmins.map(t=>t.name).join('، ')+'.':''}`;
- teachersBody.innerHTML=S.teachers.map(t=>{let rc=reserveCount(t.name),a=t.base+t.extra+rc,rem=Math.max(0,25-a);const task=ADMIN_ASSIGNMENTS[t.name];return `<tr><td><strong>${t.name}</strong>${task?`<div class="muted">${task.role}</div>`:''}</td><td><input class="baseEdit no-print" data-name="${t.name}" type="number" min="0" max="25" value="${t.base}" style="width:75px;padding:6px"><span class="print-only">${t.base}</span></td><td>${t.adminUnrecorded?'<span class="badge warn">غير مسجلة</span>':`<strong>${t.extra}</strong>`}</td><td>${rc}</td><td><b>${a}</b></td><td>${rem}</td><td>${a>=25?'<span class="badge off">معفى</span>':'<span class="badge ok">متاح</span>'}</td></tr>`}).join('');
-}
-function extractAbsentLessons(){
- const name=absent.value,d=day.value,ds=S.schedule?.[name]?.[d];
- if(!ds){alert('لا يوجد جدول معتمد لهذا المعلم في هذا اليوم.');return}
- const lessons=Object.entries(ds).filter(([p,c])=>c).map(([p,c])=>({period:+p,className:c})).sort((a,b)=>a.period-b.period);
- if(!lessons.length){alert('لا توجد حصص أصلية للمعلم في هذا اليوم.');return}
- let added=0;
- lessons.forEach(x=>{if(!S.records.some(r=>r.date===date.value&&r.day===d&&r.absent===name&&r.period===x.period)){S.records.push({id:Date.now()+Math.random(),date:date.value,day:d,absent:name,period:x.period,className:x.className,reserve:''});added++}});
- save();render();
- if(!added)alert('حصص هذا المعلم مضافة بالفعل لهذا اليوم.');
-}
-loadAbsent.onclick=extractAbsentLessons;
-absent.onchange=extractAbsentLessons;
-addAbs.onclick=()=>{if(S.records.some(r=>r.date===date.value&&r.absent===absent.value&&r.period===+period.value)){alert('هذه الحصة مضافة مسبقًا لهذا المعلم.');return;}S.records.push({id:Date.now()+Math.random(),date:date.value,day:day.value,absent:absent.value,period:+period.value,className:className.value.trim(),reserve:''});save();render()};
-auto.onclick=()=>{
- const rs=recForDate().filter(r=>r.day===day.value).sort((a,b)=>a.period-b.period);
- const unavailable=absentNamesForDay(),invalid=rs.filter(r=>r.reserve&&(unavailable.has(r.reserve)||trainingReason(r.reserve,r.day)||isBusy(r.reserve,r.day,r.period)));
- if(invalid.length&&!confirm('يوجد '+invalid.length+' تكليف احتياط غير صالح (معلم غائب أو مرتبط بالتدريب أو لديه حصة أصلية). هل تريد إلغاء هذه التكليفات وإعادة توزيعها؟'))return;
- invalid.forEach(r=>{r.reserve='';r.exceptional=false;});
- let unresolved=0;
- rs.forEach(r=>{if(!r.reserve){const c=candidates(r);if(c.length){r.reserve=c[0].t.name;r.exceptional=false;}else unresolved++;}});
- save();render();
- if(unresolved)alert('تعذر التوزيع الطبيعي لعدد '+unresolved+' حصة. يمكن مراجعة الخيارات الاستثنائية دون تجاوز التعارضات القطعية.');
-};
-clearDay.onclick=()=>{if(confirm('مسح سجل هذا اليوم؟')){S.records=S.records.filter(r=>!(r.date===date.value&&r.day===day.value));save();render()}};
-resetAll.onclick=()=>{if(confirm('سيتم حذف كل البيانات المحلية والعودة للوضع الأولي. متابعة؟')){localStorage.removeItem(K);location.reload()}};
-addTeacherCloud.onclick=async()=>{let name=newTeacherName.value.trim(),base=+newTeacherBase.value;if(!name||base<0||base>25){alert('أدخل اسمًا ونصابًا صحيحًا.');return}try{await apiPost({action:'updateTeacher',name,base,eligible:true,create:true});S.teachers.push({name,base,extra:0});save();fillTeachers();render();newTeacherName.value='';newTeacherBase.value='';alert('تمت إضافة المعلم. لن يدخل التوزيع الآلي حتى يضاف جدوله الأسبوعي.')}catch(e){alert('تعذر إضافة المعلم سحابيًا. حدّث Apps Script إلى الإصدار الجديد.')}};
-startCycleBtn.onclick=async()=>{let cs=cycleStats();if(!confirm(`سيتم إغلاق الدورة الحالية عند ${cs.pct.toFixed(1)}% وبدء دورة جديدة، وسيعاد عد الاحتياط للدورة من الصفر مع بقاء السجل التاريخي. متابعة؟`))return;try{let j=await apiPost({action:'startCycle',notes:'بدء بقرار مسؤول الاحتياط'});let ac=(j.cycles||[]).find(x=>x.status==='نشطة');S.cycleStart=ac?.start||date.value;save();render();alert('تم بدء دورة جديدة وحفظ الدورة السابقة في الأرشيف.')}catch(e){console.error('startCycle failed',e);const reason=String(e&&e.message||'خطأ غير محدد');alert('تعذر بدء الدورة الجديدة.\n\nالسبب: '+reason+'\n\nتحقق من نشر النسخة الحديثة على رابط Apps Script الخاص بنظام الاحتياط. لم تُحدَّث حالة الدورة داخل هذه الصفحة.')}};
-approveCloud.onclick=approveDay;
-function setWorkingDate(value){
- const d=new Date(value+'T12:00:00Z');if(Number.isNaN(d.getTime()))return;
- if(d.getUTCDay()>4)d.setUTCDate(d.getUTCDate()+7-d.getUTCDay());
- date.value=d.toISOString().slice(0,10);day.value=DAYS[d.getUTCDay()];
-}
-setWorkingDate(new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Muscat',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()));
-date.onchange=()=>{const requested=date.value;if(!requested)return;setWorkingDate(requested);if(date.value!==requested)alert('تم اختيار الأحد التالي؛ أيام العمل من الأحد إلى الخميس.');render()};
-day.onchange=()=>{const d=new Date(date.value+'T12:00:00Z');if(Number.isNaN(d.getTime()))return;d.setUTCDate(d.getUTCDate()+DAYS.indexOf(day.value)-d.getUTCDay());date.value=d.toISOString().slice(0,10);render()};
-const st=document.createElement('style');st.textContent='.print-only{display:none}@media print{.print-only{display:inline}.reserveSel{display:none!important}}';document.head.appendChild(st);
-async function unlockReserve(key){const err=document.getElementById('reserveLoginError'),btn=document.getElementById('reserveLoginButton');reserveAdminKey=key;btn.disabled=true;err.textContent='جارٍ التحقق...';try{await syncCloud();sessionStorage.setItem('saad-reserve-admin-session',key);document.body.classList.remove('reserve-locked');document.getElementById('reserveGate').hidden=true;err.textContent='';render();}catch(e){reserveAdminKey='';sessionStorage.removeItem('saad-reserve-admin-session');err.textContent=e.message||'تعذر التحقق من رمز الإدارة';}finally{btn.disabled=false;}}
-document.getElementById('reserveLoginForm').addEventListener('submit',e=>{e.preventDefault();unlockReserve(document.getElementById('reserveAdminPassword').value.trim())});
-if(reserveAdminKey)unlockReserve(reserveAdminKey);
-</script><script src="teacher-timetable/assets/refresh.js?v=20261024-1" defer></script></body></html>
+<p class="note">دفتر الاحتياط يتطلب رمز الإدارة. أما الخدمات الإدارية داخل بوابة المدرسة فتظل محمية بالصلاحيات المعتمدة لها.</p>
+</section></main>
+<footer>إعداد وتطوير: الأستاذ خليل البلوشي · مدرسة سعد بن معاذ للتعليم الأساسي</footer>
+</body></html>
