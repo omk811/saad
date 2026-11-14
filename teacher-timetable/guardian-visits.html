@@ -97,7 +97,7 @@ async function loadArchive(){if(!signedIn)return;status('archiveStatus','جار�
 function printVisits(){
  if(!signedIn||!archiveVisits.length){status('archiveStatus','لا توجد زيارات جاهزة للطباعة',true);return;}
  const chunks=[];for(let i=0;i<archiveVisits.length;i+=30)chunks.push(archiveVisits.slice(i,i+30));
- const imageUrl='https://pbs.twimg.com/profile_images/2022221537135505408/JvQyGIo6.jpg';
+ const imageUrl="https://oman-school.com/wp-content/uploads/2025/08/%D8%B4%D8%B9%D8%A7%D8%B1-%D9%88%D8%B2%D8%A7%D8%B1%D8%A9-%D8%A7%D9%84%D8%AA%D8%B9%D9%84%D9%8A%D9%85-%D8%B3%D9%84%D8%B7%D9%86%D8%A9-%D8%B9%D9%85%D8%A7%D9%86-%D8%A8%D8%AF%D9%88%D9%86-%D8%AE%D9%84%D9%81%D9%8A%D8%A9.png";
  const columns=['م','تاريخ الزيارة','اليوم','الحصة','الساعة','الصف/الشعبة','اسم الطالب','اسم الزائر','صلة القرابة','رقم الهوية','رقم الهاتف'];
  const header='<div class="pv-letterhead"><div class="pv-right"><strong>وزارة التعليم</strong><div>المديرية العامة للتعليم بمحافظة شمال الباطنة</div></div><div class="pv-emblem"><img src="'+imageUrl+'" alt="شعار وزارة التعليم" referrerpolicy="no-referrer"></div><div class="pv-left"><strong>العام الدراسي <span dir="ltr">2027/2026</span></strong><div>مدرسة: سعد بن معاذ للتعليم الأساسي</div></div></div>';
  const tableHead='<thead><tr>'+columns.map(v=>'<th>'+esc(v)+'</th>').join('')+'</tr></thead>';
@@ -113,7 +113,7 @@ function printVisits(){
  window.addEventListener('afterprint',clean);
  // إظهار نافذة الطباعة بعد بناء جميع الصفحات والشعار.
  const logo=el('printArea').querySelector('img');
- if(logo&&!logo.complete){Promise.race([new Promise(resolve=>{logo.addEventListener('load',resolve,{once:true});logo.addEventListener('error',resolve,{once:true})}),new Promise(resolve=>setTimeout(resolve,1800))]).then(()=>window.print());}
+ if(logo&&!logo.complete){Promise.race([new Promise(resolve=>{logo.addEventListener('load',resolve,{once:true});logo.addEventListener('error',resolve,{once:true})}),new Promise(resolve=>setTimeout(resolve,3500))]).then(()=>window.print());}
  else window.print();
 }
 el('printVisits').addEventListener('click',printVisits);
