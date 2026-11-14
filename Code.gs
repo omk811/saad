@@ -151,8 +151,9 @@ function guardianVisitSave_(d){
  if(!/^[a-zA-Z0-9-]{12,80}$/.test(requestId))throw Error('معرف التسجيل غير صالح');
  const sh=guardianVisitsSheet_(),last=sh.getLastRow();
  if(last>1){
-  const ids=sh.getRange(2,1,last-1,1).getDisplayValues();
-  if(ids.some(r=>r[0]===requestId))return{saved:true,duplicate:true,visitId:requestId};
+  const existing=sh.getRange(2,1,last-1,10).getDisplayValues();
+  const prior=existing.find(r=>String(r[0])===requestId);
+  if(prior)return{saved:true,duplicate:true,visitId:requestId,studentName:String(prior[9]||student[1])};
  }
  const record=[requestId,Utilities.formatDate(new Date(),TZ,'yyyy-MM-dd HH:mm:ss'),date,day,String(period),time,grade,section,id,String(student[1]),parent,identity,phone];
  sh.getRange(last+1,1,1,record.length).setNumberFormat('@');
