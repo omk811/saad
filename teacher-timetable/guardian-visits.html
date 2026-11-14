@@ -14,6 +14,39 @@ footer{text-align:center;padding:0 12px 25px;color:#667f77;font-size:.84rem}
 @media(min-width:950px){.grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:610px){.grid{grid-template-columns:1fr}.panel{border-radius:15px;padding:17px}.actions button{flex:1}.bar{flex-wrap:wrap}.bar button{width:100%}}
 @media print{body{background:white}header,.actions,#loginPanel,.note,footer{display:none!important}main{margin:0;width:100%}.panel{box-shadow:none;border:0}#privateApp .panel:first-child{display:none}table{font-size:8pt}}
 
+
+/* iPhone/iPad Safari typically prints in portrait regardless of @page landscape.
+   Force the print content itself inside the portrait A4 printable width. */
+@supports (-webkit-touch-callout: none) {
+ @media print {
+  html,body{width:100%!important;max-width:100%!important;overflow:visible!important}
+  #printArea{width:100%!important;max-width:100%!important}
+  .pv-page{width:188mm!important;max-width:188mm!important;height:270mm!important;max-height:270mm!important;margin:0 auto!important;overflow:visible!important;box-sizing:border-box}
+  .pv-letterhead{height:27mm!important;grid-template-columns:minmax(0,1fr) 23mm minmax(0,1fr)!important;column-gap:2mm!important}
+  .pv-right,.pv-left{font-size:7pt!important;line-height:1.55!important}
+  .pv-right strong,.pv-left strong{font-size:8pt!important}
+  .pv-emblem{height:23mm!important}
+  .pv-emblem img{width:22mm!important;height:22mm!important}
+  .pv-title{font-size:11pt!important}
+  .pv-subtitle{font-size:6.7pt!important}
+  .pv-table{width:188mm!important;min-width:0!important;max-width:188mm!important;table-layout:fixed!important;font-size:5.6pt!important}
+  .pv-table th,.pv-table td{font-size:5.6pt!important;padding:.4mm .35mm!important;line-height:1.12!important;overflow-wrap:anywhere!important;word-break:normal!important;hyphens:none!important}
+  .pv-table .pv-name{font-size:5.3pt!important;line-height:1.1!important}
+  .pv-table th:nth-child(1){width:3%!important}
+  .pv-table th:nth-child(2){width:10%!important}
+  .pv-table th:nth-child(3){width:7%!important}
+  .pv-table th:nth-child(4){width:4%!important}
+  .pv-table th:nth-child(5){width:6%!important}
+  .pv-table th:nth-child(6){width:9%!important}
+  .pv-table th:nth-child(7){width:18%!important}
+  .pv-table th:nth-child(8){width:17%!important}
+  .pv-table th:nth-child(9){width:8%!important}
+  .pv-table th:nth-child(10){width:9%!important}
+  .pv-table th:nth-child(11){width:9%!important}
+  .pv-footer{font-size:8pt!important}
+ }
+}
+
 #printArea{display:none}
 .archive-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 @page{size:A4 landscape;margin:9mm}
@@ -50,6 +83,7 @@ footer{text-align:center;padding:0 12px 25px;color:#667f77;font-size:.84rem}
   .pv-footer{position:absolute;bottom:2mm;left:0;width:100%;display:flex;justify-content:flex-end;font-size:9pt;font-weight:bold;direction:rtl}
 }
 @media(max-width:610px){.archive-actions{width:100%}.archive-actions button{flex:1}}
+@supports (-webkit-touch-callout: none) { @page { size: A4 portrait; margin: 8mm; } }
 </style></head><body>
 <header><a href="students.html">العودة إلى قسم الطلاب</a><h1>سجل زيارات أولياء الأمور</h1><p>أرشفة الزيارات المدرسية في سجل إداري خاص ودائم</p></header>
 <main><section id="loginPanel" class="panel"><h2>الدخول الإداري</h2><p class="muted">هذا القسم للمشرف المخوّل فقط. استخدم الرمز السري الخاص بقسم الطلاب، وهو نفسه المستخدم في إدارة بيانات الطلاب.</p>
