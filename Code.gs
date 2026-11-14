@@ -127,7 +127,9 @@ function guardianVisitSave_(d){
  const grade=guardianVisitText_(d.grade,20,'الصف');
  const section=guardianVisitText_(d.section,2,'الشعبة');
  if(!['الخامس','السادس','السابع','الثامن'].includes(grade)||!/^[1-7]$/.test(section)||(section==='7'&&grade!=='السابع'))throw Error('اختيار الصف والشعبة غير صالح');
- const parent=guardianVisitText_(d.guardianName,120,'اسم ولي الأمر');
+ const visitor=guardianVisitText_(d.visitorName||d.guardianName,120,'اسم الزائر');
+ const relationship=guardianVisitText_(d.relationship,60,'صلة القرابة');
+ if(!['الأب','الأم','الأخ','الأخت','الجد','الجدة','العم','العمة','الخال','الخالة','ولي الأمر','قريب آخر'].includes(relationship))throw Error('اختر صلة القرابة من القائمة');
  const identity=guardianVisitText_(d.identityNumber,22,'رقم الهوية').replace(/[\s-]/g,'');
  if(!/^[0-9]{5,20}$/.test(identity))throw Error('أدخل رقم الهوية بالأرقام فقط (5 إلى 20 رقمًا)');
  const phone=guardianVisitText_(d.phone,22,'رقم الهاتف').replace(/[\s-]/g,'');
@@ -155,7 +157,7 @@ function guardianVisitSave_(d){
   const prior=existing.find(r=>String(r[0])===requestId);
   if(prior)return{saved:true,duplicate:true,visitId:requestId,studentName:String(prior[9]||student[1])};
  }
- const record=[requestId,Utilities.formatDate(new Date(),TZ,'yyyy-MM-dd HH:mm:ss'),date,day,String(period),time,grade,section,id,String(student[1]),parent,identity,phone];
+ const record=[requestId,Utilities.formatDate(new Date(),TZ,'yyyy-MM-dd HH:mm:ss'),date,day,String(period),time,grade,section,id,String(student[1]),visitor,identity,phone,relationship];
  sh.getRange(last+1,1,1,record.length).setNumberFormat('@');
  sh.getRange(last+1,1,1,record.length).setValues([record]);
  return{saved:true,visitId:requestId,studentName:String(student[1]),day:day};
@@ -163,6 +165,6 @@ function guardianVisitSave_(d){
 function guardianVisitRecent_(d){
  const sh=guardianVisitsSheet_(),last=sh.getLastRow();
  if(last<2)return{visits:[],total:0};
- const count=Math.min(last-1,30),values=sh.getRange(last-count+1,1,count,13).getDisplayValues();
- return{visits:values.reverse().map(r=>({visitId:r[0],date:r[2],day:r[3],period:r[4],time:r[5],grade:r[6],section:r[7],studentName:r[9],guardianName:r[10],identityNumber:r[11],phone:r[12]})),total:last-1};
+ const count=Math.min(last-1,100),values=sh.getRange(last-count+1,1,count,14).getDisplayValues();
+ return{visits:values.reverse().map(r=>({visitId:r[0],date:r[2],day:r[3],period:r[4],time:r[5],grade:r[6],section:r[7],studentName:r[9],visitorName:r[10],guardianName:r[10],relationship:r[13]||'',identityNumber:r[11],phone:r[12]})),total:last-1};
 }
