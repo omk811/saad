@@ -21,7 +21,7 @@ footer{text-align:center;padding:0 12px 25px;color:#667f77;font-size:.84rem}
   html,body{width:auto!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}
   body>header,body>main,body>footer{display:none!important}
   #printArea{display:block!important;direction:rtl;color:#111;font-family:Tahoma,Arial,sans-serif}
-  .pv-page{width:100%;height:190mm;max-height:190mm;position:relative;break-after:page;page-break-after:always;overflow:hidden}
+  .pv-page{width:100%;height:190mm;max-height:190mm;position:relative;break-after:page;page-break-after:always;overflow:hidden;page-break-inside:avoid;break-inside:avoid}
   .pv-page:last-child{break-after:auto;page-break-after:auto}
   .pv-letterhead{height:28mm;display:grid;grid-template-columns:minmax(0,1fr) 27mm minmax(0,1fr);align-items:center;column-gap:4mm;border-bottom:1px solid #333;padding:0 1mm 1mm}
   .pv-right{text-align:right;font-size:8.5pt;line-height:1.5}
@@ -108,9 +108,9 @@ function printVisits(){
   }).join('');
   return '<section class="pv-page">'+header+'<div class="pv-title">سجل زيارات أولياء الأمور</div><div class="pv-subtitle">عدد الزيارات المعروضة: '+archiveVisits.length+' | الصفحة '+(page+1)+' من '+chunks.length+'</div><table class="pv-table" dir="rtl">'+tableHead+'<tbody>'+rows+'</tbody></table><div class="pv-footer"><span>مدير المدرسة: حمد المخمري</span></div></section>';
  }).join('');
+ // إبقاء صفحات الطباعة في المستند حتى ينتهي نظام الطباعة في الهاتف من قراءتها.
+ // بعض متصفحات Android/iOS ترسل afterprint قبل اكتمال إنشاء المعاينة.
  document.body.classList.add('pv-printing');
- const clean=()=>{document.body.classList.remove('pv-printing');el('printArea').innerHTML='';window.removeEventListener('afterprint',clean)};
- window.addEventListener('afterprint',clean);
  // إظهار نافذة الطباعة بعد بناء جميع الصفحات والشعار.
  const logo=el('printArea').querySelector('img');
  if(logo&&!logo.complete){Promise.race([new Promise(resolve=>{logo.addEventListener('load',resolve,{once:true});logo.addEventListener('error',resolve,{once:true})}),new Promise(resolve=>setTimeout(resolve,3500))]).then(()=>window.print());}
