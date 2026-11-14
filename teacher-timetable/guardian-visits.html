@@ -13,6 +13,43 @@
 footer{text-align:center;padding:0 12px 25px;color:#667f77;font-size:.84rem}
 @media(min-width:950px){.grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:610px){.grid{grid-template-columns:1fr}.panel{border-radius:15px;padding:17px}.actions button{flex:1}.bar{flex-wrap:wrap}.bar button{width:100%}}
 @media print{body{background:white}header,.actions,#loginPanel,.note,footer{display:none!important}main{margin:0;width:100%}.panel{box-shadow:none;border:0}#privateApp .panel:first-child{display:none}table{font-size:8pt}}
+
+#printArea{display:none}
+.archive-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+@page{size:A4 landscape;margin:9mm}
+@media print{
+  html,body{width:auto!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}
+  body>header,body>main,body>footer{display:none!important}
+  #printArea{display:block!important;direction:rtl;color:#111;font-family:Tahoma,Arial,sans-serif}
+  .pv-page{width:100%;height:190mm;max-height:190mm;position:relative;break-after:page;page-break-after:always;overflow:hidden}
+  .pv-page:last-child{break-after:auto;page-break-after:auto}
+  .pv-letterhead{height:35mm;display:grid;grid-template-columns:minmax(0,1fr) 30mm minmax(0,1fr);align-items:center;column-gap:5mm;border-bottom:1px solid #333;padding:0 1mm 3mm}
+  .pv-right{text-align:right;font-size:10pt;line-height:1.9}
+  .pv-left{text-align:left;font-size:10pt;line-height:1.9}
+  .pv-right strong,.pv-left strong{font-size:11pt}
+  .pv-emblem{height:29mm;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;font-size:8pt;font-weight:bold}
+  .pv-emblem img{height:24mm;width:24mm;object-fit:contain}
+  .pv-emblem span{display:block;line-height:1.2}
+  .pv-title{text-align:center;font-size:15pt;font-weight:bold;margin-top:3mm}
+  .pv-subtitle{text-align:center;font-size:8pt;margin:0 0 2.5mm}
+  .pv-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:8pt;direction:rtl}
+  .pv-table th,.pv-table td{border:0.35pt solid #333;text-align:center;vertical-align:middle;padding:2.1mm 1mm;height:8mm;white-space:normal;overflow-wrap:anywhere;line-height:1.4}
+  .pv-table th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-weight:bold}
+  .pv-table th:nth-child(1){width:4%}
+  .pv-table th:nth-child(2){width:10%}
+  .pv-table th:nth-child(3){width:7%}
+  .pv-table th:nth-child(4){width:5%}
+  .pv-table th:nth-child(5){width:7%}
+  .pv-table th:nth-child(6){width:9%}
+  .pv-table th:nth-child(7){width:16%}
+  .pv-table th:nth-child(8){width:16%}
+  .pv-table th:nth-child(9){width:9%}
+  .pv-table th:nth-child(10){width:9%}
+  .pv-table th:nth-child(11){width:8%}
+  .pv-name{text-align:right!important}
+  .pv-footer{position:absolute;bottom:3mm;left:0;width:100%;display:flex;justify-content:flex-end;font-size:10pt;font-weight:bold;direction:rtl}
+}
+@media(max-width:610px){.archive-actions{width:100%}.archive-actions button{flex:1}}
 </style></head><body>
 <header><a href="students.html">العودة إلى قسم الطلاب</a><h1>سجل زيارات أولياء الأمور</h1><p>أرشفة الزيارات المدرسية في سجل إداري خاص ودائم</p></header>
 <main><section id="loginPanel" class="panel"><h2>الدخول الإداري</h2><p class="muted">هذا القسم للمشرف المخوّل فقط. استخدم الرمز السري الخاص بقسم الطلاب، وهو نفسه المستخدم في إدارة بيانات الطلاب.</p>
@@ -41,11 +78,11 @@ footer{text-align:center;padding:0 12px 25px;color:#667f77;font-size:.84rem}
 </div>
 <div class="actions"><button id="saveBtn" type="submit">حفظ الزيارة في الأرشيف</button><button id="resetBtn" type="button" class="secondary">تفريغ بيانات الزيارة</button></div><p id="saveStatus" class="status" role="status" aria-live="polite"></p>
 </form></section>
-<section id="archivePanel" class="panel"><div class="bar"><h2>آخر الزيارات المسجلة <span id="total" class="private-label"></span></h2><button id="refresh" class="secondary" type="button">تحديث السجل</button></div><p class="note">السجل الكامل محفوظ دائمًا في Google Sheets الخاص بالإدارة.</p><div class="tablewrap"><table><thead><tr><th>تاريخ الزيارة</th><th>اليوم</th><th>الحصة</th><th>الساعة</th><th>الصف والشعبة</th><th>اسم الطالب</th><th>اسم الزائر</th><th>صلة القرابة</th><th>رقم الهوية</th><th>الهاتف</th></tr></thead><tbody id="rows"><tr><td colspan="10">جارٍ تحميل الأرشيف...</td></tr></tbody></table></div><p id="archiveStatus" class="status" role="status"></p></section></div>
-</main><footer>إعداد وتطوير: الأستاذ خليل البلوشي · مدرسة سعد بن معاذ للتعليم الأساسي</footer>
+<section id="archivePanel" class="panel"><div class="bar"><h2>آخر الزيارات المسجلة <span id="total" class="private-label"></span></h2><div class="archive-actions"><button id="refresh" class="secondary" type="button">تحديث السجل</button><button id="printVisits" type="button" disabled>طباعة سجل الزيارات A4</button></div></div><p class="note">السجل الكامل محفوظ دائمًا في Google Sheets الخاص بالإدارة.</p><div class="tablewrap"><table><thead><tr><th>تاريخ الزيارة</th><th>اليوم</th><th>الحصة</th><th>الساعة</th><th>الصف والشعبة</th><th>اسم الطالب</th><th>اسم الزائر</th><th>صلة القرابة</th><th>رقم الهوية</th><th>الهاتف</th></tr></thead><tbody id="rows"><tr><td colspan="10">جارٍ تحميل الأرشيف...</td></tr></tbody></table></div><p id="archiveStatus" class="status" role="status"></p></section></div>
+</main><div id="printArea" aria-hidden="true"></div><footer>إعداد وتطوير: الأستاذ خليل البلوشي · مدرسة سعد بن معاذ للتعليم الأساسي</footer>
 <script>
 'use strict';
-(()=>{const API="https://script.google.com/macros/s/AKfycbxaE54AYPy3XPTl7JUUw_nVEjA466BJqwZvwHfwPObBAxUuP_tfSZWgmbbne2xMsnxh/exec",el=id=>document.getElementById(id),days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];let signedIn=false,students=[],pendingId='';
+(()=>{const API="https://script.google.com/macros/s/AKfycbxaE54AYPy3XPTl7JUUw_nVEjA466BJqwZvwHfwPObBAxUuP_tfSZWgmbbne2xMsnxh/exec",el=id=>document.getElementById(id),days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];let signedIn=false,students=[],pendingId='',archiveVisits=[];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const weekday=date=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(date||''))return '';const dt=new Date(date+'T12:00:00Z');return Number.isNaN(dt.getTime())?'':days[dt.getUTCDay()]};
 const now=()=>{const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Muscat',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());const get=k=>parts.find(p=>p.type===k)?.value||'';return {date:get('year')+'-'+get('month')+'-'+get('day'),time:get('hour')+':'+get('minute')}};
@@ -54,7 +91,33 @@ const status=(id,message,error=false)=>{el(id).textContent=message;el(id).classL
 function setDate(){const n=now();el('visitDate').value=n.date;el('visitDate').max=n.date;el('weekday').value=weekday(n.date);el('visitTime').value=n.time}
 function sections(){const grade=el('grade').value,sel=el('section');sel.innerHTML=Array.from({length:grade==='السابع'?7:6},(_,i)=>'<option value="'+(i+1)+'">الشعبة '+(i+1)+'</option>').join('')}
 async function loadStudents(){if(!signedIn)return;el('student').disabled=true;el('student').innerHTML='<option value="">جارٍ جلب الأسماء...</option>';status('studentCount','');try{const j=await api('studentsQuery',{grade:el('grade').value,section:el('section').value});students=j.students||[];el('student').innerHTML='<option value="">اختر الطالب</option>'+students.map(x=>'<option value="'+esc(x.schoolId)+'">'+esc(x.name)+'</option>').join('');el('student').disabled=students.length===0;status('studentCount',students.length+' طالب في الشعبة')}catch(e){students=[];el('student').innerHTML='<option value="">تعذر تحميل الطلاب</option>';status('studentCount',e.message,true)}}
-async function loadArchive(){if(!signedIn)return;status('archiveStatus','جارٍ تحميل السجل...');try{const j=await api('guardianVisitRecent');el('total').textContent=(j.total||0)+' زيارة';el('rows').innerHTML=(j.visits||[]).length?j.visits.map(v=>'<tr><td>'+esc(v.date)+'</td><td>'+esc(v.day)+'</td><td>'+esc(v.period)+'</td><td>'+esc(v.time)+'</td><td>'+esc(v.grade)+' / '+esc(v.section)+'</td><td>'+esc(v.studentName)+'</td><td>'+esc(v.visitorName||v.guardianName)+'</td><td>'+esc(v.relationship||'غير محددة')+'</td><td>'+esc(v.identityNumber)+'</td><td>'+esc(v.phone)+'</td></tr>').join(''):'<tr><td colspan="10">لا توجد زيارات محفوظة بعد.</td></tr>';status('archiveStatus','آخر 100 زيارة، والأرشيف الكامل محفوظ في Google Sheets.')}catch(e){status('archiveStatus',e.message,true)}}
+async function loadArchive(){if(!signedIn)return;status('archiveStatus','جارٍ تحميل السجل...');try{const j=await api('guardianVisitRecent');archiveVisits=Array.isArray(j.visits)?j.visits:[];el('printVisits').disabled=archiveVisits.length===0;el('total').textContent=(j.total||0)+' زيارة';el('rows').innerHTML=(j.visits||[]).length?j.visits.map(v=>'<tr><td>'+esc(v.date)+'</td><td>'+esc(v.day)+'</td><td>'+esc(v.period)+'</td><td>'+esc(v.time)+'</td><td>'+esc(v.grade)+' / '+esc(v.section)+'</td><td>'+esc(v.studentName)+'</td><td>'+esc(v.visitorName||v.guardianName)+'</td><td>'+esc(v.relationship||'غير محددة')+'</td><td>'+esc(v.identityNumber)+'</td><td>'+esc(v.phone)+'</td></tr>').join(''):'<tr><td colspan="10">لا توجد زيارات محفوظة بعد.</td></tr>';status('archiveStatus','آخر 100 زيارة، والأرشيف الكامل محفوظ في Google Sheets.')}catch(e){archiveVisits=[];el('printVisits').disabled=true;status('archiveStatus',e.message,true)}}
+
+/* نموذج طباعة A4 أفقي مستقل عن واجهة الإدارة، 12 زيارة في كل ورقة. */
+function printVisits(){
+ if(!signedIn||!archiveVisits.length){status('archiveStatus','لا توجد زيارات جاهزة للطباعة',true);return;}
+ const chunks=[];for(let i=0;i<archiveVisits.length;i+=12)chunks.push(archiveVisits.slice(i,i+12));
+ const imageUrl='https://cardify.om/storage/logos/indexed/2476.png?v=1779853311';
+ const columns=['م','تاريخ الزيارة','اليوم','الحصة','الساعة','الصف/الشعبة','اسم الطالب','اسم الزائر','صلة القرابة','رقم الهوية','رقم الهاتف'];
+ const header='<div class="pv-letterhead"><div class="pv-right"><strong>وزارة التعليم</strong><div>المديرية العامة للتعليم بمحافظة شمال الباطنة</div></div><div class="pv-emblem"><img src="'+imageUrl+'" alt="شعار وزارة التعليم" referrerpolicy="no-referrer"><span>وزارة التعليم</span></div><div class="pv-left"><strong>العام الدراسي <span dir="ltr">2026/2027</span></strong><div>مدرسة: سعد بن معاذ للتعليم الأساسي</div></div></div>';
+ const tableHead='<thead><tr>'+columns.map(v=>'<th>'+esc(v)+'</th>').join('')+'</tr></thead>';
+ el('printArea').innerHTML=chunks.map((chunk,page)=>{
+  const rows=chunk.map((v,i)=>{
+   const values=[page*12+i+1,v.date,v.day,v.period,v.time,String(v.grade||'')+' / '+String(v.section||''),v.studentName,v.visitorName||v.guardianName,v.relationship||'—',v.identityNumber,v.phone];
+   return '<tr>'+values.map((x,j)=>'<td'+(j===7||j===6?' class="pv-name"':'')+'>'+esc(x??'')+'</td>').join('')+'</tr>';
+  }).join('');
+  return '<section class="pv-page">'+header+'<div class="pv-title">سجل زيارات أولياء الأمور</div><div class="pv-subtitle">عدد الزيارات المعروضة: '+archiveVisits.length+' | الصفحة '+(page+1)+' من '+chunks.length+'</div><table class="pv-table" dir="rtl">'+tableHead+'<tbody>'+rows+'</tbody></table><div class="pv-footer"><span>مدير المدرسة: حمد المخمري</span></div></section>';
+ }).join('');
+ document.body.classList.add('pv-printing');
+ const clean=()=>{document.body.classList.remove('pv-printing');el('printArea').innerHTML='';window.removeEventListener('afterprint',clean)};
+ window.addEventListener('afterprint',clean);
+ // إظهار نافذة الطباعة بعد بناء جميع الصفحات والشعار.
+ const logo=el('printArea').querySelector('img');
+ if(logo&&!logo.complete){Promise.race([new Promise(resolve=>{logo.addEventListener('load',resolve,{once:true});logo.addEventListener('error',resolve,{once:true})}),new Promise(resolve=>setTimeout(resolve,1800))]).then(()=>window.print());}
+ else window.print();
+}
+el('printVisits').addEventListener('click',printVisits);
+
 el('loginForm').addEventListener('submit',async e=>{e.preventDefault();el('loginBtn').disabled=true;status('loginStatus','جارٍ التحقق من الرمز...');try{await api('guardianVisitRecent');signedIn=true;el('loginPanel').hidden=true;el('privateApp').hidden=false;setDate();await Promise.all([loadStudents(),loadArchive()]);}catch(err){status('loginStatus',err.message,true)}finally{el('loginBtn').disabled=false}});
 el('grade').addEventListener('change',()=>{sections();loadStudents()});el('section').addEventListener('change',loadStudents);el('visitDate').addEventListener('change',()=>el('weekday').value=weekday(el('visitDate').value));el('refresh').addEventListener('click',loadArchive);
 el('logout').addEventListener('click',()=>{signedIn=false;students=[];el('pass').value='';el('privateApp').hidden=true;el('loginPanel').hidden=false;el('visitForm').reset();status('loginStatus','تم تسجيل الخروج');});
