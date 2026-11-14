@@ -5,7 +5,7 @@ function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMim
 function ss(){return SpreadsheetApp.openById(SPREADSHEET_ID)}
 function sheet(n){const s=ss().getSheetByName(n);if(!s)throw Error('الورقة غير موجودة: '+n);return s}
 function doGet(e){try{const a=(e.parameter.action||'bootstrap');if(a==='ping')return out({ok:true});if(a==='subjects')return out({ok:true,subjects:getSubjects()});if(a==='now')return out({ok:true,...serverNow()});if(a==='teachers'||a==='timetable'||a==='records'||a==='bootstrap')return out({ok:false,error:'الوصول إلى حصص الاحتياط يتطلب تسجيل دخول الإدارة'});if(a==='teachers')return out({ok:true,teachers:getTeachers()});if(a==='timetable')return out({ok:true,timetable:getTimetable()});if(a==='records')return out({ok:true,records:getRecords()});if(a==='bootstrap')return out({ok:true,teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()});return out({ok:false,error:'إجراء غير معروف'})}catch(x){return out({ok:false,error:x.message})}}
-function doPost(e){const lock=LockService.getScriptLock();lock.waitLock(20000);try{const d=JSON.parse(e.postData.contents||'{}');let r;if(d.action==='reserveBootstrap'){verifySubjectAdmin_(d);r={teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()};}else if(d.action==='saveDay'){verifySubjectAdmin_(d);r=saveDay(d);}else if(d.action==='saveSubject'){verifySubjectAdmin_(d);r=saveSubject(d);}else if(d.action==='saveSubjectAll'){verifySubjectAdmin_(d);r=saveSubjectAll(d);}else if(d.action==='studentsQuery'){verifySubjectAdmin_(d);r=studentsQuery_(d);}else if(d.action==='studentUpdate'){verifySubjectAdmin_(d);r=studentUpdate_(d);}else if(d.action==='studentsImport'){verifySubjectAdmin_(d);r=studentsImport_(d);}else if(d.action==='updateTeacher'){verifySubjectAdmin_(d);r=updateTeacher(d);}else if(d.action==='startCycle'){verifySubjectAdmin_(d);r=startCycle(d);}else throw Error('إجراء غير معروف');SpreadsheetApp.flush();return out({ok:true,...r})}catch(x){return out({ok:false,error:x.message})}finally{lock.releaseLock()}}
+function doPost(e){const lock=LockService.getScriptLock();lock.waitLock(20000);try{const d=JSON.parse(e.postData.contents||'{}');let r;if(d.action==='reserveBootstrap'){verifySubjectAdmin_(d);r={teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()};}else if(d.action==='saveDay'){verifySubjectAdmin_(d);r=saveDay(d);}else if(d.action==='saveSubject'){verifySubjectAdmin_(d);r=saveSubject(d);}else if(d.action==='saveSubjectAll'){verifySubjectAdmin_(d);r=saveSubjectAll(d);}else if(d.action==='studentsQuery'){verifySubjectAdmin_(d);r=studentsQuery_(d);}else if(d.action==='studentUpdate'){verifySubjectAdmin_(d);r=studentUpdate_(d);}else if(d.action==='studentsImport'){verifySubjectAdmin_(d);r=studentsImport_(d);}else if(d.action==='guardianVisitSave'){verifySubjectAdmin_(d);r=guardianVisitSave_(d);}else if(d.action==='guardianVisitRecent'){verifySubjectAdmin_(d);r=guardianVisitRecent_(d);}else if(d.action==='updateTeacher'){verifySubjectAdmin_(d);r=updateTeacher(d);}else if(d.action==='startCycle'){verifySubjectAdmin_(d);r=startCycle(d);}else throw Error('إجراء غير معروف');SpreadsheetApp.flush();return out({ok:true,...r})}catch(x){return out({ok:false,error:x.message})}finally{lock.releaseLock()}}
 function serverNow(){const n=new Date(),date=Utilities.formatDate(n,TZ,'yyyy-MM-dd'),dow=+Utilities.formatDate(n,TZ,'u');const days={1:'الإثنين',2:'الثلاثاء',3:'الأربعاء',4:'الخميس',5:'الجمعة',6:'السبت',7:'الأحد'};return{date,day:days[dow],time:Utilities.formatDate(n,TZ,'HH:mm:ss'),timezone:TZ}}
 function getTeachers(){const v=sheet(SH.teachers).getDataRange().getValues();return v.slice(1).filter(r=>r[0]).map(r=>({name:String(r[0]),base:+r[1]||0,reserveCount:+r[2]||0,currentLoad:+r[3]||(+r[1]||0),remaining:+r[4]||0,lastReserve:fmt(r[5]),status:String(r[6]||''),eligible:String(r[7]||'نعم')!=='لا',scheduleName:String(r[8]||r[0])}))}
 function getTimetable(){const v=sheet(SH.timetable).getDataRange().getValues();return v.slice(1).filter(r=>r[0]&&r[1]).map(r=>({teacher:String(r[0]),day:String(r[1]),periods:Object.fromEntries([1,2,3,4,5,6,7,8].map((p,i)=>[p,String(r[i+2]||'')])),dailyCount:+r[10]||0}))}
@@ -95,4 +95,60 @@ function studentsImport_(d){
  if(last>1)sh.getRange(2,1,last-1,8).clearContent();
  if(all.length){sh.getRange(2,1,all.length,8).setNumberFormat('@');sh.getRange(2,1,all.length,8).setValues(all);}
  return{imported:incomingRows.length,retained:keep.length,total:all.length,grades:[...importedGrades]};
+}
+
+
+/* أرشيف زيارات أولياء الأمور — قاعدة الطلاب الخاصة، دون أي مسار GET عام */
+function guardianVisitsSheet_(){
+ const sh=SpreadsheetApp.openById(STUDENTS_PRIVATE_SPREADSHEET_ID).getSheetByName('زيارات أولياء الأمور');
+ if(!sh)throw Error('ورقة سجل الزيارات غير موجودة في قاعدة الطلاب الخاصة');
+ return sh;
+}
+function guardianVisitText_(value,max,label){
+ const s=String(value==null?'':value).trim().replace(/\s+/g,' ');
+ if(!s||s.length>max||/^[=+@\-\t\r]/.test(s))throw Error('تحقق من '+label);
+ return s;
+}
+function guardianVisitSave_(d){
+ const id=guardianVisitText_(d.schoolId,55,'الرقم المدرسي');
+ const grade=guardianVisitText_(d.grade,20,'الصف');
+ const section=guardianVisitText_(d.section,2,'الشعبة');
+ if(!['الخامس','السادس','السابع','الثامن'].includes(grade)||!/^[1-7]$/.test(section)||(section==='7'&&grade!=='السابع'))throw Error('اختيار الصف والشعبة غير صالح');
+ const parent=guardianVisitText_(d.guardianName,120,'اسم ولي الأمر');
+ const identity=guardianVisitText_(d.identityNumber,22,'رقم الهوية').replace(/[\s-]/g,'');
+ if(!/^[0-9]{5,20}$/.test(identity))throw Error('أدخل رقم الهوية بالأرقام فقط (5 إلى 20 رقمًا)');
+ const phone=guardianVisitText_(d.phone,22,'رقم الهاتف').replace(/[\s-]/g,'');
+ if(!/^\+?[0-9]{7,15}$/.test(phone))throw Error('رقم الهاتف غير صالح');
+ const date=guardianVisitText_(d.visitDate,10,'تاريخ الزيارة');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error('تاريخ الزيارة غير صالح');
+ const dt=new Date(date+'T12:00:00Z');
+ if(Number.isNaN(dt.getTime())||dt.toISOString().slice(0,10)!==date)throw Error('تاريخ الزيارة غير صالح');
+ const day=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][dt.getUTCDay()];
+ if(!['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس'].includes(day))throw Error('اختر تاريخًا من أيام الدراسة');
+ const today=Utilities.formatDate(new Date(),TZ,'yyyy-MM-dd');
+ if(date>today)throw Error('لا يمكن تسجيل زيارة بتاريخ مستقبلي');
+ const period=Number(d.period);
+ if(!Number.isInteger(period)||period<1||period>8)throw Error('الحصة غير صالحة');
+ const time=guardianVisitText_(d.visitTime,5,'ساعة الزيارة');
+ if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))throw Error('حدد وقت الزيارة بدقة');
+ const students=studentsSheet_().getDataRange().getDisplayValues();
+ const student=students.slice(1).find(r=>String(r[0]).trim()===id&&String(r[2]).trim()===grade&&String(r[3]).trim()===section);
+ if(!student)throw Error('الطالب غير موجود ضمن الصف والشعبة المحددين');
+ const requestId=guardianVisitText_(d.requestId,80,'معرف التسجيل');
+ if(!/^[a-zA-Z0-9-]{12,80}$/.test(requestId))throw Error('معرف التسجيل غير صالح');
+ const sh=guardianVisitsSheet_(),last=sh.getLastRow();
+ if(last>1){
+  const ids=sh.getRange(2,1,last-1,1).getDisplayValues();
+  if(ids.some(r=>r[0]===requestId))return{saved:true,duplicate:true,visitId:requestId};
+ }
+ const record=[requestId,Utilities.formatDate(new Date(),TZ,'yyyy-MM-dd HH:mm:ss'),date,day,String(period),time,grade,section,id,String(student[1]),parent,identity,phone];
+ sh.getRange(last+1,1,1,record.length).setNumberFormat('@');
+ sh.getRange(last+1,1,1,record.length).setValues([record]);
+ return{saved:true,visitId:requestId,studentName:String(student[1]),day:day};
+}
+function guardianVisitRecent_(d){
+ const sh=guardianVisitsSheet_(),last=sh.getLastRow();
+ if(last<2)return{visits:[],total:0};
+ const count=Math.min(last-1,30),values=sh.getRange(last-count+1,1,count,13).getDisplayValues();
+ return{visits:values.reverse().map(r=>({visitId:r[0],date:r[2],day:r[3],period:r[4],time:r[5],grade:r[6],section:r[7],studentName:r[9],guardianName:r[10],identityNumber:r[11],phone:r[12]})),total:last-1};
 }
