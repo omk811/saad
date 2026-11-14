@@ -23,17 +23,17 @@ footer{text-align:center;padding:0 12px 25px;color:#667f77;font-size:.84rem}
   #printArea{display:block!important;direction:rtl;color:#111;font-family:Tahoma,Arial,sans-serif}
   .pv-page{width:100%;height:190mm;max-height:190mm;position:relative;break-after:page;page-break-after:always;overflow:hidden}
   .pv-page:last-child{break-after:auto;page-break-after:auto}
-  .pv-letterhead{height:35mm;display:grid;grid-template-columns:minmax(0,1fr) 30mm minmax(0,1fr);align-items:center;column-gap:5mm;border-bottom:1px solid #333;padding:0 1mm 3mm}
-  .pv-right{text-align:right;font-size:10pt;line-height:1.9}
-  .pv-left{text-align:left;font-size:10pt;line-height:1.9}
-  .pv-right strong,.pv-left strong{font-size:11pt}
-  .pv-emblem{height:29mm;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;font-size:8pt;font-weight:bold}
-  .pv-emblem img{height:24mm;width:24mm;object-fit:contain}
+  .pv-letterhead{height:28mm;display:grid;grid-template-columns:minmax(0,1fr) 27mm minmax(0,1fr);align-items:center;column-gap:4mm;border-bottom:1px solid #333;padding:0 1mm 1mm}
+  .pv-right{text-align:right;font-size:8.5pt;line-height:1.5}
+  .pv-left{text-align:left;font-size:8.5pt;line-height:1.5}
+  .pv-right strong,.pv-left strong{font-size:9.5pt}
+  .pv-emblem{height:26mm;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center}
+  .pv-emblem img{height:25mm;width:25mm;object-fit:contain}
   .pv-emblem span{display:block;line-height:1.2}
-  .pv-title{text-align:center;font-size:15pt;font-weight:bold;margin-top:3mm}
-  .pv-subtitle{text-align:center;font-size:8pt;margin:0 0 2.5mm}
-  .pv-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:8pt;direction:rtl}
-  .pv-table th,.pv-table td{border:0.35pt solid #333;text-align:center;vertical-align:middle;padding:2.1mm 1mm;height:8mm;white-space:normal;overflow-wrap:anywhere;line-height:1.4}
+  .pv-title{text-align:center;font-size:12pt;font-weight:bold;margin-top:2mm}
+  .pv-subtitle{text-align:center;font-size:7pt;margin:0 0 1.5mm}
+  .pv-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:6.6pt;direction:rtl}
+  .pv-table th,.pv-table td{border:0.35pt solid #333;text-align:center;vertical-align:middle;padding:.45mm .65mm;height:4.55mm;max-height:4.55mm;white-space:normal;overflow-wrap:anywhere;line-height:1.12}
   .pv-table th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-weight:bold}
   .pv-table th:nth-child(1){width:4%}
   .pv-table th:nth-child(2){width:10%}
@@ -46,8 +46,8 @@ footer{text-align:center;padding:0 12px 25px;color:#667f77;font-size:.84rem}
   .pv-table th:nth-child(9){width:9%}
   .pv-table th:nth-child(10){width:9%}
   .pv-table th:nth-child(11){width:8%}
-  .pv-name{text-align:right!important}
-  .pv-footer{position:absolute;bottom:3mm;left:0;width:100%;display:flex;justify-content:flex-end;font-size:10pt;font-weight:bold;direction:rtl}
+  .pv-name{text-align:right!important;font-size:6.3pt!important;line-height:1.08!important}
+  .pv-footer{position:absolute;bottom:2mm;left:0;width:100%;display:flex;justify-content:flex-end;font-size:9pt;font-weight:bold;direction:rtl}
 }
 @media(max-width:610px){.archive-actions{width:100%}.archive-actions button{flex:1}}
 </style></head><body>
@@ -93,17 +93,17 @@ function sections(){const grade=el('grade').value,sel=el('section');sel.innerHTM
 async function loadStudents(){if(!signedIn)return;el('student').disabled=true;el('student').innerHTML='<option value="">جارٍ جلب الأسماء...</option>';status('studentCount','');try{const j=await api('studentsQuery',{grade:el('grade').value,section:el('section').value});students=j.students||[];el('student').innerHTML='<option value="">اختر الطالب</option>'+students.map(x=>'<option value="'+esc(x.schoolId)+'">'+esc(x.name)+'</option>').join('');el('student').disabled=students.length===0;status('studentCount',students.length+' طالب في الشعبة')}catch(e){students=[];el('student').innerHTML='<option value="">تعذر تحميل الطلاب</option>';status('studentCount',e.message,true)}}
 async function loadArchive(){if(!signedIn)return;status('archiveStatus','جارٍ تحميل السجل...');try{const j=await api('guardianVisitRecent');archiveVisits=Array.isArray(j.visits)?j.visits:[];el('printVisits').disabled=archiveVisits.length===0;el('total').textContent=(j.total||0)+' زيارة';el('rows').innerHTML=(j.visits||[]).length?j.visits.map(v=>'<tr><td>'+esc(v.date)+'</td><td>'+esc(v.day)+'</td><td>'+esc(v.period)+'</td><td>'+esc(v.time)+'</td><td>'+esc(v.grade)+' / '+esc(v.section)+'</td><td>'+esc(v.studentName)+'</td><td>'+esc(v.visitorName||v.guardianName)+'</td><td>'+esc(v.relationship||'غير محددة')+'</td><td>'+esc(v.identityNumber)+'</td><td>'+esc(v.phone)+'</td></tr>').join(''):'<tr><td colspan="10">لا توجد زيارات محفوظة بعد.</td></tr>';status('archiveStatus','آخر 100 زيارة، والأرشيف الكامل محفوظ في Google Sheets.')}catch(e){archiveVisits=[];el('printVisits').disabled=true;status('archiveStatus',e.message,true)}}
 
-/* نموذج طباعة A4 أفقي مستقل عن واجهة الإدارة، 12 زيارة في كل ورقة. */
+/* نموذج طباعة A4 أفقي مستقل عن واجهة الإدارة، 30 زيارة في كل ورقة. */
 function printVisits(){
  if(!signedIn||!archiveVisits.length){status('archiveStatus','لا توجد زيارات جاهزة للطباعة',true);return;}
- const chunks=[];for(let i=0;i<archiveVisits.length;i+=12)chunks.push(archiveVisits.slice(i,i+12));
- const imageUrl='https://cardify.om/storage/logos/indexed/2476.png?v=1779853311';
+ const chunks=[];for(let i=0;i<archiveVisits.length;i+=30)chunks.push(archiveVisits.slice(i,i+30));
+ const imageUrl='https://pbs.twimg.com/profile_images/2022221537135505408/JvQyGIo6.jpg';
  const columns=['م','تاريخ الزيارة','اليوم','الحصة','الساعة','الصف/الشعبة','اسم الطالب','اسم الزائر','صلة القرابة','رقم الهوية','رقم الهاتف'];
- const header='<div class="pv-letterhead"><div class="pv-right"><strong>وزارة التعليم</strong><div>المديرية العامة للتعليم بمحافظة شمال الباطنة</div></div><div class="pv-emblem"><img src="'+imageUrl+'" alt="شعار وزارة التعليم" referrerpolicy="no-referrer"><span>وزارة التعليم</span></div><div class="pv-left"><strong>العام الدراسي <span dir="ltr">2027/2026</span></strong><div>مدرسة: سعد بن معاذ للتعليم الأساسي</div></div></div>';
+ const header='<div class="pv-letterhead"><div class="pv-right"><strong>وزارة التعليم</strong><div>المديرية العامة للتعليم بمحافظة شمال الباطنة</div></div><div class="pv-emblem"><img src="'+imageUrl+'" alt="شعار وزارة التعليم" referrerpolicy="no-referrer"></div><div class="pv-left"><strong>العام الدراسي <span dir="ltr">2027/2026</span></strong><div>مدرسة: سعد بن معاذ للتعليم الأساسي</div></div></div>';
  const tableHead='<thead><tr>'+columns.map(v=>'<th>'+esc(v)+'</th>').join('')+'</tr></thead>';
  el('printArea').innerHTML=chunks.map((chunk,page)=>{
   const rows=chunk.map((v,i)=>{
-   const values=[page*12+i+1,v.date,v.day,v.period,v.time,String(v.grade||'')+' / '+String(v.section||''),v.studentName,v.visitorName||v.guardianName,v.relationship||'—',v.identityNumber,v.phone];
+   const values=[page*30+i+1,v.date,v.day,v.period,v.time,String(v.grade||'')+' / '+String(v.section||''),v.studentName,v.visitorName||v.guardianName,v.relationship||'—',v.identityNumber,v.phone];
    return '<tr>'+values.map((x,j)=>'<td'+(j===7||j===6?' class="pv-name"':'')+'>'+esc(x??'')+'</td>').join('')+'</tr>';
   }).join('');
   return '<section class="pv-page">'+header+'<div class="pv-title">سجل زيارات أولياء الأمور</div><div class="pv-subtitle">عدد الزيارات المعروضة: '+archiveVisits.length+' | الصفحة '+(page+1)+' من '+chunks.length+'</div><table class="pv-table" dir="rtl">'+tableHead+'<tbody>'+rows+'</tbody></table><div class="pv-footer"><span>مدير المدرسة: حمد المخمري</span></div></section>';
