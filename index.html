@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#123e45">
 <meta name="description" content="الواجهة الرئيسية للبوابة المدرسية الرقمية لمدرسة سعد بن معاذ: دفتر الاحتياط اليومي وبوابة الطلاب والمعلمين.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="pwa/icon-180.png">
+<script src="pwa/install.js" defer></script>
 <title>البوابة الرئيسية | مدرسة سعد بن معاذ</title>
 <style>
 :root{color-scheme:light;--ink:#1c3b40;--muted:#566e73;--line:#dbe8e7;--deep:#123e45;--teal:#146d68;--amber:#bb813d;--bg:#f3f8f7}
@@ -25,6 +28,9 @@ main{position:relative;margin-top:-58px;padding-bottom:30px}
 .intro{text-align:center;margin:0 auto 23px;position:relative;z-index:1}
 .intro h2{font-size:clamp(1.13rem,2.5vw,1.55rem);color:var(--ink);margin:0 0 4px}
 .intro p{color:var(--muted);margin:0;font-size:.94rem}
+.install-button{margin-top:12px;min-height:44px;padding:7px 18px;border:1px solid #17685b;border-radius:12px;background:#e8f2ed;color:#123e45;font:inherit;font-weight:700;cursor:pointer}
+.install-button:focus-visible{outline:3px solid #146d68;outline-offset:3px}
+.install-help{max-width:540px;margin:10px auto 0;padding:10px 14px;border-radius:12px;background:#f3f8f7;text-align:start}
 .panel{background:white;border:1px solid var(--line);box-shadow:0 18px 48px #123d4111;border-radius:26px;padding:clamp(20px,4vw,34px);position:relative}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
 .service{position:relative;display:flex;flex-direction:column;text-decoration:none;min-width:0;min-height:290px;padding:clamp(22px,3.2vw,32px);border:1px solid #d6e4e1;background:linear-gradient(160deg,#fbfefd,#f2f8f5);border-radius:21px;box-shadow:0 5px 16px #183e3d0a;transition:transform .18s,box-shadow .18s,border-color .18s;overflow:hidden}
@@ -53,7 +59,10 @@ footer{text-align:center;color:#637a7b;font-size:.85rem;padding:5px 20px 24px}
 </head>
 <body>
 <header class="hero"><div class="shell hero-content"><div class="eyebrow">مدرسة سعد بن معاذ للتعليم الأساسي</div><h1>البوابة المدرسية الرئيسية</h1><p>وصول منظم وسريع إلى خدمات إدارة اليوم الدراسي، والجداول والخدمات الرقمية للطلاب والمعلمين.</p></div></header>
-<main class="shell"><section class="panel" aria-labelledby="choices-title"><div class="intro"><h2 id="choices-title">اختر الخدمة المطلوبة</h2><p>بوابتان مستقلتان للوصول إلى خدمات المدرسة</p></div>
+<main class="shell"><section class="panel" aria-labelledby="choices-title"><div class="intro"><h2 id="choices-title">اختر الخدمة المطلوبة</h2><p>بوابتان مستقلتان للوصول إلى خدمات المدرسة</p>
+<button type="button" class="install-button" id="install-app" aria-expanded="false" aria-controls="install-help" hidden>تثبيت التطبيق</button>
+<div id="install-help" class="install-help" role="status" hidden><p id="install-steps"></p></div>
+</div>
 <nav class="cards" aria-label="الخدمات الرئيسية">
 <a class="service reserve" href="reserve.html" aria-label="فتح دفتر الاحتياط اليومي المحمي برمز الإدارة">
 <div class="service-head"><div class="service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="16" rx="2"/><path d="M7 3v4M13 3v4M6 11h8M6 15h5"/><rect x="15" y="13" width="7" height="8" rx="1.5"/><path d="M17.5 13v-2a1 1 0 0 1 2 0v2"/></svg></div><span class="access">للمشرف فقط · محمي برمز</span></div>
