@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<style>
+:root{color-scheme:light;--ink:#123e45;--line:#cddeda;--accent:#146d62;--pad:clamp(16px,4vw,28px)}
+*{box-sizing:border-box}body{margin:0;background:#f1f7f5;color:var(--ink);font:100%/1.65 Tahoma,Arial,sans-serif}
+header,main,footer{width:min(900px,calc(100% - 24px));margin:16px auto}
+header,section{border:1px solid var(--line);border-radius:18px;padding:var(--pad);background:white}
+header{background:var(--ink);color:white}header a{color:white}h1{font-size:clamp(1.35rem,4vw,2rem);margin:.25em 0}h2{margin:0 0 12px}
+section+section{margin-top:16px}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,155px),1fr));gap:12px;align-items:end}
+label{display:block;font-weight:700}select,input,button{font:inherit;color:inherit}select,input[type=date],button{min-height:46px;border:1px solid var(--line);border-radius:10px;padding:7px 10px;background:#f8fcfa}select,input[type=date]{display:block;width:100%}
+button{cursor:pointer}button.primary{background:var(--accent);color:white;border-color:var(--accent);font-weight:700}button:disabled{opacity:.55;cursor:default}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}fieldset{border:1px solid var(--line);border-radius:12px;margin:16px 0 0;padding:12px}legend{font-weight:700}
+#roster{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:6px}
+.check{display:flex;align-items:center;gap:8px;min-height:44px;padding:4px 7px;background:#f1f7f5;border-radius:7px;font-weight:400}.check input{width:20px;height:20px;flex:none}
+.status{margin:.6rem 0 0;min-height:1.6em}.status.error{color:#992538}footer{text-align:center;font-size:.87rem}
+.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;text-align:right}th,td{padding:8px;border:1px solid var(--line);vertical-align:top}th{background:#e9f4f0}.letterhead{display:none}
+[hidden]{display:none!important}
+@page{size:A4 portrait;margin:11mm}
+@media print{
+ body{background:white;color:black;font-size:10pt}header,footer,#form,#reportControls{display:none!important}
+ main,#archive{margin:0;padding:0;border:0;width:100%;max-width:none}#archive>h2{display:none}
+ #reportOutput .letterhead{display:grid;grid-template-columns:1fr 28mm 1fr;align-items:center;text-align:center;border-bottom:1pt solid #333;padding-bottom:3mm;gap:4mm}
+ .letterhead img{width:17mm;height:auto}.table-wrap{overflow:visible}table{table-layout:fixed}th,td{border-color:#555;overflow-wrap:anywhere}
+ td:last-child,th:last-child{width:39%}thead{display:table-header-group}tr{break-inside:avoid}
+ #reportOutput h3{text-align:center;font-size:15pt;margin:3mm 0}
+}
+</style>
+</head>
+<body>
+<header><a href="https://omk811.github.io/saad/">العودة إلى بوابة سعد</a><h1>حضور وغياب الطلبة</h1><div id="today" aria-live="polite">جارٍ تحديد تاريخ اليوم…</div></header>
+<main>
+<section id="form" aria-labelledby="formTitle">
+<h2 id="formTitle">تسجيل الحصة</h2>
+<div class="controls">
+<label>الصف<select id="grade" disabled></select></label>
+<label>الشعبة<select id="section" disabled></select></label>
+<button id="reload" type="button" disabled>تحميل الشعبة</button>
+<label>الحصة<select id="period" disabled></select></label>
+<label>المعلم<select id="teacher" disabled></select></label>
+</div>
+<fieldset id="absence" hidden><legend>حدّد الطلبة الغائبين</legend><div id="roster"></div></fieldset>
+<div class="actions">
+<button type="button" id="allPresent" disabled>الجميع حاضر</button>
+<button type="button" class="primary" id="save" disabled>حفظ غياب المحددين</button>
+</div>
+<p class="status" id="formStatus" aria-live="polite"></p>
+</section>
+<section id="archive" aria-labelledby="archiveTitle">
+<h2 id="archiveTitle">مراجعة وطباعة التقرير</h2>
+<div id="reportControls">
+<div class="controls">
+<label>التاريخ<input id="reportDate" type="date" required></label>
+<label>الصف<select id="reportGrade"></select></label>
+<label>الشعبة<select id="reportSection"></select></label>
+<label>الحصة<select id="reportPeriod"></select></label>
+</div>
+<div class="actions"><button type="button" class="primary" id="report" disabled>عرض التقرير</button><button type="button" id="print" disabled>طباعة التقرير</button></div>
+<p class="status" id="reportStatus" aria-live="polite"></p>
+</div>
+<div id="reportOutput" hidden>
+<div class="letterhead"><div><b>وزارة التعليم</b><div>المديرية العامة للتعليم بمحافظة شمال الباطنة</div></div><div><img src="data:image/png;base64,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" alt="شعار وزارة التعليم"></div><div><b id="schoolYear"></b><div>مدرسة: سعد بن معاذ للتعليم الأساسي</div></div></div>
+<h3>تقرير حضور وغياب الطلبة</h3><p id="reportMeta"></p>
+<div class="table-wrap"><table><thead><tr><th>الحصة</th><th>المعلم</th><th>الحاضرون</th><th>الغائبون</th><th>أسماء الطلبة الغائبين</th></tr></thead><tbody id="reportRows"></tbody></table></div>
+</div>
+</section>
+</main>
+<footer>إعداد وتطوير: الأستاذ خليل البلوشي · مدرسة سعد بن معاذ للتعليم الأساسي</footer>
+<script>
+'use strict';
+const el = id => document.getElementById(id);
+const grades = [['5','الخامس'],['6','السادس'],['7','السابع'],['8','الثامن']];
+const maxSections = {'5':6,'6':6,'7':7,'8':5};
+const digits = value => String(value).replace(/\d/g, n => '٠١٢٣٤٥٦٧٨٩'[n]);
+let groupData;
+let loading = false;
+let saving = false;
+let reportRequest = 0;
+
+function call(method, ...args) {
+  return new Promise((resolve,reject) => {
+    const runner = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+    runner[method](...args);
+  });
+}
+function status(id, text, error=false) {
+  el(id).textContent = text;
+  el(id).classList.toggle('error',error);
+}
+function options(id, entries, initial) {
+  const items = entries.map(([value,label]) => new Option(label,value));
+  if (initial) items.unshift(new Option(initial,''));
+  el(id).replaceChildren(...items);
+}
+function sections(gradeId, sectionId, placeholder) {
+  const length = maxSections[el(gradeId).value] || 0;
+  options(sectionId,Array.from({length},(_, i) => [String(i+1),digits(i+1)]),placeholder);
+  el(sectionId).disabled = !length;
+}
+function setToday(today) {
+  el('today').textContent = today.day+' — '+digits(today.date);
+  el('reportDate').max = today.date;
+  if (!el('reportDate').value) el('reportDate').value = today.date;
+}
+function actions() {
+  const ready = Boolean(groupData?.roster.length && el('period').value && el('teacher').value && !loading && !saving);
+  el('allPresent').disabled = !ready;
+  el('save').disabled = !ready || !el('roster').querySelector('input:checked');
+}
+function resetPeriod() {
+  options('teacher',[],'اختر المعلم');
+  el('teacher').disabled = true;
+  el('absence').hidden = true;
+  el('roster').replaceChildren();
+  actions();
+}
+function showPeriod() {
+  resetPeriod();
+  const period = el('period').value;
+  if (!period || !groupData) return;
+  const saved = groupData.records.find(r => String(r.period) === period);
+  const suggested = groupData.schedule.periods[period];
+  const teacher = saved?.teacher || (suggested.length===1 ? suggested[0] : '');
+  const teachers = [...new Set([...suggested,...groupData.schedule.teachers,...(saved?[saved.teacher]:[])])];
+  options('teacher',teachers.map(name => [name,name]),'اختر المعلم');
+  el('teacher').value = teacher;
+  el('teacher').disabled = false;
+  const selected = new Set(saved?.absentIndexes || []);
+  for (const [index,name] of groupData.roster.entries()) {
+    const label = document.createElement('label');
+    label.className = 'check';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = index;
+    checkbox.checked = selected.has(index);
+    label.append(checkbox,document.createTextNode(name));
+    el('roster').append(label);
+  }
+  el('absence').hidden = !groupData.roster.length;
+  status('formStatus',saved ? 'هذه الحصة مسجّلة. يمكنك مراجعة التسجيل وتحديثه.' : 'حدّد الغائبين أو اضغط «الجميع حاضر».');
+  actions();
+}
+async function openGroup() {
+  if (loading || saving) return;
+  groupData = undefined;
+  resetPeriod();
+  options('period',[],'اختر الحصة');
+  el('period').disabled = true;
+  const grade = el('grade').value;
+  const section = el('section').value;
+  el('reload').disabled = !(grade && section);
+  if (!grade || !section) {
+    status('formStatus','اختر الصف والشعبة.');
+    return;
+  }
+  loading = true;
+  el('grade').disabled = el('section').disabled = el('reload').disabled = true;
+  status('formStatus','جارٍ تحميل قوائم الشعبة والجدول…');
+  try {
+    groupData = await call('attendanceOpen',grade,section);
+    setToday(groupData.today);
+    const periods = Object.keys(groupData.schedule.periods);
+    options('period',periods.map(p => [p,'الحصة '+digits(p)]),'اختر الحصة');
+    el('period').disabled = !periods.length || !groupData.roster.length;
+    status('formStatus',!groupData.roster.length ? 'لا توجد أسماء لهذه الشعبة.' :
+      periods.length ? 'اختر الحصة.' : 'لا توجد حصص مجدولة لهذه الشعبة اليوم.');
+  } catch(error) {
+    status('formStatus',error.message || 'تعذّر تحميل الشعبة.',true);
+  } finally {
+    loading = false;
+    el('grade').disabled = el('section').disabled = el('reload').disabled = false;
+    actions();
+  }
+}
+async function save(allPresent) {
+  if (saving || !groupData) return;
+  const period = Number(el('period').value);
+  const checked = [...el('roster').querySelectorAll('input:checked')];
+  if (allPresent && checked.length && !window.confirm('هل تريد إلغاء تحديد الغائبين وتسجيل حضور الجميع؟')) return;
+  const previous = groupData.records.find(r => r.period === period);
+  saving = true;
+  for (const id of ['grade','section','reload','period','teacher','absence']) el(id).disabled = true;
+  actions();
+  status('formStatus','جارٍ حفظ التسجيل…');
+  try {
+    const record = await call('attendanceSave',{
+      date:groupData.today.date, grade:el('grade').value, section:el('section').value,
+      period, teacher:el('teacher').value, absentIndexes:allPresent ? [] : checked.map(i => Number(i.value)),
+      allPresent, rosterVersion:groupData.rosterVersion, revision:previous?.revision || ''
+    });
+    groupData.records = groupData.records.filter(r => r.period !== period).concat(record);
+    showPeriod();
+    clearReport();
+    status('formStatus',record.absentIndexes.length ? 'حُفظ غياب '+digits(record.absentIndexes.length)+' من الطلبة.' : 'تم تسجيل حضور جميع الطلبة.');
+  } catch(error) {
+    status('formStatus',error.message || 'تعذّر حفظ التسجيل.',true);
+  } finally {
+    saving = false;
+    for (const id of ['grade','section','reload','period','teacher','absence']) el(id).disabled = false;
+    actions();
+  }
+}
+function clearReport() {
+  reportRequest++;
+  el('reportOutput').hidden = true;
+  el('print').disabled = true;
+  status('reportStatus','');
+}
+async function showReport() {
+  clearReport();
+  if (!el('reportDate').reportValidity()) return;
+  const request = reportRequest;
+  status('reportStatus','جارٍ جلب التقرير…');
+  try {
+    const date = el('reportDate').value;
+    const data = await call('attendanceReport',date,el('reportGrade').value,el('reportSection').value);
+    if (request !== reportRequest) return;
+    const filter = el('reportPeriod').value;
+    const records = data.records.filter(row => !filter || String(row.period) === filter);
+    if (!records.length) {
+      status('reportStatus','لا يوجد تسجيل لهذه الفترة.');
+      return;
+    }
+    const [year,month] = date.split('-').map(Number);
+    const start = month >= 8 ? year : year-1;
+    el('schoolYear').textContent = 'العام الدراسي '+start+'/'+(start+1);
+    el('reportMeta').textContent = data.day+' '+digits(data.date)+' · الصف '+data.grade+' · الشعبة '+digits(data.section);
+    el('reportRows').replaceChildren(...records.map(record => {
+      const row = document.createElement('tr');
+      for (const value of [digits(record.period),record.teacher,digits(record.present),digits(record.absent.length),record.absent.join('، ') || 'الجميع حاضر']) {
+        row.insertCell().textContent = value;
+      }
+      return row;
+    }));
+    el('reportOutput').hidden = false;
+    el('print').disabled = false;
+    status('reportStatus','');
+  } catch(error) {
+    if (request === reportRequest) status('reportStatus',error.message || 'تعذّر جلب التقرير.',true);
+  }
+}
+el('grade').addEventListener('change',() => { sections('grade','section','اختر الشعبة'); openGroup(); });
+el('section').addEventListener('change',openGroup);
+el('reload').addEventListener('click',openGroup);
+el('period').addEventListener('change',showPeriod);
+el('teacher').addEventListener('change',actions);
+el('roster').addEventListener('change',actions);
+el('allPresent').addEventListener('click',() => save(true));
+el('save').addEventListener('click',() => save(false));
+el('reportGrade').addEventListener('change',() => { sections('reportGrade','reportSection'); clearReport(); });
+for (const id of ['reportDate','reportSection','reportPeriod']) el(id).addEventListener('change',clearReport);
+el('report').addEventListener('click',showReport);
+el('print').addEventListener('click',() => window.print());
+options('grade',grades,'اختر الصف');
+options('reportGrade',grades);
+sections('reportGrade','reportSection');
+options('reportPeriod',Array.from({length:8},(_,i) => [String(i+1),'الحصة '+digits(i+1)]),'جميع الحصص');
+call('attendanceBootstrap').then(today => {
+  setToday(today);
+  el('grade').disabled = el('report').disabled = false;
+}).catch(error => status('formStatus',error.message || 'تعذّر فتح سجل الحضور والغياب.',true));
+</script>
+</body>
+</html>

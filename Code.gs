@@ -4,7 +4,7 @@ const SH={teachers:'المعلمون',records:'سجل الاحتياط',timetabl
 function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON)}
 function ss(){return SpreadsheetApp.openById(SPREADSHEET_ID)}
 function sheet(n){const s=ss().getSheetByName(n);if(!s)throw Error('الورقة غير موجودة: '+n);return s}
-function doGet(e){try{const a=(e.parameter.action||'bootstrap');if(a==='ping')return out({ok:true});if(a==='subjects')return out({ok:true,subjects:getSubjects()});if(a==='now')return out({ok:true,...serverNow()});if(a==='teachers'||a==='timetable'||a==='records'||a==='bootstrap')return out({ok:false,error:'الوصول إلى حصص الاحتياط يتطلب تسجيل دخول الإدارة'});if(a==='teachers')return out({ok:true,teachers:getTeachers()});if(a==='timetable')return out({ok:true,timetable:getTimetable()});if(a==='records')return out({ok:true,records:getRecords()});if(a==='bootstrap')return out({ok:true,teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()});return out({ok:false,error:'إجراء غير معروف'})}catch(x){return out({ok:false,error:x.message})}}
+function doGet(e){try{const a=(e.parameter.action||'bootstrap');if(a==='attendance')return attendancePage_();if(a==='ping')return out({ok:true});if(a==='subjects')return out({ok:true,subjects:getSubjects()});if(a==='now')return out({ok:true,...serverNow()});if(a==='teachers'||a==='timetable'||a==='records'||a==='bootstrap')return out({ok:false,error:'الوصول إلى حصص الاحتياط يتطلب تسجيل دخول الإدارة'});if(a==='teachers')return out({ok:true,teachers:getTeachers()});if(a==='timetable')return out({ok:true,timetable:getTimetable()});if(a==='records')return out({ok:true,records:getRecords()});if(a==='bootstrap')return out({ok:true,teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()});return out({ok:false,error:'إجراء غير معروف'})}catch(x){return out({ok:false,error:x.message})}}
 function doPost(e){const lock=LockService.getScriptLock();lock.waitLock(20000);try{const d=JSON.parse(e.postData.contents||'{}');let r;if(d.action==='reserveBootstrap'){verifySubjectAdmin_(d);r={teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()};}else if(d.action==='saveDay'){verifySubjectAdmin_(d);r=saveDay(d);}else if(d.action==='saveSubject'){verifySubjectAdmin_(d);r=saveSubject(d);}else if(d.action==='saveSubjectAll'){verifySubjectAdmin_(d);r=saveSubjectAll(d);}else if(d.action==='studentsQuery'){verifyStudentAdmin_(d);r=studentsQuery_(d);}else if(d.action==='studentUpdate'){verifyStudentAdmin_(d);r=studentUpdate_(d);}else if(d.action==='studentsImport'){verifyStudentAdmin_(d);r=studentsImport_(d);}else if(d.action==='guardianVisitSave'){verifyStudentAdmin_(d);r=guardianVisitSave_(d);}else if(d.action==='guardianVisitRecent'){verifyStudentAdmin_(d);r=guardianVisitRecent_(d);}else if(d.action==='updateTeacher'){verifySubjectAdmin_(d);r=updateTeacher(d);}else if(d.action==='startCycle'){verifySubjectAdmin_(d);r=startCycle(d);}else throw Error('إجراء غير معروف');SpreadsheetApp.flush();return out({ok:true,...r})}catch(x){return out({ok:false,error:x.message})}finally{lock.releaseLock()}}
 function serverNow(){const n=new Date(),date=Utilities.formatDate(n,TZ,'yyyy-MM-dd'),dow=+Utilities.formatDate(n,TZ,'u');const days={1:'الإثنين',2:'الثلاثاء',3:'الأربعاء',4:'الخميس',5:'الجمعة',6:'السبت',7:'الأحد'};return{date,day:days[dow],time:Utilities.formatDate(n,TZ,'HH:mm:ss'),timezone:TZ}}
 function getTeachers(){const v=sheet(SH.teachers).getDataRange().getValues();return v.slice(1).filter(r=>r[0]).map(r=>({name:String(r[0]),base:+r[1]||0,reserveCount:+r[2]||0,currentLoad:+r[3]||(+r[1]||0),remaining:+r[4]||0,lastReserve:fmt(r[5]),status:String(r[6]||''),eligible:String(r[7]||'نعم')!=='لا',scheduleName:String(r[8]||r[0])}))}
@@ -168,4 +168,161 @@ function guardianVisitRecent_(d){
  if(last<2)return{visits:[],total:0};
  const count=Math.min(last-1,100),values=sh.getRange(last-count+1,1,count,14).getDisplayValues();
  return{visits:values.reverse().map(r=>({visitId:r[0],date:r[2],day:r[3],period:r[4],time:r[5],grade:r[6],section:r[7],studentName:r[9],visitorName:r[10],guardianName:r[10],relationship:r[13]||'',identityNumber:r[11],phone:r[12]})),total:last-1};
+}
+
+const ATTENDANCE_GRADES_ = {5:'الخامس', 6:'السادس', 7:'السابع', 8:'الثامن'};
+const ATTENDANCE_SHEET_ = 'حضور وغياب الطلبة';
+const ATTENDANCE_HEADERS_ = ['معرّف الحصة','التاريخ','اليوم','الصف','الشعبة','الحصة','المعلم','الحاضرون','الغائبون','أسماء الغائبين','بيانات الغياب','نسخة السجل','وقت الحفظ'];
+
+function attendanceAuthorize_() {
+  const email = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();
+  const entries = PropertiesService.getScriptProperties().getProperty('ATTENDANCE_TEACHER_EMAILS') || '';
+  const allowed = entries.toLowerCase().split(/[\s,،;]+/).filter(Boolean);
+  if (!email || !allowed.includes(email)) {
+    throw Error('الدخول متاح للمعلمين المسجلين بحساباتهم المدرسية. تحقّق من الحساب المفتوح أو تواصل مع إدارة المدرسة.');
+  }
+}
+
+function attendancePage_() {
+  try {
+    attendanceAuthorize_();
+    return HtmlService.createHtmlOutputFromFile('Attendance')
+      .setTitle('حضور وغياب الطلبة | بوابة سعد')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  } catch (error) {
+    return HtmlService.createHtmlOutput('<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><p>الدخول متاح للمعلمين المسجلين بحساباتهم المدرسية. تحقّق من الحساب المفتوح أو تواصل مع إدارة المدرسة.</p><a target="_top" href="https://omk811.github.io/saad/">العودة إلى بوابة سعد</a></html>')
+      .setTitle('حضور وغياب الطلبة').addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
+}
+
+function attendanceSheet_(create) {
+  const book = studentsSheet_().getParent();
+  const current = book.getSheetByName(ATTENDANCE_SHEET_);
+  if (current || !create) return current;
+  const tab = book.insertSheet(ATTENDANCE_SHEET_);
+  tab.getRange(1,1,1,ATTENDANCE_HEADERS_.length).setValues([ATTENDANCE_HEADERS_]);
+  tab.setFrozenRows(1);
+  return tab;
+}
+
+function attendanceClass_(grade, section) {
+  grade = String(grade);
+  section = String(section);
+  const max = {5:6, 6:6, 7:7, 8:5}[grade];
+  if (!max || !/^[1-7]$/.test(section) || Number(section) > max) throw Error('اختر الصف والشعبة.');
+  return {grade, section, label:ATTENDANCE_GRADES_[grade], code:section+'/'+grade};
+}
+
+function attendanceSchedule_(day, group) {
+  const periods = {};
+  const teachers = new Set();
+  if (!['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس'].includes(day)) return {periods, teachers:[]};
+  const dayKey = value => String(value).trim().replace(/[أإآ]/g,'ا');
+  const classKey = value => String(value).replace(/[٠-٩]/g, x => '٠١٢٣٤٥٦٧٨٩'.indexOf(x)).replace(/\s+/g,'');
+  for (const row of getTimetable()) {
+    const teacher = row.teacher.trim();
+    if (!teacher) continue;
+    teachers.add(teacher);
+    if (dayKey(row.day) !== dayKey(day)) continue;
+    for (const [period, value] of Object.entries(row.periods)) {
+      if (classKey(value) !== group.code) continue;
+      (periods[period] ||= []).push(teacher);
+    }
+  }
+  const compareNames = (a,b) => a.localeCompare(b,'ar');
+  return {periods, teachers:[...teachers].sort(compareNames)};
+}
+
+function attendanceRoster_(group) {
+  return studentsSheet_().getDataRange().getDisplayValues().slice(1)
+    .filter(r => r[0] && r[1] && r[2].trim() === group.label && r[3].trim() === group.section)
+    .map(r => ({id:r[0].trim(),name:r[1].trim()}))
+    .sort((a,b) => a.name.localeCompare(b.name,'ar'));
+}
+
+function attendanceRosterVersion_(roster) {
+  const keys = JSON.stringify(roster.map(s => [s.id,s.name]));
+  return Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,keys));
+}
+
+function attendanceRows_(date, group) {
+  const tab = attendanceSheet_(false);
+  if (!tab || tab.getLastRow() < 2) return [];
+  const prefix = [date,group.grade,group.section,''].join('|');
+  const keys = tab.getRange(2,1,tab.getLastRow()-1,1).getDisplayValues();
+  return keys.flatMap(([key], index) => {
+    if (!key.startsWith(prefix)) return [];
+    const row = index+2;
+    const r = tab.getRange(row,1,1,ATTENDANCE_HEADERS_.length).getDisplayValues()[0];
+    return [{row, key, day:r[2], period:Number(r[5]), teacher:r[6], present:Number(r[7]),
+      absent:JSON.parse(r[10]), revision:r[11]}];
+  }).sort((a,b) => a.period-b.period);
+}
+
+function attendanceBootstrap() {
+  attendanceAuthorize_();
+  return serverNow();
+}
+
+function attendanceOpen(grade, section) {
+  attendanceAuthorize_();
+  const today = serverNow();
+  const group = attendanceClass_(grade,section);
+  const schedule = attendanceSchedule_(today.day,group);
+  const roster = attendanceRoster_(group);
+  const indexes = new Map(roster.map((s,i) => [s.id,i]));
+  const records = attendanceRows_(today.date,group).map(r => ({
+    period:r.period, teacher:r.teacher,
+    absentIndexes:r.absent.map(s => indexes.get(s.id)).filter(Number.isInteger),
+    revision:r.revision
+  }));
+  return {today, schedule, roster:roster.map(s => s.name), rosterVersion:attendanceRosterVersion_(roster), records};
+}
+
+function attendanceSave(d) {
+  attendanceAuthorize_();
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const today = serverNow();
+    if (d.date !== today.date) throw Error('تغيّر التاريخ. أعد فتح تسجيل اليوم.');
+    const group = attendanceClass_(d.grade,d.section);
+    const period = Number(d.period);
+    const schedule = attendanceSchedule_(today.day,group);
+    if (!Number.isInteger(period) || !schedule.periods[period]?.length) throw Error('لا توجد حصة مجدولة لهذا الاختيار.');
+    if (!schedule.teachers.includes(d.teacher)) throw Error('اختر المعلم من القائمة.');
+    const roster = attendanceRoster_(group);
+    if (!roster.length) throw Error('لا توجد أسماء طلبة لهذه الشعبة.');
+    if (d.rosterVersion !== attendanceRosterVersion_(roster)) throw Error('تغيرت قائمة الطلبة. أعد تحميل الشعبة.');
+    if (!Array.isArray(d.absentIndexes) || d.absentIndexes.length > roster.length ||
+        (!d.absentIndexes.length && d.allPresent !== true)) throw Error('حدد الغائبين أو أكّد حضور الجميع.');
+    const indexes = new Set(d.absentIndexes);
+    if ([...indexes].some(i => !Number.isInteger(i) || i < 0 || i >= roster.length)) throw Error('اختيار الغياب غير صالح.');
+    const absent = roster.filter((_,i) => indexes.has(i));
+    const previous = attendanceRows_(today.date,group).find(r => r.period === period);
+    if ((previous?.revision || '') !== (d.revision || '')) throw Error('عُدّل هذا السجل. أعد تحميل الشعبة قبل الحفظ.');
+    const revision = Utilities.getUuid();
+    const tab = attendanceSheet_(true);
+    const range = tab.getRange(previous?.row || tab.getLastRow()+1,1,1,ATTENDANCE_HEADERS_.length);
+    const key = [today.date,group.grade,group.section,period].join('|');
+    const plain = value => /^[=+\-@]/.test(value) ? "'"+value : value;
+    range.setNumberFormats([['@','@','@','@','@','0','@','0','0','@','@','@','@']]);
+    range.setValues([[key,today.date,today.day,group.label,group.section,period,plain(d.teacher),
+      roster.length-absent.length,absent.length,plain(absent.map(s => s.name).join('، ')),JSON.stringify(absent),
+      revision,today.date+' '+today.time]]);
+    SpreadsheetApp.flush();
+    return {period, teacher:d.teacher, absentIndexes:[...indexes], revision};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function attendanceReport(date, grade, section) {
+  attendanceAuthorize_();
+  const today = serverNow();
+  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today.date) throw Error('اختر تاريخًا صحيحًا.');
+  const group = attendanceClass_(grade,section);
+  const records = attendanceRows_(date,group);
+  return {date, grade:group.label, section:group.section, day:records[0]?.day || '',
+    records:records.map(r => ({period:r.period, teacher:r.teacher, present:r.present, absent:r.absent.map(s => s.name)}))};
 }
