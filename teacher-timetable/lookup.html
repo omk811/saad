@@ -6,7 +6,7 @@
 header{background:linear-gradient(125deg,#123c46,#176c63);color:#fff;padding:27px max(18px,calc((100vw - 1150px)/2)) 46px}
 header a{color:#e7fff5;text-decoration:none;font-size:.86rem}header h1{font-size:clamp(1.5rem,3vw,2rem);margin:14px 0 5px}header p{margin:0;color:#e0f4eb}
 main{width:min(1150px,calc(100% - 28px));margin:-22px auto 35px;position:relative}.sheet{background:#fff;border:1px solid #dae9e2;border-radius:18px;box-shadow:0 12px 28px #1d534c10;padding:clamp(16px,3vw,27px)}
-.filter{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;max-width:670px}label{display:block;font-weight:700;font-size:.9rem;margin-bottom:7px}select{width:100%;min-height:48px;border:1px solid #b9d4c9;border-radius:12px;background:#fafffc;padding:8px 13px;font:inherit;color:#21433d}
+.filter{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;max-width:760px}label{display:block;font-weight:700;font-size:.9rem;margin-bottom:7px}select{width:100%;min-height:48px;border:1px solid #b9d4c9;border-radius:12px;background:#fafffc;padding:8px 13px;font:inherit;color:#21433d}
 .summary{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-radius:12px;background:#e9f4ef;color:#235445;margin:22px 0 14px;padding:12px 16px}.summary strong{font-size:1.05rem}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,238px),1fr));gap:13px}
 .card{border:1px solid #cfe2d9;border-radius:15px;overflow:hidden;background:#fff;box-shadow:0 5px 14px #1f4f3d0b;break-inside:avoid}.card .top{background:#e9f5ef;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;gap:8px;color:#205a48;font-weight:700}.card .top b{font-size:1.16rem}.card .details{padding:15px}.teacher{font-size:1.12rem;font-weight:800;color:#163f47}.subject{font-size:.91rem;color:#507066;margin-top:5px}.alert{color:#a54416;background:#fff0e7;padding:7px 12px;font-size:.8rem;font-weight:700}.card.conflict{border-color:#dba17d}
@@ -16,9 +16,9 @@ footer{text-align:center;font-size:.85rem;color:#668078;padding:12px}
 @media(max-width:355px){.cards,.filter{grid-template-columns:1fr}}
 @media print{@page{size:A4 landscape;margin:7mm}body{background:#fff}header{background:#fff!important;color:#172f32!important;padding:0!important}header h1{font-size:14pt;margin:0 0 2mm}header a,header p,.filter,.controls button,.note,footer{display:none!important}main{margin:0!important;width:100%!important}.sheet{padding:0!important;border:0;box-shadow:none}.summary{margin:2mm 0;background:#edf4f0!important;padding:2mm;font-size:9pt}.cards{grid-template-columns:repeat(4,minmax(0,1fr));gap:2mm}.card{border-radius:2mm;box-shadow:none}.card .top{padding:1.4mm 2mm;font-size:8pt}.card .top b{font-size:9pt}.card .details{padding:2mm}.teacher{font-size:8.8pt}.subject{font-size:7.5pt;margin:0}.alert{font-size:7pt;padding:1mm}}
 </style></head>
-<body><header><a href="teachers.html">العودة إلى قسم المعلمين</a><h1>البحث عن معلم الحصة</h1><p>جميع الشعب المشغولة وأسماء معلميها وموادها في عرض واحد</p></header>
-<main><section class="sheet"><div class="controls"><strong>اختر اليوم والحصة</strong><button type="button" onclick="window.print()">طباعة النتائج A4</button></div>
-<div class="filter"><div><label for="day">اليوم الدراسي</label><select id="day"></select></div><div><label for="period">رقم الحصة</label><select id="period"></select></div></div>
+<body><header><a href="teachers.html">العودة إلى قسم المعلمين</a><h1>البحث عن معلم الحصة</h1><p>معلمو الحصة والمواد الدراسية بحسب شعب الصف المختار</p></header>
+<main><section class="sheet"><div class="controls"><strong>اختر اليوم والحصة والصف</strong><button type="button" onclick="window.print()">طباعة النتائج A4</button></div>
+<div class="filter"><div><label for="day">اليوم الدراسي</label><select id="day"></select></div><div><label for="period">رقم الحصة</label><select id="period"></select></div><div><label for="grade">الصف</label><select id="grade"></select></div></div>
 <div id="summary" class="summary" role="status" aria-live="polite"></div><div id="cards" class="cards"></div><p class="note" id="dataStatus">النتائج تُعرض وفق الجدول المدرسي المعتمد، وتُحدّث أسماء المواد المسجلة عند توفر الاتصال.</p>
 </section></main><footer>إعداد وتطوير: الأستاذ خليل البلوشي · مدرسة سعد بن معاذ للتعليم الأساسي</footer>
 <script src="assets/meeting-data.js?v=20261116-shared-timetable"></script><script>
@@ -26,7 +26,9 @@ footer{text-align:center;font-size:.85rem;color:#668078;padding:12px}
 const DATA=window.SAAD_TIMETABLE.teachers;
 const DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس'];
 const API='https://script.google.com/macros/s/AKfycbxaE54AYPy3XPTl7JUUw_nVEjA466BJqwZvwHfwPObBAxUuP_tfSZWgmbbne2xMsnxh/exec';
-const day=document.getElementById('day'),period=document.getElementById('period'),cards=document.getElementById('cards'),summary=document.getElementById('summary');
+const day=document.getElementById('day'),period=document.getElementById('period'),grade=document.getElementById('grade'),cards=document.getElementById('cards'),summary=document.getElementById('summary');
+const LOOKUP_GRADES={5:'الخامس',6:'السادس',7:'السابع',8:'الثامن'};
+grade.innerHTML=Object.entries(LOOKUP_GRADES).map(([value,label])=>'<option value="'+value+'">'+label+'</option>').join('');
 day.innerHTML=DAYS.map(d=>'<option>'+d+'</option>').join('');
 period.innerHTML=Array.from({length:8},(_,i)=>'<option value="'+(i+1)+'">الحصة '+(i+1)+'</option>').join('');
 const today=new Intl.DateTimeFormat('ar-OM',{weekday:'long',timeZone:'Asia/Muscat'}).format(new Date());
@@ -43,7 +45,7 @@ function subjectOf(name,cls){
 function render(){
  const groups=new Map(),d=day.value,p=Number(period.value);
  Object.entries(DATA).forEach(([teacher,days])=>{
-  const c=days[d]?.[p-1];if(!c)return;
+  const c=days[d]?.[p-1];if(!c||c.split('/')[1]!==grade.value)return;
   if(!groups.has(c))groups.set(c,[]);
   groups.get(c).push(teacher);
  });
@@ -52,9 +54,9 @@ function render(){
   return x[1]-y[1]||x[0]-y[0];
  });
  const conflicts=ordered.filter(([,names])=>names.length>1).length;
- summary.innerHTML='<strong>'+ordered.length+' شعبة لديها حصة</strong><span>'+esc(d)+' — الحصة '+p+(conflicts?' — '+conflicts+' تعارض':'')+'</span>';
- cards.innerHTML=ordered.length?ordered.map(([cls,names])=>'<article class="card'+(names.length>1?' conflict':'')+'"><div class="top"><span>الصف '+esc(cls.split('/')[1])+'</span><b>الشعبة '+esc(cls.split('/')[0])+'</b></div>'+names.map(name=>'<div class="details"><div class="teacher">'+esc(name)+'</div><div class="subject">'+esc(subjectOf(name,cls))+'</div></div>').join('')+(names.length>1?'<div class="alert">تعارض في الجدول، يرجى المراجعة</div>':'')+'</article>').join(''):'<p>لا توجد حصص مسجلة في هذا الوقت.</p>';
+ summary.innerHTML='<strong>'+ordered.length+' شعبة لديها حصة</strong><span>'+esc(d)+' — الحصة '+p+' — الصف '+esc(LOOKUP_GRADES[grade.value])+(conflicts?' — '+conflicts+' تعارض':'')+'</span>';
+ cards.innerHTML=ordered.length?ordered.map(([cls,names])=>'<article class="card'+(names.length>1?' conflict':'')+'"><div class="top"><span>الصف '+esc(cls.split('/')[1])+'</span><b>الشعبة '+esc(cls.split('/')[0])+'</b></div>'+names.map(name=>'<div class="details"><div class="teacher">'+esc(name)+'</div><div class="subject">'+esc(subjectOf(name,cls))+'</div></div>').join('')+(names.length>1?'<div class="alert">تعارض في الجدول، يرجى المراجعة</div>':'')+'</article>').join(''):'<p>لا توجد حصص لهذا الصف في التوقيت المحدد.</p>';
 }
-day.addEventListener('change',render);period.addEventListener('change',render);render();
+day.addEventListener('change',render);period.addEventListener('change',render);grade.addEventListener('change',render);render();
 fetch(API+'?action=subjects',{cache:'no-store'}).then(r=>r.json()).then(j=>{if(j.ok&&j.subjects&&typeof j.subjects==='object'){subjects={...FALLBACK_SUBJECTS,...j.subjects};render();document.getElementById('dataStatus').textContent='المواد الدراسية متزامنة مع سجل المواد.'}}).catch(()=>{});
 </script></body></html>
