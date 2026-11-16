@@ -17,6 +17,9 @@ button{cursor:pointer}button.primary{background:var(--accent);color:white;border
 .check{display:flex;align-items:center;gap:8px;min-height:44px;padding:4px 7px;background:#f1f7f5;border-radius:7px;font-weight:400}.check input{width:20px;height:20px;flex:none}
 .status{margin:.6rem 0 0;min-height:1.6em}.status.error{color:#992538}footer{text-align:center;font-size:.87rem}
 .table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;text-align:right}th,td{padding:8px;border:1px solid var(--line);vertical-align:top}th{background:#e9f4f0}.letterhead{display:none}
+#reportRows td:last-child{text-align:center}
+.approval-box{display:inline-grid;place-items:center;box-sizing:border-box;width:1.2em;height:1.2em;border:1px solid currentColor;line-height:1;font-weight:700;color:#111}
+.pending{color:#603a11}
 [hidden]{display:none!important}
 @page{size:A4 portrait;margin:11mm}
 @media print{
@@ -24,7 +27,9 @@ button{cursor:pointer}button.primary{background:var(--accent);color:white;border
  main,#archive{margin:0;padding:0;border:0;width:100%;max-width:none}#archive>h2{display:none}
  #reportOutput .letterhead{display:grid;grid-template-columns:1fr 28mm 1fr;align-items:center;text-align:center;border-bottom:1pt solid #333;padding-bottom:3mm;gap:4mm}
  .letterhead img{width:17mm;height:auto}.table-wrap{overflow:visible}table{table-layout:fixed}th,td{border-color:#555;overflow-wrap:anywhere}
- td:last-child,th:last-child{width:39%}thead{display:table-header-group}tr{break-inside:avoid}
+ th:nth-child(1){width:11%}th:nth-child(2),th:nth-child(3){width:8%}
+ th:nth-child(4){width:20%}th:nth-child(6){width:9%}
+ thead{display:table-header-group}tr{break-inside:avoid}
  #reportOutput h3{text-align:center;font-size:15pt;margin:3mm 0}
 }
 </style>
@@ -53,8 +58,6 @@ button{cursor:pointer}button.primary{background:var(--accent);color:white;border
 <div id="reportControls">
 <div class="controls">
 <label>التاريخ<input id="reportDate" type="date" required></label>
-<label>الصف<select id="reportGrade"></select></label>
-<label>الشعبة<select id="reportSection"></select></label>
 <label>الحصة<select id="reportPeriod"></select></label>
 </div>
 <div class="actions"><button type="button" class="primary" id="report" disabled>عرض التقرير</button><button type="button" id="print" disabled>طباعة التقرير</button></div>
@@ -63,7 +66,7 @@ button{cursor:pointer}button.primary{background:var(--accent);color:white;border
 <div id="reportOutput" hidden>
 <div class="letterhead"><div><b>وزارة التعليم</b><div>المديرية العامة للتعليم بمحافظة شمال الباطنة</div></div><div><img src="data:image/png;base64,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" alt="شعار وزارة التعليم"></div><div><b id="schoolYear"></b><div>مدرسة: سعد بن معاذ للتعليم الأساسي</div></div></div>
 <h3>تقرير حضور وغياب الطلبة</h3><p id="reportMeta"></p>
-<div class="table-wrap"><table><thead><tr><th>الحصة</th><th>المعلم</th><th>الحاضرون</th><th>الغائبون</th><th>أسماء الطلبة الغائبين</th></tr></thead><tbody id="reportRows"></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>الصف</th><th>الشعبة</th><th>الحصة</th><th>المعلم</th><th>الغائبون أو حالة التسجيل</th><th>اعتماد</th></tr></thead><tbody id="reportRows"></tbody></table></div>
 </div>
 </section>
 </main>
@@ -215,23 +218,34 @@ async function showReport() {
   status('reportStatus','جارٍ جلب التقرير…');
   try {
     const date = el('reportDate').value;
-    const data = await call('attendanceReport',date,el('reportGrade').value,el('reportSection').value);
+    const data = await call('attendanceReport',date,el('reportPeriod').value);
     if (request !== reportRequest) return;
-    const filter = el('reportPeriod').value;
-    const records = data.records.filter(row => !filter || String(row.period) === filter);
+    const {records} = data;
     if (!records.length) {
-      status('reportStatus','لا يوجد تسجيل لهذه الفترة.');
+      status('reportStatus','لا توجد حصص مجدولة أو سجلات لهذا الاختيار.');
       return;
     }
     const [year,month] = date.split('-').map(Number);
     const start = month >= 8 ? year : year-1;
     el('schoolYear').textContent = 'العام الدراسي '+start+'/'+(start+1);
-    el('reportMeta').textContent = data.day+' '+digits(data.date)+' · الصف '+data.grade+' · الشعبة '+digits(data.section);
+    const scope = data.period ? 'الحصة '+digits(data.period) : 'جميع الحصص';
+    const approved = records.filter(r => r.approved).length;
+    el('reportMeta').textContent = data.day+' '+digits(data.date)+' · '+scope+' · '+digits(approved)+
+      ' معتمدة · '+digits(records.length-approved)+' غير مكتملة';
     el('reportRows').replaceChildren(...records.map(record => {
       const row = document.createElement('tr');
-      for (const value of [digits(record.period),record.teacher,digits(record.present),digits(record.absent.length),record.absent.join('، ') || 'الجميع حاضر']) {
+      for (const value of [record.grade,digits(record.section),digits(record.period),record.teacher]) {
         row.insertCell().textContent = value;
       }
+      const details = row.insertCell();
+      details.textContent = record.approved ? record.absent.join('، ') || 'الجميع حاضر' : 'لم يكتمل تسجيل الحضور والغياب';
+      if (!record.approved) details.className = 'pending';
+      const box = document.createElement('span');
+      box.className = 'approval-box';
+      box.setAttribute('role','img');
+      box.setAttribute('aria-label',record.approved ? 'معتمد بالحفظ' : 'غير معتمد');
+      if (record.approved) box.textContent = '✓';
+      row.insertCell().append(box);
       return row;
     }));
     el('reportOutput').hidden = false;
@@ -249,13 +263,10 @@ el('teacher').addEventListener('change',actions);
 el('roster').addEventListener('change',actions);
 el('allPresent').addEventListener('click',() => save(true));
 el('save').addEventListener('click',() => save(false));
-el('reportGrade').addEventListener('change',() => { sections('reportGrade','reportSection'); clearReport(); });
-for (const id of ['reportDate','reportSection','reportPeriod']) el(id).addEventListener('change',clearReport);
+for (const id of ['reportDate','reportPeriod']) el(id).addEventListener('change',clearReport);
 el('report').addEventListener('click',showReport);
 el('print').addEventListener('click',() => window.print());
 options('grade',grades,'اختر الصف');
-options('reportGrade',grades);
-sections('reportGrade','reportSection');
 options('reportPeriod',Array.from({length:8},(_,i) => [String(i+1),'الحصة '+digits(i+1)]),'جميع الحصص');
 call('attendanceBootstrap').then(today => {
   setToday(today);

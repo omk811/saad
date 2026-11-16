@@ -171,6 +171,8 @@ function guardianVisitRecent_(d){
 }
 
 const ATTENDANCE_GRADES_ = {5:'الخامس', 6:'السادس', 7:'السابع', 8:'الثامن'};
+const ATTENDANCE_SECTIONS_ = {5:6, 6:6, 7:7, 8:5};
+const ATTENDANCE_DAYS_ = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const ATTENDANCE_SHEET_ = 'حضور وغياب الطلبة';
 const ATTENDANCE_HEADERS_ = ['معرّف الحصة','التاريخ','اليوم','الصف','الشعبة','الحصة','المعلم','الحاضرون','الغائبون','أسماء الغائبين','بيانات الغياب','نسخة السجل','وقت الحفظ'];
 
@@ -193,15 +195,15 @@ function attendanceSheet_(create) {
 function attendanceClass_(grade, section) {
   grade = String(grade);
   section = String(section);
-  const max = {5:6, 6:6, 7:7, 8:5}[grade];
+  const max = ATTENDANCE_SECTIONS_[grade];
   if (!max || !/^[1-7]$/.test(section) || Number(section) > max) throw Error('اختر الصف والشعبة.');
   return {grade, section, label:ATTENDANCE_GRADES_[grade], code:section+'/'+grade};
 }
 
-function attendanceSchedule_(day, group) {
-  const periods = {};
+function attendanceTimetableDay_(day) {
+  const groups = new Map();
   const teachers = new Set();
-  if (!['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس'].includes(day)) return {periods, teachers:[]};
+  if (!ATTENDANCE_DAYS_.slice(0,5).includes(day)) return {groups, teachers:[]};
   const dayKey = value => String(value).trim().replace(/[أإآ]/g,'ا');
   const classKey = value => String(value).replace(/[٠-٩]/g, x => '٠١٢٣٤٥٦٧٨٩'.indexOf(x)).replace(/\s+/g,'');
   for (const row of getTimetable()) {
@@ -210,13 +212,20 @@ function attendanceSchedule_(day, group) {
     teachers.add(teacher);
     if (dayKey(row.day) !== dayKey(day)) continue;
     for (const [period, value] of Object.entries(row.periods)) {
-      if (classKey(value) !== group.code) continue;
+      const code = classKey(value);
+      if (!/^[1-7]\/[5-8]$/.test(code)) continue;
+      if (!groups.has(code)) groups.set(code,{});
+      const periods = groups.get(code);
       if (!periods[period]) periods[period] = [];
-      periods[period].push(teacher);
+      if (!periods[period].includes(teacher)) periods[period].push(teacher);
     }
   }
-  const compareNames = (a,b) => a.localeCompare(b,'ar');
-  return {periods, teachers:[...teachers].sort(compareNames)};
+  return {groups, teachers:[...teachers].sort((a,b) => a.localeCompare(b,'ar'))};
+}
+
+function attendanceSchedule_(day, group) {
+  const daySchedule = attendanceTimetableDay_(day);
+  return {periods:daySchedule.groups.get(group.code) || {}, teachers:daySchedule.teachers};
 }
 
 function attendanceRoster_(group) {
@@ -233,16 +242,19 @@ function attendanceRosterVersion_(roster) {
 
 function attendanceRows_(date, group) {
   const tab = attendanceSheet_(false);
-  if (!tab || tab.getLastRow() < 2) return [];
-  const prefix = [date,group.grade,group.section,''].join('|');
-  const keys = tab.getRange(2,1,tab.getLastRow()-1,1).getDisplayValues();
-  return keys.flatMap(([key], index) => {
-    if (!key.startsWith(prefix)) return [];
-    const row = index+2;
-    const r = tab.getRange(row,1,1,ATTENDANCE_HEADERS_.length).getDisplayValues()[0];
-    return [{row, key, day:r[2], period:Number(r[5]), teacher:r[6], present:Number(r[7]),
-      absent:JSON.parse(r[10]), revision:r[11]}];
-  }).sort((a,b) => a.period-b.period);
+  const last = tab ? tab.getLastRow() : 0;
+  if (last < 2) return [];
+  const prefix = group ? [date,group.grade,group.section,''].join('|') : date+'|';
+  const keys = tab.getRange(2,1,last-1,1).getDisplayValues();
+  const first = keys.findIndex(([key]) => key.startsWith(prefix));
+  if (first < 0) return [];
+  let end = keys.length-1;
+  while (!keys[end][0].startsWith(prefix)) end--;
+  const values = tab.getRange(first+2,1,end-first+1,ATTENDANCE_HEADERS_.length).getDisplayValues();
+  return values.flatMap((r,index) => r[0].startsWith(prefix) ? [{
+    row:first+index+2, key:r[0], period:Number(r[5]), teacher:r[6],
+    absent:JSON.parse(r[10]), revision:r[11]
+  }] : []);
 }
 
 function attendanceBootstrap() {
@@ -300,11 +312,32 @@ function attendanceSave(d) {
   }
 }
 
-function attendanceReport(date, grade, section) {
+function attendanceReport(date, selectedPeriod) {
   const today = serverNow();
   if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today.date) throw Error('اختر تاريخًا صحيحًا.');
-  const group = attendanceClass_(grade,section);
-  const records = attendanceRows_(date,group);
-  return {date, grade:group.label, section:group.section, day:records[0]?.day || '',
-    records:records.map(r => ({period:r.period, teacher:r.teacher, present:r.present, absent:r.absent.map(s => s.name)}))};
+  const calendarDate = new Date(date+'T12:00:00Z');
+  if (!Number.isFinite(calendarDate.getTime()) || calendarDate.toISOString().slice(0,10) !== date) throw Error('اختر تاريخًا صحيحًا.');
+  const day = ATTENDANCE_DAYS_[calendarDate.getUTCDay()];
+  const period = selectedPeriod === '' ? 0 : Number(selectedPeriod);
+  if (selectedPeriod !== '' && (!Number.isInteger(period) || period < 1 || period > 8)) throw Error('اختر الحصة.');
+  const {groups} = attendanceTimetableDay_(day);
+  const saved = new Map(attendanceRows_(date).map(r => [r.key,r]));
+  const records = [];
+  for (const [grade,maxSection] of Object.entries(ATTENDANCE_SECTIONS_)) {
+    for (let section=1; section<=maxSection; section++) {
+      const schedule = groups.get(section+'/'+grade) || {};
+      for (let slot=1; slot<=8; slot++) {
+        if (period && slot !== period) continue;
+        const entry = saved.get([date,grade,section,slot].join('|'));
+        const scheduled = schedule[slot];
+        if (!entry && !scheduled?.length) continue;
+        records.push({
+          grade:ATTENDANCE_GRADES_[grade], section, period:slot,
+          teacher:entry ? entry.teacher : scheduled.join('، '),
+          approved:Boolean(entry), absent:entry ? entry.absent.map(s => s.name) : []
+        });
+      }
+    }
+  }
+  return {date, day, period, records};
 }
