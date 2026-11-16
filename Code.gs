@@ -226,7 +226,8 @@ function attendanceSchedule_(day, group) {
     if (dayKey(row.day) !== dayKey(day)) continue;
     for (const [period, value] of Object.entries(row.periods)) {
       if (classKey(value) !== group.code) continue;
-      (periods[period] ||= []).push(teacher);
+      if (!periods[period]) periods[period] = [];
+      periods[period].push(teacher);
     }
   }
   const compareNames = (a,b) => a.localeCompare(b,'ar');
