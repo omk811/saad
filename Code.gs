@@ -174,25 +174,10 @@ const ATTENDANCE_GRADES_ = {5:'الخامس', 6:'السادس', 7:'السابع'
 const ATTENDANCE_SHEET_ = 'حضور وغياب الطلبة';
 const ATTENDANCE_HEADERS_ = ['معرّف الحصة','التاريخ','اليوم','الصف','الشعبة','الحصة','المعلم','الحاضرون','الغائبون','أسماء الغائبين','بيانات الغياب','نسخة السجل','وقت الحفظ'];
 
-function attendanceAuthorize_() {
-  const email = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();
-  const entries = PropertiesService.getScriptProperties().getProperty('ATTENDANCE_TEACHER_EMAILS') || '';
-  const allowed = entries.toLowerCase().split(/[\s,،;]+/).filter(Boolean);
-  if (!email || !allowed.includes(email)) {
-    throw Error('الدخول متاح للمعلمين المسجلين بحساباتهم المدرسية. تحقّق من الحساب المفتوح أو تواصل مع إدارة المدرسة.');
-  }
-}
-
 function attendancePage_() {
-  try {
-    attendanceAuthorize_();
-    return HtmlService.createHtmlOutputFromFile('Attendance')
-      .setTitle('حضور وغياب الطلبة | بوابة سعد')
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
-  } catch (error) {
-    return HtmlService.createHtmlOutput('<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><p>الدخول متاح للمعلمين المسجلين بحساباتهم المدرسية. تحقّق من الحساب المفتوح أو تواصل مع إدارة المدرسة.</p><a target="_top" href="https://omk811.github.io/saad/">العودة إلى بوابة سعد</a></html>')
-      .setTitle('حضور وغياب الطلبة').addMetaTag('viewport', 'width=device-width, initial-scale=1');
-  }
+  return HtmlService.createHtmlOutputFromFile('Attendance')
+    .setTitle('حضور وغياب الطلبة | بوابة سعد')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
 function attendanceSheet_(create) {
@@ -261,12 +246,10 @@ function attendanceRows_(date, group) {
 }
 
 function attendanceBootstrap() {
-  attendanceAuthorize_();
   return serverNow();
 }
 
 function attendanceOpen(grade, section) {
-  attendanceAuthorize_();
   const today = serverNow();
   const group = attendanceClass_(grade,section);
   const schedule = attendanceSchedule_(today.day,group);
@@ -281,7 +264,6 @@ function attendanceOpen(grade, section) {
 }
 
 function attendanceSave(d) {
-  attendanceAuthorize_();
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -319,7 +301,6 @@ function attendanceSave(d) {
 }
 
 function attendanceReport(date, grade, section) {
-  attendanceAuthorize_();
   const today = serverNow();
   if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today.date) throw Error('اختر تاريخًا صحيحًا.');
   const group = attendanceClass_(grade,section);
