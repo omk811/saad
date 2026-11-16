@@ -174,7 +174,7 @@ const ATTENDANCE_GRADES_ = {5:'الخامس', 6:'السادس', 7:'السابع'
 const ATTENDANCE_SECTIONS_ = {5:6, 6:6, 7:7, 8:5};
 const ATTENDANCE_DAYS_ = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const ATTENDANCE_SHEET_ = 'حضور وغياب الطلبة';
-const ATTENDANCE_HEADERS_ = ['معرّف الحصة','التاريخ','اليوم','الصف','الشعبة','الحصة','المعلم','الحاضرون','الغائبون','أسماء الغائبين','بيانات الغياب','نسخة السجل','وقت الحفظ'];
+const ATTENDANCE_HEADERS_ = ['معرّف الحصة','التاريخ','اليوم','الصف','الشعبة','الحصة','المعلم','الحاضرون','الغائبون','أسماء الغائبين','بيانات الغياب','نسخة السجل','وقت الحفظ','وقت اعتماد المعلم'];
 
 function attendancePage_() {
   return HtmlService.createHtmlOutputFromFile('Attendance')
@@ -185,7 +185,16 @@ function attendancePage_() {
 function attendanceSheet_(create) {
   const book = studentsSheet_().getParent();
   const current = book.getSheetByName(ATTENDANCE_SHEET_);
-  if (current || !create) return current;
+  if (current) {
+    const column = ATTENDANCE_HEADERS_.length;
+    if (create && current.getLastColumn() < column) {
+      const missing = column-current.getMaxColumns();
+      if (missing > 0) current.insertColumnsAfter(current.getMaxColumns(),missing);
+      current.getRange(1,column).setValue(ATTENDANCE_HEADERS_[column-1]);
+    }
+    return current;
+  }
+  if (!create) return null;
   const tab = book.insertSheet(ATTENDANCE_SHEET_);
   tab.getRange(1,1,1,ATTENDANCE_HEADERS_.length).setValues([ATTENDANCE_HEADERS_]);
   tab.setFrozenRows(1);
@@ -250,10 +259,10 @@ function attendanceRows_(date, group) {
   if (first < 0) return [];
   let end = keys.length-1;
   while (!keys[end][0].startsWith(prefix)) end--;
-  const values = tab.getRange(first+2,1,end-first+1,ATTENDANCE_HEADERS_.length).getDisplayValues();
+  const values = tab.getRange(first+2,1,end-first+1,Math.min(tab.getMaxColumns(),ATTENDANCE_HEADERS_.length)).getDisplayValues();
   return values.flatMap((r,index) => r[0].startsWith(prefix) ? [{
     row:first+index+2, key:r[0], period:Number(r[5]), teacher:r[6],
-    absent:JSON.parse(r[10]), revision:r[11]
+    absent:JSON.parse(r[10]), revision:r[11], approved:Boolean(r[13])
   }] : []);
 }
 
@@ -270,7 +279,7 @@ function attendanceOpen(grade, section) {
   const records = attendanceRows_(today.date,group).map(r => ({
     period:r.period, teacher:r.teacher,
     absentIndexes:r.absent.map(s => indexes.get(s.id)).filter(Number.isInteger),
-    revision:r.revision
+    revision:r.revision, approved:r.approved
   }));
   return {today, schedule, roster:roster.map(s => s.name), rosterVersion:attendanceRosterVersion_(roster), records};
 }
@@ -301,12 +310,35 @@ function attendanceSave(d) {
     const range = tab.getRange(previous?.row || tab.getLastRow()+1,1,1,ATTENDANCE_HEADERS_.length);
     const key = [today.date,group.grade,group.section,period].join('|');
     const plain = value => /^[=+\-@]/.test(value) ? "'"+value : value;
-    range.setNumberFormats([['@','@','@','@','@','0','@','0','0','@','@','@','@']]);
+    range.setNumberFormats([['@','@','@','@','@','0','@','0','0','@','@','@','@','@']]);
     range.setValues([[key,today.date,today.day,group.label,group.section,period,plain(d.teacher),
       roster.length-absent.length,absent.length,plain(absent.map(s => s.name).join('، ')),JSON.stringify(absent),
-      revision,today.date+' '+today.time]]);
+      revision,today.date+' '+today.time,'']]);
     SpreadsheetApp.flush();
-    return {period, teacher:d.teacher, absentIndexes:[...indexes], revision};
+    return {period, teacher:d.teacher, absentIndexes:[...indexes], revision, approved:false};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function attendanceApprove(d) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const today = serverNow();
+    if (d.date !== today.date) throw Error('تغيّر التاريخ. أعد فتح تسجيل اليوم.');
+    const group = attendanceClass_(d.grade,d.section);
+    const period = Number(d.period);
+    if (!Number.isInteger(period) || period < 1 || period > 8) throw Error('اختر الحصة.');
+    const record = attendanceRows_(today.date,group).find(r => r.period === period);
+    if (!record) throw Error('احفظ التسجيل قبل اعتماده.');
+    if (record.revision !== d.revision) throw Error('عُدّل السجل. أعد تحميل الشعبة قبل الاعتماد.');
+    if (record.approved) return {approved:true};
+    const column = ATTENDANCE_HEADERS_.length;
+    attendanceSheet_(true).getRange(record.row,column).setNumberFormat('@')
+      .setValue(today.date+' '+today.time);
+    SpreadsheetApp.flush();
+    return {approved:true};
   } finally {
     lock.releaseLock();
   }
@@ -334,7 +366,7 @@ function attendanceReport(date, selectedPeriod) {
         records.push({
           grade:ATTENDANCE_GRADES_[grade], section, period:slot,
           teacher:entry ? entry.teacher : scheduled.join('، '),
-          approved:Boolean(entry), absent:entry ? entry.absent.map(s => s.name) : []
+          saved:Boolean(entry), approved:Boolean(entry?.approved), absent:entry ? entry.absent.map(s => s.name) : []
         });
       }
     }

@@ -50,6 +50,7 @@ button{cursor:pointer}button.primary{background:var(--accent);color:white;border
 <div class="actions">
 <button type="button" id="allPresent" disabled>الجميع حاضر</button>
 <button type="button" class="primary" id="save" disabled>حفظ غياب المحددين</button>
+<button type="button" id="approve" disabled><span aria-hidden="true">✓</span> موافق، اعتماد الحصة</button>
 </div>
 <p class="status" id="formStatus" aria-live="polite"></p>
 </section>
@@ -107,10 +108,24 @@ function setToday(today) {
   el('reportDate').max = today.date;
   if (!el('reportDate').value) el('reportDate').value = today.date;
 }
+function selectedAbsences() {
+  return [...el('roster').querySelectorAll('input:checked')].map(input => Number(input.value));
+}
+function savedPeriod() {
+  return groupData?.records.find(record => String(record.period) === el('period').value);
+}
+function matchesSaved(record, selected) {
+  return Boolean(record && record.teacher === el('teacher').value &&
+    record.absentIndexes.length === selected.length && selected.every(index => record.absentIndexes.includes(index)));
+}
 function actions() {
   const ready = Boolean(groupData?.roster.length && el('period').value && el('teacher').value && !loading && !saving);
-  el('allPresent').disabled = !ready;
-  el('save').disabled = !ready || !el('roster').querySelector('input:checked');
+  const selected = selectedAbsences();
+  const saved = savedPeriod();
+  const matches = matchesSaved(saved,selected);
+  el('allPresent').disabled = !ready || (matches && selected.length === 0);
+  el('save').disabled = !ready || !selected.length || matches;
+  el('approve').disabled = !ready || !matches || saved.approved;
 }
 function resetPeriod() {
   options('teacher',[],'اختر المعلم');
@@ -142,7 +157,9 @@ function showPeriod() {
     el('roster').append(label);
   }
   el('absence').hidden = !groupData.roster.length;
-  status('formStatus',saved ? 'هذه الحصة مسجّلة. يمكنك مراجعة التسجيل وتحديثه.' : 'حدّد الغائبين أو اضغط «الجميع حاضر».');
+  const message = saved?.approved ? 'تم اعتماد هذه الحصة. تعديل التسجيل يتطلب اعتمادًا جديدًا.' :
+    saved ? 'التسجيل محفوظ. راجعه ثم اضغط «موافق، اعتماد الحصة».' : 'حدّد الغائبين أو اضغط «الجميع حاضر».';
+  status('formStatus',message);
   actions();
 }
 async function openGroup() {
@@ -180,9 +197,9 @@ async function openGroup() {
 async function save(allPresent) {
   if (saving || !groupData) return;
   const period = Number(el('period').value);
-  const checked = [...el('roster').querySelectorAll('input:checked')];
+  const checked = selectedAbsences();
   if (allPresent && checked.length && !window.confirm('هل تريد إلغاء تحديد الغائبين وتسجيل حضور الجميع؟')) return;
-  const previous = groupData.records.find(r => r.period === period);
+  const previous = savedPeriod();
   saving = true;
   for (const id of ['grade','section','reload','period','teacher','absence']) el(id).disabled = true;
   actions();
@@ -190,15 +207,38 @@ async function save(allPresent) {
   try {
     const record = await call('attendanceSave',{
       date:groupData.today.date, grade:el('grade').value, section:el('section').value,
-      period, teacher:el('teacher').value, absentIndexes:allPresent ? [] : checked.map(i => Number(i.value)),
+      period, teacher:el('teacher').value, absentIndexes:allPresent ? [] : checked,
       allPresent, rosterVersion:groupData.rosterVersion, revision:previous?.revision || ''
     });
     groupData.records = groupData.records.filter(r => r.period !== period).concat(record);
     showPeriod();
     clearReport();
-    status('formStatus',record.absentIndexes.length ? 'حُفظ غياب '+digits(record.absentIndexes.length)+' من الطلبة.' : 'تم تسجيل حضور جميع الطلبة.');
+
   } catch(error) {
     status('formStatus',error.message || 'تعذّر حفظ التسجيل.',true);
+  } finally {
+    saving = false;
+    for (const id of ['grade','section','reload','period','teacher','absence']) el(id).disabled = false;
+    actions();
+  }
+}
+async function approve() {
+  if (el('approve').disabled) return;
+  const record = savedPeriod();
+  saving = true;
+  for (const id of ['grade','section','reload','period','teacher','absence']) el(id).disabled = true;
+  actions();
+  status('formStatus','جارٍ اعتماد الحصة…');
+  try {
+    const result = await call('attendanceApprove',{
+      date:groupData.today.date, grade:el('grade').value, section:el('section').value,
+      period:record.period, revision:record.revision
+    });
+    record.approved = result.approved;
+    clearReport();
+    showPeriod();
+  } catch(error) {
+    status('formStatus',error.message || 'تعذّر اعتماد الحصة.',true);
   } finally {
     saving = false;
     for (const id of ['grade','section','reload','period','teacher','absence']) el(id).disabled = false;
@@ -238,12 +278,22 @@ async function showReport() {
         row.insertCell().textContent = value;
       }
       const details = row.insertCell();
-      details.textContent = record.approved ? record.absent.join('، ') || 'الجميع حاضر' : 'لم يكتمل تسجيل الحضور والغياب';
-      if (!record.approved) details.className = 'pending';
+      if (record.saved) {
+        details.textContent = record.absent.join('، ') || 'الجميع حاضر';
+        if (!record.approved) {
+          const note = document.createElement('div');
+          note.className = 'pending';
+          note.textContent = 'بانتظار اعتماد المعلم';
+          details.append(note);
+        }
+      } else {
+        details.textContent = 'لم يكتمل تسجيل الحضور والغياب';
+        details.className = 'pending';
+      }
       const box = document.createElement('span');
       box.className = 'approval-box';
       box.setAttribute('role','img');
-      box.setAttribute('aria-label',record.approved ? 'معتمد بالحفظ' : 'غير معتمد');
+      box.setAttribute('aria-label',record.approved ? 'اعتمده المعلم' : 'غير معتمد');
       if (record.approved) box.textContent = '✓';
       row.insertCell().append(box);
       return row;
@@ -263,6 +313,7 @@ el('teacher').addEventListener('change',actions);
 el('roster').addEventListener('change',actions);
 el('allPresent').addEventListener('click',() => save(true));
 el('save').addEventListener('click',() => save(false));
+el('approve').addEventListener('click',approve);
 for (const id of ['reportDate','reportPeriod']) el(id).addEventListener('change',clearReport);
 el('report').addEventListener('click',showReport);
 el('print').addEventListener('click',() => window.print());
