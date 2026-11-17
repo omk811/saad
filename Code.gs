@@ -4,8 +4,8 @@ const SH={teachers:'المعلمون',records:'سجل الاحتياط',timetabl
 function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON)}
 function ss(){return SpreadsheetApp.openById(SPREADSHEET_ID)}
 function sheet(n){const s=ss().getSheetByName(n);if(!s)throw Error('الورقة غير موجودة: '+n);return s}
-function doGet(e){try{const a=(e.parameter.action||'bootstrap');if(a==='attendance')return attendancePage_();if(a==='ping')return out({ok:true});if(a==='subjects')return out({ok:true,subjects:getSubjects()});if(a==='now')return out({ok:true,...serverNow()});if(a==='teachers'||a==='timetable'||a==='records'||a==='bootstrap')return out({ok:false,error:'الوصول إلى حصص الاحتياط يتطلب تسجيل دخول الإدارة'});if(a==='teachers')return out({ok:true,teachers:getTeachers()});if(a==='timetable')return out({ok:true,timetable:getTimetable()});if(a==='records')return out({ok:true,records:getRecords()});if(a==='bootstrap')return out({ok:true,teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()});return out({ok:false,error:'إجراء غير معروف'})}catch(x){return out({ok:false,error:x.message})}}
-function doPost(e){const lock=LockService.getScriptLock();lock.waitLock(20000);try{const d=JSON.parse(e.postData.contents||'{}');let r;if(d.action==='reserveBootstrap'){verifySubjectAdmin_(d);r={teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()};}else if(d.action==='saveDay'){verifySubjectAdmin_(d);r=saveDay(d);}else if(d.action==='saveSubject'){verifySubjectAdmin_(d);r=saveSubject(d);}else if(d.action==='saveSubjectAll'){verifySubjectAdmin_(d);r=saveSubjectAll(d);}else if(d.action==='studentsQuery'){verifyStudentAdmin_(d);r=studentsQuery_(d);}else if(d.action==='studentUpdate'){verifyStudentAdmin_(d);r=studentUpdate_(d);}else if(d.action==='studentsImport'){verifyStudentAdmin_(d);r=studentsImport_(d);}else if(d.action==='guardianVisitSave'){verifyStudentAdmin_(d);r=guardianVisitSave_(d);}else if(d.action==='guardianVisitRecent'){verifyStudentAdmin_(d);r=guardianVisitRecent_(d);}else if(d.action==='updateTeacher'){verifySubjectAdmin_(d);r=updateTeacher(d);}else if(d.action==='startCycle'){verifySubjectAdmin_(d);r=startCycle(d);}else throw Error('إجراء غير معروف');SpreadsheetApp.flush();return out({ok:true,...r})}catch(x){return out({ok:false,error:x.message})}finally{lock.releaseLock()}}
+function doGet(e){try{const a=(e.parameter.action||'bootstrap');if(a==='attendance')return attendancePage_();if(a==='readinessPublic')return out({ok:true,...readinessPublic_(e.parameter)});if(a==='ping')return out({ok:true});if(a==='subjects')return out({ok:true,subjects:getSubjects()});if(a==='now')return out({ok:true,...serverNow()});if(a==='teachers'||a==='timetable'||a==='records'||a==='bootstrap')return out({ok:false,error:'الوصول إلى حصص الاحتياط يتطلب تسجيل دخول الإدارة'});if(a==='teachers')return out({ok:true,teachers:getTeachers()});if(a==='timetable')return out({ok:true,timetable:getTimetable()});if(a==='records')return out({ok:true,records:getRecords()});if(a==='bootstrap')return out({ok:true,teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()});return out({ok:false,error:'إجراء غير معروف'})}catch(x){return out({ok:false,error:x.message})}}
+function doPost(e){const lock=LockService.getScriptLock();lock.waitLock(20000);try{const d=JSON.parse(e.postData.contents||'{}');let r;if(d.action==='reserveBootstrap'){verifySubjectAdmin_(d);r={teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()};}else if(d.action==='saveDay'){verifySubjectAdmin_(d);r=saveDay(d);}else if(d.action==='saveSubject'){verifySubjectAdmin_(d);r=saveSubject(d);}else if(d.action==='saveSubjectAll'){verifySubjectAdmin_(d);r=saveSubjectAll(d);}else if(d.action==='studentsQuery'){verifyStudentAdmin_(d);r=studentsQuery_(d);}else if(d.action==='studentUpdate'){verifyStudentAdmin_(d);r=studentUpdate_(d);}else if(d.action==='studentsImport'){verifyStudentAdmin_(d);r=studentsImport_(d);}else if(d.action==='guardianVisitSave'){verifyStudentAdmin_(d);r=guardianVisitSave_(d);}else if(d.action==='guardianVisitRecent'){verifyStudentAdmin_(d);r=guardianVisitRecent_(d);}else if(d.action==='updateTeacher'){verifySubjectAdmin_(d);r=updateTeacher(d);}else if(d.action==='readinessPublish'){verifySubjectAdmin_(d);r=readinessPublish_(d);}else if(d.action==='readinessWithdraw'){verifySubjectAdmin_(d);r=readinessWithdraw_(d);}else if(d.action==='startCycle'){verifySubjectAdmin_(d);r=startCycle(d);}else throw Error('إجراء غير معروف');SpreadsheetApp.flush();return out({ok:true,...r})}catch(x){return out({ok:false,error:x.message})}finally{lock.releaseLock()}}
 function serverNow(){const n=new Date(),date=Utilities.formatDate(n,TZ,'yyyy-MM-dd'),dow=+Utilities.formatDate(n,TZ,'u');const days={1:'الإثنين',2:'الثلاثاء',3:'الأربعاء',4:'الخميس',5:'الجمعة',6:'السبت',7:'الأحد'};return{date,day:days[dow],time:Utilities.formatDate(n,TZ,'HH:mm:ss'),timezone:TZ}}
 function getTeachers(){const v=sheet(SH.teachers).getDataRange().getValues();return v.slice(1).filter(r=>r[0]).map(r=>({name:String(r[0]),base:+r[1]||0,reserveCount:+r[2]||0,currentLoad:+r[3]||(+r[1]||0),remaining:+r[4]||0,lastReserve:fmt(r[5]),status:String(r[6]||''),eligible:String(r[7]||'نعم')!=='لا',scheduleName:String(r[8]||r[0])}))}
 function getTimetable(){const v=sheet(SH.timetable).getDataRange().getValues();return v.slice(1).filter(r=>r[0]&&r[1]).map(r=>({teacher:String(r[0]),day:String(r[1]),periods:Object.fromEntries([1,2,3,4,5,6,7,8].map((p,i)=>[p,String(r[i+2]||'')])),dailyCount:+r[10]||0}))}
@@ -372,4 +372,87 @@ function attendanceReport(date, selectedPeriod) {
     }
   }
   return {date, day, period, records};
+}
+
+const READINESS_SHEET_ = 'نشر خطة الجاهزية';
+const READINESS_CLASSES_ = Object.entries(ATTENDANCE_SECTIONS_).flatMap(([grade,count]) =>
+  Array.from({length:count},(_,i) => grade+'/'+(i+1)));
+const READINESS_MODES_ = ['live','async','postponed','cancelled'];
+
+function readinessDate_(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw Error('اختر تاريخ الخطة.');
+  const date = new Date(value+'T12:00:00Z');
+  if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0,10) !== value || date.getUTCDay() > 4) {
+    throw Error('اختر تاريخًا صحيحًا من الأحد إلى الخميس.');
+  }
+  return value;
+}
+
+function readinessSheet_(create) {
+  const book = ss();
+  let tab = book.getSheetByName(READINESS_SHEET_);
+  if (!tab && create) {
+    tab = book.insertSheet(READINESS_SHEET_);
+    const headers = ['التاريخ','وقت النشر',...READINESS_CLASSES_];
+    if (tab.getMaxColumns() < headers.length) tab.insertColumnsAfter(tab.getMaxColumns(),headers.length-tab.getMaxColumns());
+    tab.getRange(1,1,1,headers.length).setNumberFormat('@').setValues([headers]);
+    tab.setFrozenRows(1);
+  }
+  return tab;
+}
+
+function readinessRow_(tab,date) {
+  const last = tab?.getLastRow() || 0;
+  if (last < 2) return 0;
+  const match = tab.getRange(2,1,last-1,1).createTextFinder(date).matchEntireCell(true).findNext();
+  return match ? match.getRow() : 0;
+}
+
+function readinessPublish_(d) {
+  const date = readinessDate_(d.date);
+  if (date < serverNow().date) throw Error('اختر اليوم أو تاريخًا لاحقًا للنشر.');
+  if (!Array.isArray(d.rows) || !d.rows.length || d.rows.length > READINESS_CLASSES_.length*4) throw Error('اختر حصصًا صالحة للنشر.');
+  const seen = new Set();
+  const grouped = new Map(READINESS_CLASSES_.map(group => [group,[]]));
+  for (const row of d.rows) {
+    if (!row || !grouped.has(row.group) || !Number.isInteger(row.slot) || row.slot<1 || row.slot>4 ||
+        !READINESS_MODES_.includes(row.mode) || typeof row.subject!=='string' || row.subject.length>120 ||
+        typeof row.teacher!=='string' || row.teacher.length>160 ||
+        typeof row.link!=='string' || row.link.length>1500 || (row.link && !/^https:\/\/[^\s<>"']+$/.test(row.link)) ||
+        typeof row.from!=='string' || typeof row.to!=='string' ||
+        !/^([01]\d|2[0-3]):[0-5]\d$/.test(row.from) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(row.to) || row.from>=row.to) {
+      throw Error('راجع بيانات الحصص وأوقاتها وروابطها قبل النشر.');
+    }
+    const key = row.group+'|'+row.slot;
+    if (seen.has(key)) throw Error('يوجد أكثر من سجل للشعبة في الحصة نفسها. راجع التوزيع قبل النشر.');
+    seen.add(key);
+    grouped.get(row.group).push({slot:row.slot,from:row.from,to:row.to,mode:row.mode,subject:row.subject,teacher:row.teacher,link:row.link});
+  }
+  const tab = readinessSheet_(true);
+  const row = readinessRow_(tab,date) || tab.getLastRow()+1;
+  const published = serverNow();
+  const values = [date,published.date+' '+published.time,...READINESS_CLASSES_.map(group =>
+    JSON.stringify(grouped.get(group).sort((a,b)=>a.slot-b.slot)))];
+  tab.getRange(row,1,1,values.length).setNumberFormat('@').setValues([values]);
+  return {date,lessons:seen.size};
+}
+
+function readinessWithdraw_(d) {
+  const date = readinessDate_(d.date);
+  const tab = readinessSheet_(false);
+  const row = readinessRow_(tab,date);
+  if (row) tab.deleteRow(row);
+  return {date,withdrawn:Boolean(row)};
+}
+
+function readinessPublic_(parameters) {
+  const date = parameters.date || serverNow().date;
+  const group = String(parameters.group || '');
+  const index = READINESS_CLASSES_.indexOf(group);
+  if (index<0) throw Error('اختر الصف والشعبة.');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw Error('اختر تاريخًا صحيحًا.');
+  const tab = readinessSheet_(false);
+  const row = readinessRow_(tab,date);
+  const lessons = row ? JSON.parse(tab.getRange(row,index+3).getDisplayValue() || '[]') : [];
+  return {date,group,active:Boolean(row),lessons};
 }

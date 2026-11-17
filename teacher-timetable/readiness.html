@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>جدول التعلّم عن بُعد | بوابة سعد</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf5f2;color:#173e42;font:1rem/1.65 Tahoma,Arial,sans-serif}header{background:#123e45;color:white;padding:24px 0}header a{color:#d9f0e9}header div,main,footer{width:min(760px,calc(100% - 28px));margin:auto}main{padding:18px 0}h1{margin:8px 0;font-size:clamp(1.5rem,5vw,2.2rem)}form,article{background:white;border:1px solid #cfdfda;border-radius:14px;padding:14px;margin-bottom:10px}form{display:flex;flex-wrap:wrap;gap:12px;align-items:end}label{flex:1 1 145px;font-weight:bold}input,select,button{display:block;font:inherit;min-height:44px;padding:4px 10px;border:1px solid #8aafa4;border-radius:8px}input,select{width:100%}button{background:#146c61;color:white;cursor:pointer}article h2{font-size:1.1rem;margin:0}article p{margin:4px 0}article a{display:inline-flex;align-items:center;min-height:44px;color:#146c61}footer{text-align:center;color:#476762;padding:12px 0}
+</style>
+</head>
+<body>
+<header><div><a href="students.html">العودة إلى قسم الطلاب</a><h1>جدول التعلّم عن بُعد</h1><div>مدرسة سعد بن معاذ للتعليم الأساسي</div></div></header>
+<main>
+<form id="filters"><label>التاريخ<input id="date" type="date" required></label><label>الصف والشعبة<select id="group" required></select></label><button>عرض الجدول</button></form>
+<p id="status" role="status"></p><div id="lessons"></div>
+</main>
+<footer>إعداد الأستاذ خليل البلوشي</footer>
+<script>
+'use strict';
+const api='https://script.google.com/macros/s/AKfycbxaE54AYPy3XPTl7JUUw_nVEjA466BJqwZvwHfwPObBAxUuP_tfSZWgmbbne2xMsnxh/exec';
+const $=id=>document.getElementById(id);
+const grades=[[5,'الخامس',6],[6,'السادس',6],[7,'السابع',7],[8,'الثامن',5]];
+const modes={live:'متزامن',async:'غير متزامن',postponed:'مؤجلة',cancelled:'ملغاة'};
+const group=$('group'), date=$('date'), status=$('status'), lessons=$('lessons');
+const params=new URLSearchParams(location.search);
+let request=0;
+for(const [grade,label,total] of grades){
+ for(let i=1;i<=total;i++)group.add(new Option(label+' — الشعبة '+i,grade+'/'+i));
+}
+const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Muscat',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts().map(p=>[p.type,p.value]));
+date.value=params.get('date')||[parts.year,parts.month,parts.day].join('-');
+try{
+ const saved=localStorage.getItem('saad-readiness-group');
+ if(saved&&[...group.options].some(o=>o.value===saved))group.value=saved;
+}catch{}
+async function show(){
+ const id=++request;
+ lessons.replaceChildren();
+ if(!date.reportValidity()){status.textContent='اختر تاريخًا صحيحًا.';return;}
+ status.textContent='جارٍ تحميل الجدول…';
+ try{localStorage.setItem('saad-readiness-group',group.value)}catch{}
+ try{
+  const q=new URLSearchParams({action:'readinessPublic',date:date.value,group:group.value});
+  const response=await fetch(api+'?'+q,{cache:'no-store'});
+  const result=await response.json();
+  if(id!==request)return;
+  if(!result.ok)throw Error(result.error);
+  if(!result.active){status.textContent='لم تُنشر خطة جاهزية لهذا التاريخ.';return;}
+  if(!result.lessons.length){status.textContent='لا توجد حصص منشورة لهذه الشعبة في التاريخ المختار.';return;}
+  status.textContent='الحصص المنشورة للشعبة';
+  for(const row of result.lessons){
+   const card=document.createElement('article'), heading=document.createElement('h2'), meta=document.createElement('p');
+   heading.textContent='الحصة '+row.slot+' — '+(row.subject||'المادة غير محددة');
+   meta.textContent=row.from+' – '+row.to+' · '+modes[row.mode]+(row.teacher?' · '+row.teacher:'');
+   card.append(heading,meta);
+   if(/^https:\/\/[^\s<>"']+$/.test(row.link)){
+    const a=document.createElement('a');
+    a.href=row.link;a.target='_blank';a.rel='noopener';a.textContent='فتح رابط الحصة';
+    card.append(a);
+   }
+   lessons.append(card);
+  }
+ }catch(error){if(id===request)status.textContent='تعذّر تحميل الخطة المنشورة.';}
+}
+$('filters').onsubmit=event=>{event.preventDefault();show();};
+show();
+</script>
+</body></html>
