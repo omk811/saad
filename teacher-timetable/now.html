@@ -4,14 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#123e45">
-<title>أين أذهب الآن؟ | بوابة سعد</title>
+<title>يومي الدراسي | بوابة سعد</title>
 <style>
 *{box-sizing:border-box}body{margin:0;color:#153b40;background:#edf5f2;font:1rem/1.65 Tahoma,Arial,sans-serif}header{background:#123e45;color:white;padding:1.6rem 0 2.4rem}main,header>div,footer{width:min(780px,calc(100% - 28px));margin:auto}header a{color:#d6f2e7}h1{font-size:clamp(1.8rem,6vw,2.9rem);margin:.35rem 0}h2{margin:0;font-size:1.25rem}p{margin:.45rem 0}main{margin-top:-1.25rem}section,.card{background:white;border:1px solid #c8ded7;border-radius:17px;padding:clamp(1rem,4vw,1.6rem)}.control,.cards,.simulation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cards{margin:12px 0}.card strong{display:block;font-size:1.2rem;color:#12655a}label{display:block;font-weight:700}select,input{display:block;width:100%;margin-top:.3rem}select,input,button{font:inherit;min-height:46px;padding:.4rem .65rem;border:1px solid #95b8ac;border-radius:9px;background:#f8fcfb;color:#153b40}button{cursor:pointer}button[aria-pressed=true]{background:#12655a;color:white}details{margin-top:1rem}summary{cursor:pointer;width:fit-content;min-height:44px;line-height:44px;font-weight:700}.meta{margin-top:.85rem;color:#345b59}.clock{font-weight:700;font-size:1.25rem}.note,footer{font-size:.89rem;color:#3f6460}footer{text-align:center;padding:1rem 0 1.5rem}.demo-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}[hidden]{display:none!important}@media(max-width:500px){.control,.cards{grid-template-columns:1fr}}
 </style>
 <script src="assets/meeting-data.js?v=20261116-shared-timetable" defer></script>
-</head>
+<script src="assets/subjects.js?v=20261117" defer></script>
+<style>
+main,header>div,footer{width:min(1060px,calc(100% - 30px))}body{background:#f5f6f2;color:#173e41}header{background:#174e45;padding:30px 0 46px}.control select,.simulation input{border-color:#c8d9d0;background:white;border-radius:11px}.card,section{border-color:#dbe4df;border-radius:19px}.day-schedule{margin:15px 0}.day-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.day-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.day-actions a{font-size:.85rem;font-weight:700;color:#176b59}.day-actions button{background:#edf3e9;color:#255e49;border-color:#cfdece;font-size:.85rem}.day-lesson{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:14px;border-top:1px solid #e4eae1;padding:14px 0}.day-lesson strong{font-size:1rem}.day-lesson p{font-size:.85rem;color:#617773;margin:3px 0 0}.day-lesson small{color:#617773;font-size:.8rem}.day-number{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#edf3e9;color:#31634f;font-weight:700}.day-schedule>.day-actions{margin-top:15px}a:focus-visible,button:focus-visible{outline:3px solid #bd965a;outline-offset:3px}
+@media(max-width:500px){.day-lesson{grid-template-columns:32px minmax(0,1fr);gap:10px}.day-lesson small{grid-column:2}.day-heading h2{font-size:1.1rem}.day-actions{gap:8px}}
+@media print{@page{size:A4 portrait;margin:12mm}body{background:white;font-size:10pt}header{background:white;color:#173e41;padding:0 0 10px}header a,main>section[aria-label],.cards,.day-actions,.no-print,main>.note{display:none!important}header h1{font-size:18pt}main{margin:0;width:100%}.day-schedule{border:0;padding:0}.day-lesson{grid-template-columns:30px minmax(0,1fr) auto;padding:8px 0;break-inside:avoid}.day-lesson small{grid-column:auto}.day-lesson strong{font-size:10pt}.day-lesson p{font-size:9pt}.day-schedule .note{font-size:10pt}footer{font-size:8pt}#todayChanges{break-inside:avoid}}
+</style>
+<link rel="stylesheet" href="assets/theme.css?v=20261117"></head>
 <body>
-<header><div><a href="../">العودة إلى بوابة سعد</a><h1>أين أذهب الآن؟</h1><p>مدرسة سعد بن معاذ للتعليم الأساسي</p></div></header>
+<header><div><a href="teachers.html">العودة إلى قسم المعلمين</a><h1>يومي الدراسي</h1><p>مدرسة سعد بن معاذ للتعليم الأساسي</p></div></header>
 <main>
 <section aria-label="اختيار الجدول والتوقيت">
 <div class="control">
@@ -29,6 +35,7 @@
 <article class="card"><h2>الآن</h2><strong id="current"></strong><p id="currentDetail"></p></article>
 <article class="card"><h2>الحصة التالية</h2><strong id="next"></strong><p id="nextDetail"></p></article>
 </div>
+<section class="day-schedule"><div class="day-heading"><h2>حصص اليوم</h2><div class="day-actions"><a href="weekly.html" id="weekLink">الجدول الأسبوعي</a><button type="button" id="printDay">طباعة اليوم</button></div></div><p id="dayLabel" class="note"></p><div id="dayLessons"></div><div class="day-actions no-print"><button type="button" id="refreshMaterials">تحديث المواد</button><span class="note" id="materialStatus" role="status"></span></div></section>
 <section id="todayChanges" hidden><h2>تغييرات اليوم</h2><ul id="changeList"></ul></section>
 <p class="note">التوقيت الشتوي من ١ نوفمبر ٢٠٢٦ إلى ٢٥ مارس ٢٠٢٧. تُعرض التغييرات المعتمدة إذا كانت متاحة. الإجازات الرسمية تحتاج إلى تنبيه من الإدارة.</p>
 </main>
@@ -110,6 +117,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    if(sections.includes(saved.class))selection.class=saved.class;
    if(saved.mode==='class')mode.value='class';}
  }catch{}
+ try { const savedTeacher=localStorage.getItem('saad-timetable-teacher'); if(teacherNames.includes(savedTeacher))selection.teacher=savedTeacher; } catch {}
  const linkGroup=new URLSearchParams(location.search).get('group');
  const sectionFromLink=linkGroup?.split('/').reverse().join('/');
  if(sections.includes(sectionFromLink)){selection.class=sectionFromLink;mode.value='class';}
@@ -140,15 +148,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   const schedule=scheduleWithSwaps(teachers,day,changes);
   for(const [id,value] of Object.entries(timeline(schedule,mode.value,who.value,when.date,when.time))) $(id).textContent=value;
   const group=mode.value==='class'?who.value.split('/').reverse().join('/'):'';
-  const relevant=changes.filter(c=>group?c.group===group:c.type==='swap'&&[c.afterFirst,c.afterSecond].includes(who.value));
+  const taughtGroups=new Set([...(teachers[who.value]?.[day]||[]),...(schedule[who.value]?.[day]||[])].filter(Boolean).map(code=>code.split('/').reverse().join('/')));
+  const relevant=changes.filter(c=>group?c.group===group:taughtGroups.has(c.group)||(c.type==='swap'&&[c.afterFirst,c.afterSecond].includes(who.value)));
   $('todayChanges').hidden=!relevant.length;
+  renderDay(schedule,day,when);
   $('changeList').replaceChildren(...relevant.map(c=>{
    const li=document.createElement('li');
    li.textContent=(c.type==='note'&&c.slot?'الحصة '+c.slot+' · ':'')+c.text;
    return li;
   }));
  }
- function persist(){try{localStorage.setItem('saad-now-selection',JSON.stringify({...selection,mode:mode.value}));}catch{}}
+ function persist(){try{localStorage.setItem('saad-now-selection',JSON.stringify({...selection,mode:mode.value}));if(mode.value==='teacher')localStorage.setItem('saad-timetable-teacher',who.value);}catch{}}
  function fill(){
   const teaching=mode.value==='teacher', items=teaching?teacherNames:sections;
   $('whoLabel').textContent=teaching?'المعلم':'الصف والشعبة';
@@ -158,7 +168,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  }
  mode.addEventListener('change',()=>{fill();persist();});
  who.addEventListener('change',()=>{selection[mode.value]=who.value;persist();display();});
- $('demoDate').value='2026-11-17';$('demoTime').value='07:40';
+ $('demoDate').value=liveTime().date;$('demoTime').value='07:40';
  $('preview').addEventListener('click',()=>{
   if(!$('demoDate').reportValidity()||!$('demoTime').reportValidity())return;
   simulated={date:$('demoDate').value,time:$('demoTime').value};
@@ -170,8 +180,43 @@ document.addEventListener('DOMContentLoaded',()=>{
   simulated=null;$('live').setAttribute('aria-pressed','true');
   $('demoStatus').textContent='';display();
  });
- fill();
- window.setInterval(()=>{if(!simulated)display();},15000);
+ let daySignature='';
+ function renderDay(schedule,day,when){
+  const plan=Array.from({length:8},(_,slot)=>{
+   if(mode.value==='teacher'){
+    const code=schedule[who.value]?.[day]?.[slot];
+    return {place:code?sectionLabel(code):'لا حصة مجدولة',subject:code?(window.SaadSubjects.lookup(who.value,code)||'المادة غير محددة'):'',names:''};
+   }
+   const teachers=Object.keys(schedule).filter(name=>schedule[name]?.[day]?.[slot]===who.value);
+   return {place:teachers.length?teachers.map(name=>window.SaadSubjects.lookup(name,who.value)||'المادة غير محددة').join('، '):'لا حصة مسجلة',subject:'',names:teachers.map(name=>names[name]||name).join('، ')};
+  });
+  const signature=JSON.stringify([when.date,who.value,mode.value,plan]);
+  if(signature===daySignature)return;
+  daySignature=signature;
+  $('dayLabel').textContent=(mode.value==='teacher'?(names[who.value]||who.value):sectionLabel(who.value))+' · '+day+' · '+when.date;
+  $('weekLink').href=mode.value==='teacher'?'weekly.html':'student.html?group='+encodeURIComponent(who.value.split('/').reverse().join('/'));
+  if(weekday(when.date)>4){$('dayLessons').textContent='لا حصص مجدولة في عطلة نهاية الأسبوع.';return;}
+  $('dayLessons').replaceChildren(...plan.map((lesson,slot)=>{
+   const row=document.createElement('article');row.className='day-lesson';
+   const number=document.createElement('div'),content=document.createElement('div'),time=document.createElement('small');
+   number.className='day-number';number.textContent=String(slot+1);
+   const title=document.createElement('strong');title.textContent=lesson.place;
+   const detail=document.createElement('p');detail.textContent=[lesson.subject,lesson.names].filter(Boolean).join(' · ');
+   content.append(title,detail);time.textContent=windowLabel(slot);time.dir='ltr';row.append(number,content,time);return row;
+  }));
+ }
+ $('printDay').addEventListener('click',()=>window.print());
+ async function refreshMaterials(force=false){
+  $('refreshMaterials').disabled=true;
+  $('materialStatus').textContent='جارٍ تحديث المواد…';
+  try{await window.SaadSubjects.refresh(force);$('materialStatus').textContent='المواد محدثة';}
+  catch{$('materialStatus').textContent='تعذّر التحديث. تظهر المواد المحفوظة إن توفرت.';}
+  finally{$('refreshMaterials').disabled=false;}
+ }
+ window.SaadSubjects.subscribe(()=>display());
+ $('refreshMaterials').addEventListener('click',()=>refreshMaterials(true));
+ fill();persist();refreshMaterials();
+ window.setInterval(()=>{if(!document.hidden&&!simulated)display();},15000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!simulated)display();});
 });
 </script>

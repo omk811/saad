@@ -1,5 +1,5 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ماذا تغيّر اليوم؟ | بوابة سعد</title><link rel="stylesheet" href="assets/school-tools.css"></head>
-<body><header><div><a href="students.html">العودة إلى قسم الطلاب</a><h1>ماذا تغيّر اليوم؟</h1><p>التغييرات المعتمدة للشعب</p></div></header><main>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ماذا تغيّر اليوم؟ | بوابة سعد</title><link rel="stylesheet" href="assets/school-tools.css"><link rel="stylesheet" href="assets/theme.css?v=20261117"></head>
+<body><header><div><a href="administration.html">العودة إلى الإدارة المدرسية</a><h1>ماذا تغيّر اليوم؟</h1><p>التغييرات المعتمدة للشعب</p></div></header><main>
 <section><form id="filters" class="fields"><label>التاريخ<input id="date" type="date" required></label><label>الصف والشعبة<select id="group"></select></label><button class="primary">عرض التغييرات</button></form><div class="actions"><button id="screen" aria-pressed="false" type="button">تشغيل العرض على شاشة المدرسة</button></div><p id="status" role="status"></p></section>
 <div id="updates" class="cards"></div></main><footer>إعداد الأستاذ خليل البلوشي</footer>
 <script>
@@ -45,7 +45,7 @@ $('filters').onsubmit=e=>{e.preventDefault();show();};
 $('screen').onclick=()=>{
  if(timer){clearInterval(timer);timer=null;$('screen').textContent='تشغيل العرض على شاشة المدرسة';}
  else{
-  const refresh=()=>{date.value=today();group.value='';show(true);};
+  const refresh=()=>{if(document.hidden)return;date.value=today();group.value='';show(true);};
   refresh();timer=setInterval(refresh,60000);$('screen').textContent='إيقاف العرض التلقائي';
  }
  $('screen').setAttribute('aria-pressed',String(Boolean(timer)));

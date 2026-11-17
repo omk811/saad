@@ -1,0 +1,5 @@
+/* الخط العربي المحلي والهوية المشتركة — الأستاذ خليل البلوشي */
+@font-face{font-family:Saad Arabic;src:url('fonts/noto-sans-arabic-regular.woff2') format('woff2');font-weight:400 600;font-display:swap}
+@font-face{font-family:Saad Arabic;src:url('fonts/noto-sans-arabic-bold.woff2') format('woff2');font-weight:700 900;font-display:swap}
+body,input,button,select,textarea{font-family:'Saad Arabic',Tahoma,Arial,sans-serif!important}
+@media screen{body{background-color:#f5f6f2}}
