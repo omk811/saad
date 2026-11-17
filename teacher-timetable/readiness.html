@@ -33,6 +33,7 @@ try{
  const saved=localStorage.getItem('saad-readiness-group');
  if(saved&&[...group.options].some(o=>o.value===saved))group.value=saved;
 }catch{}
+if([...group.options].some(o=>o.value===params.get('group')))group.value=params.get('group');
 async function show(){
  const id=++request;
  lessons.replaceChildren();

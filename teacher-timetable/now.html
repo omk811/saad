@@ -29,7 +29,8 @@
 <article class="card"><h2>الآن</h2><strong id="current"></strong><p id="currentDetail"></p></article>
 <article class="card"><h2>الحصة التالية</h2><strong id="next"></strong><p id="nextDetail"></p></article>
 </div>
-<p class="note">التوقيت الشتوي من ١ نوفمبر ٢٠٢٦ إلى ٢٥ مارس ٢٠٢٧. العرض وفق الجدول الأسبوعي ويحتاج إلى تحديث عند اعتماد تغييرات أو إجازات.</p>
+<section id="todayChanges" hidden><h2>تغييرات اليوم</h2><ul id="changeList"></ul></section>
+<p class="note">التوقيت الشتوي من ١ نوفمبر ٢٠٢٦ إلى ٢٥ مارس ٢٠٢٧. تُعرض التغييرات المعتمدة إذا كانت متاحة. الإجازات الرسمية تحتاج إلى تنبيه من الإدارة.</p>
 </main>
 <footer>إعداد الأستاذ خليل البلوشي</footer>
 <script>
@@ -39,6 +40,7 @@ const periods=[['07:35','08:15'],['08:20','09:00'],['09:05','09:45'],['09:50','1
 const headings=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const grades={5:'الخامس',6:'السادس',7:'السابع',8:'الثامن'};
 const names={'خليل عربي':'الأستاذ خليل البلوشي'};
+const changesApi='https://script.google.com/macros/s/AKfycbxaE54AYPy3XPTl7JUUw_nVEjA466BJqwZvwHfwPObBAxUuP_tfSZWgmbbne2xMsnxh/exec';
 const firstDay='2026-11-01',lastDay='2027-03-25';
 const minutes=time=>Number(time.slice(0,2))*60+Number(time.slice(3,5));
 const windowLabel=slot=>periods[slot].join(' – ');
@@ -78,6 +80,21 @@ function timeline(teachers,mode,person,date,time){
   upcoming===-1?'':'الحصة '+(upcoming+1)+' · '+windowLabel(upcoming));
 }
 
+function scheduleWithSwaps(teachers,day,changes){
+ const swaps=changes.filter(change=>change.type==='swap');
+ if(!swaps.length)return teachers;
+ const effective=Object.fromEntries(Object.entries(teachers).map(([name,days])=>[name,{...days,[day]:[...(days[day]||Array(8).fill(''))]}]));
+ for(const change of swaps){
+  const section=change.group.split('/').reverse().join('/');
+  for(const [slot,teacher] of [[change.first,change.afterFirst],[change.second,change.afterSecond]]){
+   for(const days of Object.values(effective))if(days[day][slot-1]===section)days[day][slot-1]='';
+   if(!effective[teacher])effective[teacher]={[day]:Array(8).fill('')};
+   effective[teacher][day][slot-1]=section;
+  }
+ }
+ return effective;
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
  const $=id=>document.getElementById(id),teachers=window.SAAD_TIMETABLE?.teachers;
  if(!teachers){$('current').textContent='تعذّر تحميل الجدول الدراسي';$('next').textContent='أعد تحميل الصفحة';return;}
@@ -93,6 +110,22 @@ document.addEventListener('DOMContentLoaded',()=>{
    if(sections.includes(saved.class))selection.class=saved.class;
    if(saved.mode==='class')mode.value='class';}
  }catch{}
+ const linkGroup=new URLSearchParams(location.search).get('group');
+ const sectionFromLink=linkGroup?.split('/').reverse().join('/');
+ if(sections.includes(sectionFromLink)){selection.class=sectionFromLink;mode.value='class';}
+ let changesDate='',changes=[],loadedAt=0;
+ async function refreshChanges(date){
+  if(date===changesDate&&Date.now()-loadedAt<60000)return;
+  if(changesDate!==date)changes=[];
+  changesDate=date;loadedAt=Date.now();
+  const started=loadedAt;
+  if(weekday(date)>4)return;
+  try{
+   const q=new URLSearchParams({action:'schoolChangesPublic',date});
+   const data=await (await fetch(changesApi+'?'+q,{cache:'no-store'})).json();
+   if(data.ok&&changesDate===date&&loadedAt===started){changes=data.changes;display();}
+  }catch{}
+ }
  const clock=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Muscat',year:'numeric',month:'2-digit',day:'2-digit',
   hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
  function liveTime(){
@@ -101,9 +134,19 @@ document.addEventListener('DOMContentLoaded',()=>{
  }
  function display(){
   const when=simulated||liveTime(),day=headings[weekday(when.date)];
+  refreshChanges(when.date);
   $('clock').textContent=when.time;
   $('caption').textContent=' · '+day+' '+when.date+' · '+(simulated?'وضع التجربة':'توقيت عُمان');
-  for(const [id,value] of Object.entries(timeline(teachers,mode.value,who.value,when.date,when.time))) $(id).textContent=value;
+  const schedule=scheduleWithSwaps(teachers,day,changes);
+  for(const [id,value] of Object.entries(timeline(schedule,mode.value,who.value,when.date,when.time))) $(id).textContent=value;
+  const group=mode.value==='class'?who.value.split('/').reverse().join('/'):'';
+  const relevant=changes.filter(c=>group?c.group===group:c.type==='swap'&&[c.afterFirst,c.afterSecond].includes(who.value));
+  $('todayChanges').hidden=!relevant.length;
+  $('changeList').replaceChildren(...relevant.map(c=>{
+   const li=document.createElement('li');
+   li.textContent=(c.type==='note'&&c.slot?'الحصة '+c.slot+' · ':'')+c.text;
+   return li;
+  }));
  }
  function persist(){try{localStorage.setItem('saad-now-selection',JSON.stringify({...selection,mode:mode.value}));}catch{}}
  function fill(){

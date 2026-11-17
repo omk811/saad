@@ -1,0 +1,54 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ماذا تغيّر اليوم؟ | بوابة سعد</title><link rel="stylesheet" href="assets/school-tools.css"></head>
+<body><header><div><a href="students.html">العودة إلى قسم الطلاب</a><h1>ماذا تغيّر اليوم؟</h1><p>التغييرات المعتمدة للشعب</p></div></header><main>
+<section><form id="filters" class="fields"><label>التاريخ<input id="date" type="date" required></label><label>الصف والشعبة<select id="group"></select></label><button class="primary">عرض التغييرات</button></form><div class="actions"><button id="screen" aria-pressed="false" type="button">تشغيل العرض على شاشة المدرسة</button></div><p id="status" role="status"></p></section>
+<div id="updates" class="cards"></div></main><footer>إعداد الأستاذ خليل البلوشي</footer>
+<script>
+'use strict';
+const api='https://script.google.com/macros/s/AKfycbxaE54AYPy3XPTl7JUUw_nVEjA466BJqwZvwHfwPObBAxUuP_tfSZWgmbbne2xMsnxh/exec';
+const $=id=>document.getElementById(id);
+const grades=[[5,'الخامس',6],[6,'السادس',6],[7,'السابع',7],[8,'الثامن',5]];
+const labels={};
+const p=new URLSearchParams(location.search);
+const group=$('group'),date=$('date');
+group.add(new Option('جميع الشعب',''));
+for(const [grade,name,count] of grades) for(let i=1;i<=count;i++){
+ const key=grade+'/'+i;labels[key]=name+' — الشعبة '+i;group.add(new Option(labels[key],key));
+}
+if(labels[p.get('group')])group.value=p.get('group');
+function today(){
+ const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Muscat',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts().map(({type,value})=>[type,value]));
+ return [parts.year,parts.month,parts.day].join('-');
+}
+date.value=p.get('date')||today();
+let request=0,timer;
+async function show(background=false){
+ if(!date.reportValidity())return;
+ const stamp=++request;
+ if(!background){$('updates').replaceChildren();$('status').textContent='جارٍ تحميل التغييرات…';}
+ try{
+  const q=new URLSearchParams({action:'schoolChangesPublic',date:date.value,group:group.value});
+  const r=await (await fetch(api+'?'+q,{cache:'no-store'})).json();
+  if(stamp!==request)return;
+  if(!r.ok)throw Error(r.error);
+  $('updates').replaceChildren(...r.changes.map(change=>{
+   const card=document.createElement('article'),title=document.createElement('h2'),info=document.createElement('p');
+   title.textContent=labels[change.group];info.textContent=(change.type==='note'&&change.slot?'الحصة '+change.slot+' · ':'')+change.text;
+   card.append(title,info);return card;
+  }));
+  $('status').textContent=r.changes.length?'التغييرات المعتمدة · '+r.date:'لا توجد تغييرات منشورة للاختيار المحدد.';
+ }catch(error){
+  if(stamp!==request)return;
+  $('status').textContent=error.message==='إجراء غير معروف'?'خدمة التغييرات تنتظر تحديث Apps Script.':error.message||'تعذّر تحميل التغييرات.';
+ }
+}
+$('filters').onsubmit=e=>{e.preventDefault();show();};
+$('screen').onclick=()=>{
+ if(timer){clearInterval(timer);timer=null;$('screen').textContent='تشغيل العرض على شاشة المدرسة';}
+ else{
+  const refresh=()=>{date.value=today();group.value='';show(true);};
+  refresh();timer=setInterval(refresh,60000);$('screen').textContent='إيقاف العرض التلقائي';
+ }
+ $('screen').setAttribute('aria-pressed',String(Boolean(timer)));
+};
+show();
+</script></body></html>

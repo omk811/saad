@@ -4,8 +4,8 @@ const SH={teachers:'المعلمون',records:'سجل الاحتياط',timetabl
 function out(o){return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON)}
 function ss(){return SpreadsheetApp.openById(SPREADSHEET_ID)}
 function sheet(n){const s=ss().getSheetByName(n);if(!s)throw Error('الورقة غير موجودة: '+n);return s}
-function doGet(e){try{const a=(e.parameter.action||'bootstrap');if(a==='attendance')return attendancePage_();if(a==='readinessPublic')return out({ok:true,...readinessPublic_(e.parameter)});if(a==='ping')return out({ok:true});if(a==='subjects')return out({ok:true,subjects:getSubjects()});if(a==='now')return out({ok:true,...serverNow()});if(a==='teachers'||a==='timetable'||a==='records'||a==='bootstrap')return out({ok:false,error:'الوصول إلى حصص الاحتياط يتطلب تسجيل دخول الإدارة'});if(a==='teachers')return out({ok:true,teachers:getTeachers()});if(a==='timetable')return out({ok:true,timetable:getTimetable()});if(a==='records')return out({ok:true,records:getRecords()});if(a==='bootstrap')return out({ok:true,teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()});return out({ok:false,error:'إجراء غير معروف'})}catch(x){return out({ok:false,error:x.message})}}
-function doPost(e){const lock=LockService.getScriptLock();lock.waitLock(20000);try{const d=JSON.parse(e.postData.contents||'{}');let r;if(d.action==='reserveBootstrap'){verifySubjectAdmin_(d);r={teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()};}else if(d.action==='saveDay'){verifySubjectAdmin_(d);r=saveDay(d);}else if(d.action==='saveSubject'){verifySubjectAdmin_(d);r=saveSubject(d);}else if(d.action==='saveSubjectAll'){verifySubjectAdmin_(d);r=saveSubjectAll(d);}else if(d.action==='studentsQuery'){verifyStudentAdmin_(d);r=studentsQuery_(d);}else if(d.action==='studentUpdate'){verifyStudentAdmin_(d);r=studentUpdate_(d);}else if(d.action==='studentsImport'){verifyStudentAdmin_(d);r=studentsImport_(d);}else if(d.action==='guardianVisitSave'){verifyStudentAdmin_(d);r=guardianVisitSave_(d);}else if(d.action==='guardianVisitRecent'){verifyStudentAdmin_(d);r=guardianVisitRecent_(d);}else if(d.action==='updateTeacher'){verifySubjectAdmin_(d);r=updateTeacher(d);}else if(d.action==='readinessPublish'){verifySubjectAdmin_(d);r=readinessPublish_(d);}else if(d.action==='readinessWithdraw'){verifySubjectAdmin_(d);r=readinessWithdraw_(d);}else if(d.action==='startCycle'){verifySubjectAdmin_(d);r=startCycle(d);}else throw Error('إجراء غير معروف');SpreadsheetApp.flush();return out({ok:true,...r})}catch(x){return out({ok:false,error:x.message})}finally{lock.releaseLock()}}
+function doGet(e){try{const a=(e.parameter.action||'bootstrap');if(a==='attendance')return attendancePage_();if(a==='readinessPublic')return out({ok:true,...readinessPublic_(e.parameter)});if(a==='schoolChangesPublic')return out({ok:true,...schoolChangesPublic_(e.parameter)});if(a==='ping')return out({ok:true});if(a==='subjects')return out({ok:true,subjects:getSubjects()});if(a==='now')return out({ok:true,...serverNow()});if(a==='teachers'||a==='timetable'||a==='records'||a==='bootstrap')return out({ok:false,error:'الوصول إلى حصص الاحتياط يتطلب تسجيل دخول الإدارة'});if(a==='teachers')return out({ok:true,teachers:getTeachers()});if(a==='timetable')return out({ok:true,timetable:getTimetable()});if(a==='records')return out({ok:true,records:getRecords()});if(a==='bootstrap')return out({ok:true,teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()});return out({ok:false,error:'إجراء غير معروف'})}catch(x){return out({ok:false,error:x.message})}}
+function doPost(e){const lock=LockService.getScriptLock();lock.waitLock(20000);try{const d=JSON.parse(e.postData.contents||'{}');let r;if(d.action==='reserveBootstrap'){verifySubjectAdmin_(d);r={teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()};}else if(d.action==='saveDay'){verifySubjectAdmin_(d);r=saveDay(d);}else if(d.action==='saveSubject'){verifySubjectAdmin_(d);r=saveSubject(d);}else if(d.action==='saveSubjectAll'){verifySubjectAdmin_(d);r=saveSubjectAll(d);}else if(d.action==='studentsQuery'){verifyStudentAdmin_(d);r=studentsQuery_(d);}else if(d.action==='studentUpdate'){verifyStudentAdmin_(d);r=studentUpdate_(d);}else if(d.action==='studentsImport'){verifyStudentAdmin_(d);r=studentsImport_(d);}else if(d.action==='guardianVisitSave'){verifyStudentAdmin_(d);r=guardianVisitSave_(d);}else if(d.action==='guardianVisitRecent'){verifyStudentAdmin_(d);r=guardianVisitRecent_(d);}else if(d.action==='updateTeacher'){verifySubjectAdmin_(d);r=updateTeacher(d);}else if(d.action==='readinessPublish'){verifySubjectAdmin_(d);r=readinessPublish_(d);}else if(d.action==='readinessWithdraw'){verifySubjectAdmin_(d);r=readinessWithdraw_(d);}else if(d.action==='schoolPreviewSwap'){verifySubjectAdmin_(d);r=schoolPreviewSwap_(d);}else if(d.action==='schoolPublishChange'){verifySubjectAdmin_(d);r=schoolPublishChange_(d);}else if(d.action==='schoolMeetingCheck'){verifySubjectAdmin_(d);r=schoolMeetingCheck_(d);}else if(d.action==='schoolProgress'){verifySubjectAdmin_(d);r=schoolProgress_(d);}else if(d.action==='startCycle'){verifySubjectAdmin_(d);r=startCycle(d);}else throw Error('إجراء غير معروف');SpreadsheetApp.flush();return out({ok:true,...r})}catch(x){return out({ok:false,error:x.message})}finally{lock.releaseLock()}}
 function serverNow(){const n=new Date(),date=Utilities.formatDate(n,TZ,'yyyy-MM-dd'),dow=+Utilities.formatDate(n,TZ,'u');const days={1:'الإثنين',2:'الثلاثاء',3:'الأربعاء',4:'الخميس',5:'الجمعة',6:'السبت',7:'الأحد'};return{date,day:days[dow],time:Utilities.formatDate(n,TZ,'HH:mm:ss'),timezone:TZ}}
 function getTeachers(){const v=sheet(SH.teachers).getDataRange().getValues();return v.slice(1).filter(r=>r[0]).map(r=>({name:String(r[0]),base:+r[1]||0,reserveCount:+r[2]||0,currentLoad:+r[3]||(+r[1]||0),remaining:+r[4]||0,lastReserve:fmt(r[5]),status:String(r[6]||''),eligible:String(r[7]||'نعم')!=='لا',scheduleName:String(r[8]||r[0])}))}
 function getTimetable(){const v=sheet(SH.timetable).getDataRange().getValues();return v.slice(1).filter(r=>r[0]&&r[1]).map(r=>({teacher:String(r[0]),day:String(r[1]),periods:Object.fromEntries([1,2,3,4,5,6,7,8].map((p,i)=>[p,String(r[i+2]||'')])),dailyCount:+r[10]||0}))}
@@ -232,9 +232,18 @@ function attendanceTimetableDay_(day) {
   return {groups, teachers:[...teachers].sort((a,b) => a.localeCompare(b,'ar'))};
 }
 
-function attendanceSchedule_(day, group) {
+function attendanceSchedule_(day, group, date) {
   const daySchedule = attendanceTimetableDay_(day);
-  return {periods:daySchedule.groups.get(group.code) || {}, teachers:daySchedule.teachers};
+  const periods=daySchedule.groups.get(group.code) || {};
+  if(date){
+    const label=group.grade+'/'+group.section;
+    for(const change of schoolChanges_(date)){
+      if(change.type!=='swap'||change.group!==label)continue;
+      periods[change.first]=[change.afterFirst];
+      periods[change.second]=[change.afterSecond];
+    }
+  }
+  return {periods, teachers:daySchedule.teachers};
 }
 
 function attendanceRoster_(group) {
@@ -273,7 +282,7 @@ function attendanceBootstrap() {
 function attendanceOpen(grade, section) {
   const today = serverNow();
   const group = attendanceClass_(grade,section);
-  const schedule = attendanceSchedule_(today.day,group);
+  const schedule = attendanceSchedule_(today.day,group,today.date);
   const roster = attendanceRoster_(group);
   const indexes = new Map(roster.map((s,i) => [s.id,i]));
   const records = attendanceRows_(today.date,group).map(r => ({
@@ -292,7 +301,7 @@ function attendanceSave(d) {
     if (d.date !== today.date) throw Error('تغيّر التاريخ. أعد فتح تسجيل اليوم.');
     const group = attendanceClass_(d.grade,d.section);
     const period = Number(d.period);
-    const schedule = attendanceSchedule_(today.day,group);
+    const schedule = attendanceSchedule_(today.day,group,today.date);
     if (!Number.isInteger(period) || !schedule.periods[period]?.length) throw Error('لا توجد حصة مجدولة لهذا الاختيار.');
     if (!schedule.teachers.includes(d.teacher)) throw Error('اختر المعلم من القائمة.');
     const roster = attendanceRoster_(group);
@@ -353,6 +362,14 @@ function attendanceReport(date, selectedPeriod) {
   const period = selectedPeriod === '' ? 0 : Number(selectedPeriod);
   if (selectedPeriod !== '' && (!Number.isInteger(period) || period < 1 || period > 8)) throw Error('اختر الحصة.');
   const {groups} = attendanceTimetableDay_(day);
+  for(const change of schoolChanges_(date)){
+    if(change.type!=='swap')continue;
+    const [grade,section]=change.group.split('/');
+    const periods=groups.get(section+'/'+grade)||{};
+    periods[change.first]=[change.afterFirst];
+    periods[change.second]=[change.afterSecond];
+    groups.set(section+'/'+grade,periods);
+  }
   const saved = new Map(attendanceRows_(date).map(r => [r.key,r]));
   const records = [];
   for (const [grade,maxSection] of Object.entries(ATTENDANCE_SECTIONS_)) {
@@ -455,4 +472,121 @@ function readinessPublic_(parameters) {
   const row = readinessRow_(tab,date);
   const lessons = row ? JSON.parse(tab.getRange(row,index+3).getDisplayValue() || '[]') : [];
   return {date,group,active:Boolean(row),lessons};
+}
+
+const SCHOOL_CHANGES_SHEET_ = 'التغييرات المدرسية المعتمدة';
+const SCHOOL_CHANGES_HEADERS_ = ['المعرّف','التاريخ','الشعبة','النوع','بيانات التغيير'];
+
+function schoolGroup_(value) {
+  const group = String(value || '');
+  if (!READINESS_CLASSES_.includes(group)) throw Error('اختر الصف والشعبة.');
+  return group;
+}
+
+function schoolChanges_(date) {
+  const tab = ss().getSheetByName(SCHOOL_CHANGES_SHEET_);
+  if (!tab || tab.getLastRow()<2) return [];
+  return tab.getRange(2,1,tab.getLastRow()-1,SCHOOL_CHANGES_HEADERS_.length).getDisplayValues()
+    .flatMap(r=>r[1]===date?[{...JSON.parse(r[4]),id:r[0],group:r[2],type:r[3]}]:[]);
+}
+
+function schoolChangesPublic_(p) {
+  const date = p.date || serverNow().date;
+  const value = new Date(date+'T12:00:00Z');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(value.getTime())||value.toISOString().slice(0,10)!==date)throw Error('اختر تاريخًا صحيحًا.');
+  const group = p.group ? schoolGroup_(p.group) : '';
+  return {date,changes:schoolChanges_(date).filter(change=>!group||change.group===group)};
+}
+
+function schoolDayGrid_(date) {
+  const day = ATTENDANCE_DAYS_[new Date(date+'T12:00:00Z').getUTCDay()];
+  const {groups,teachers:names}=attendanceTimetableDay_(day);
+  const grid=new Map();
+  for(const [code,periods] of groups){
+    const group=code.split('/').reverse().join('/');
+    for(const [slot,teachers] of Object.entries(periods))grid.set(group+'|'+slot,teachers);
+  }
+  const changes = schoolChanges_(date);
+  for (const change of changes.filter(c=>c.type==='swap')) {
+    grid.set(change.group+'|'+change.first,[change.afterFirst]);
+    grid.set(change.group+'|'+change.second,[change.afterSecond]);
+  }
+  return {day,grid,names,changes};
+}
+
+function schoolPreviewSwap_(d) {
+  const date = readinessDate_(d.date), group=schoolGroup_(d.group);
+  const first=Number(d.first), second=Number(d.second);
+  if (![first,second].every(slot=>Number.isInteger(slot)&&slot>=1&&slot<=8)||first===second) throw Error('اختر حصتين مختلفتين.');
+  const {grid}=schoolDayGrid_(date);
+  const a=grid.get(group+'|'+first)||[], b=grid.get(group+'|'+second)||[];
+  if (a.length!==1||b.length!==1) throw Error('يلزم وجود معلم واحد لكل من الحصتين في الجدول.');
+  if (a[0]===b[0]) throw Error('المعلم نفسه يدرّس الحصتين.');
+  const conflicts=[];
+  for (const [key,names] of grid) {
+    const [other,slot]=key.split('|');
+    if (other===group) continue;
+    if ((Number(slot)===first&&names.includes(b[0]))||(Number(slot)===second&&names.includes(a[0]))) {
+      conflicts.push({group:other,slot:Number(slot),teacher:Number(slot)===first?b[0]:a[0]});
+    }
+  }
+  return {date,group,first,second,beforeFirst:a[0],beforeSecond:b[0],afterFirst:b[0],afterSecond:a[0],conflicts};
+}
+
+function schoolPublishChange_(d) {
+  const date=readinessDate_(d.date), group=schoolGroup_(d.group);
+  if (date<serverNow().date) throw Error('اختر اليوم أو تاريخًا لاحقًا.');
+  let change;
+  if(d.type==='swap'){
+    const next=schoolPreviewSwap_(d);
+    if(next.conflicts.length)throw Error('تغيّر الجدول أو توجد حصة متعارضة. راجع المعاينة.');
+    if(next.beforeFirst!==d.beforeFirst||next.beforeSecond!==d.beforeSecond)throw Error('تغيّرت الحصص. أعد المعاينة.');
+    change={first:next.first,second:next.second,afterFirst:next.afterFirst,afterSecond:next.afterSecond,
+      text:'تبديل الحصتين '+next.first+' و'+next.second};
+  }else if(d.type==='note'){
+    const message=String(d.text||'').trim(), slot=Number(d.slot||0);
+    if(!message||message.length>240||!Number.isInteger(slot)||slot<0||slot>8)throw Error('أدخل تنبيهًا مختصرًا واختر الحصة عند الحاجة.');
+    change={slot,text:message};
+  }else throw Error('اختر نوع التغيير.');
+  const book=ss();
+  let tab=book.getSheetByName(SCHOOL_CHANGES_SHEET_);
+  if(!tab){
+    tab=book.insertSheet(SCHOOL_CHANGES_SHEET_);
+    tab.appendRow(SCHOOL_CHANGES_HEADERS_);
+    tab.setFrozenRows(1);
+  }
+  const id=Utilities.getUuid();
+  tab.getRange(tab.getLastRow()+1,1,1,5).setNumberFormat('@').setValues([[id,date,group,d.type,JSON.stringify(change)]]);
+  return {date,id};
+}
+
+function schoolMeetingCheck_(d) {
+  const date=readinessDate_(d.date), slot=Number(d.slot);
+  const {grid,names,day}=schoolDayGrid_(date);
+  const teachers=Array.isArray(d.teachers)?[...new Set(d.teachers)]:[];
+  if(!Number.isInteger(slot)||slot<1||slot>8||teachers.length<2||teachers.some(t=>!names.includes(t))) throw Error('اختر حصة ومعلمين اثنين على الأقل.');
+  const conflicts=[];
+  for(const teacher of teachers){
+    const groups=[...grid].filter(([key,members])=>key.endsWith('|'+slot)&&members.includes(teacher)).map(([key])=>key.split('|')[0]);
+    if(groups.length||teacher==='عمر البلوشي'&&!['الأربعاء','الخميس'].includes(day)||teacher==='خليل اسلامية'&&day==='الأحد') conflicts.push({teacher,groups});
+  }
+  return {conflicts};
+}
+
+function schoolProgress_(d) {
+  const date=readinessDate_(d.date);
+  const {grid}=schoolDayGrid_(date);
+  const attendance=new Map(attendanceRows_(date).map(r=>[r.key,r]));
+  const waiting=[], missing=[];
+  for(const [key,teachers] of grid){
+    const [group,slot]=key.split('|');
+    const [grade,section]=group.split('/');
+    const saved=attendance.get([date,grade,section,slot].join('|'));
+    const item={group,slot:Number(slot),teacher:saved?.teacher||teachers.join('، ')};
+    if(!saved)missing.push(item);
+    else if(!saved.approved)waiting.push(item);
+  }
+  const order=(a,b)=>a.group.localeCompare(b.group,'ar',{numeric:true})||a.slot-b.slot;
+  const uncovered=getRecords().filter(r=>r.date===date&&!r.reserve).map(r=>({group:r.className.split('/').reverse().join('/'),slot:r.period,teacher:r.absent}));
+  return {date,missing:missing.sort(order),waiting:waiting.sort(order),uncovered,scheduled:grid.size};
 }
