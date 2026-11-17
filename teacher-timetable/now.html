@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123e45">
+<title>أين أذهب الآن؟ | بوابة سعد</title>
+<style>
+*{box-sizing:border-box}body{margin:0;color:#153b40;background:#edf5f2;font:1rem/1.65 Tahoma,Arial,sans-serif}header{background:#123e45;color:white;padding:1.6rem 0 2.4rem}main,header>div,footer{width:min(780px,calc(100% - 28px));margin:auto}header a{color:#d6f2e7}h1{font-size:clamp(1.8rem,6vw,2.9rem);margin:.35rem 0}h2{margin:0;font-size:1.25rem}p{margin:.45rem 0}main{margin-top:-1.25rem}section,.card{background:white;border:1px solid #c8ded7;border-radius:17px;padding:clamp(1rem,4vw,1.6rem)}.control,.cards,.simulation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cards{margin:12px 0}.card strong{display:block;font-size:1.2rem;color:#12655a}label{display:block;font-weight:700}select,input{display:block;width:100%;margin-top:.3rem}select,input,button{font:inherit;min-height:46px;padding:.4rem .65rem;border:1px solid #95b8ac;border-radius:9px;background:#f8fcfb;color:#153b40}button{cursor:pointer}button[aria-pressed=true]{background:#12655a;color:white}details{margin-top:1rem}summary{cursor:pointer;width:fit-content;min-height:44px;line-height:44px;font-weight:700}.meta{margin-top:.85rem;color:#345b59}.clock{font-weight:700;font-size:1.25rem}.note,footer{font-size:.89rem;color:#3f6460}footer{text-align:center;padding:1rem 0 1.5rem}.demo-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}[hidden]{display:none!important}@media(max-width:500px){.control,.cards{grid-template-columns:1fr}}
+</style>
+<script src="assets/meeting-data.js?v=20261116-shared-timetable" defer></script>
+</head>
+<body>
+<header><div><a href="../">العودة إلى بوابة سعد</a><h1>أين أذهب الآن؟</h1><p>مدرسة سعد بن معاذ للتعليم الأساسي</p></div></header>
+<main>
+<section aria-label="اختيار الجدول والتوقيت">
+<div class="control">
+<label>عرض جدول<select id="mode"><option value="teacher">معلم</option><option value="class">شعبة</option></select></label>
+<label><span id="whoLabel">المعلم</span><select id="who"></select></label>
+</div>
+<div class="meta"><span id="clock" class="clock"></span> <span id="caption"></span></div>
+<details><summary>جرّب يومًا ووقتًا</summary><div class="simulation">
+<label>التاريخ<input id="demoDate" type="date" min="2026-11-01" max="2027-03-25" required></label>
+<label>الوقت<input id="demoTime" type="time" required></label>
+</div><div class="demo-actions"><button id="preview" type="button">عرض الوقت التجريبي</button><button id="live" type="button" aria-pressed="true">الوقت الحالي</button></div>
+<p class="note" id="demoStatus" role="status"></p></details>
+</section>
+<div class="cards" aria-live="polite">
+<article class="card"><h2>الآن</h2><strong id="current"></strong><p id="currentDetail"></p></article>
+<article class="card"><h2>الحصة التالية</h2><strong id="next"></strong><p id="nextDetail"></p></article>
+</div>
+<p class="note">التوقيت الشتوي من ١ نوفمبر ٢٠٢٦ إلى ٢٥ مارس ٢٠٢٧. العرض وفق الجدول الأسبوعي ويحتاج إلى تحديث عند اعتماد تغييرات أو إجازات.</p>
+</main>
+<footer>إعداد الأستاذ خليل البلوشي</footer>
+<script>
+'use strict';
+const periods=[['07:35','08:15'],['08:20','09:00'],['09:05','09:45'],['09:50','10:30'],
+ ['10:55','11:35'],['11:40','12:20'],['12:25','13:05'],['13:10','13:50']];
+const headings=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const grades={5:'الخامس',6:'السادس',7:'السابع',8:'الثامن'};
+const names={'خليل عربي':'الأستاذ خليل البلوشي'};
+const firstDay='2026-11-01',lastDay='2027-03-25';
+const minutes=time=>Number(time.slice(0,2))*60+Number(time.slice(3,5));
+const windowLabel=slot=>periods[slot].join(' – ');
+const sectionLabel=value=>{
+ const [division,grade]=value.split('/');
+ return grades[grade]+' — الشعبة '+division;
+};
+const weekday=date=>new Date(date+'T12:00:00Z').getUTCDay();
+
+function findLesson(teachers, mode, person, day, slot){
+ if(mode==='teacher') {
+  const section=teachers[person]?.[day]?.[slot];
+  return section?sectionLabel(section):'';
+ }
+ return Object.keys(teachers).filter(name=>teachers[name][day]?.[slot]===person)
+  .map(name=>names[name]||name).join('، ');
+}
+
+function timeline(teachers,mode,person,date,time){
+ const day=headings[weekday(date)];
+ const show=(current,currentDetail,next,nextDetail)=>({current,currentDetail,next,nextDetail});
+ if(date<firstDay||date>lastDay) return show('خارج فترة التوقيت الشتوي','','التوقيت غير متاح','');
+ if(weekday(date)>4) return show('عطلة نهاية الأسبوع','الجمعة والسبت','لا حصص مجدولة اليوم','');
+ const now=minutes(time);
+ const slot=periods.findIndex(([start,end])=>now>=minutes(start)&&now<minutes(end));
+ const lesson=index=>findLesson(teachers,mode,person,day,index);
+ const upcoming=periods.findIndex(([start],index)=>minutes(start)>now&&lesson(index));
+ let current,detail='';
+ if(now<minutes('07:20')) current='قبل الدوام';
+ else if(now<minutes('07:35')){current='الطابور الصباحي'; detail='07:20 – 07:35';}
+ else if(now>=minutes('13:50'))current='انتهى الدوام';
+ else if(now>=minutes('10:30')&&now<minutes('10:55')){current='الفسحة';detail='10:30 – 10:55';}
+ else if(slot===-1)current='بين حصتين';
+ else if(lesson(slot)){current=lesson(slot);detail='الحصة '+(slot+1)+' · '+windowLabel(slot);}
+ else{current='لا حصة مجدولة الآن';detail='الحصة '+(slot+1)+' · '+windowLabel(slot);}
+ return show(current,detail,upcoming===-1?'لا حصص متبقية اليوم':lesson(upcoming),
+  upcoming===-1?'':'الحصة '+(upcoming+1)+' · '+windowLabel(upcoming));
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+ const $=id=>document.getElementById(id),teachers=window.SAAD_TIMETABLE?.teachers;
+ if(!teachers){$('current').textContent='تعذّر تحميل الجدول الدراسي';$('next').textContent='أعد تحميل الصفحة';return;}
+ const sections=[...new Set(Object.values(teachers).flatMap(days=>Object.values(days).flat()).filter(Boolean))]
+  .sort((a,b)=>Number(a.split('/')[1])-Number(b.split('/')[1])||Number(a.split('/')[0])-Number(b.split('/')[0]));
+ const teacherNames=Object.keys(teachers).sort((a,b)=>(names[a]||a).localeCompare(names[b]||b,'ar'));
+ const selection={teacher:'خليل عربي',class:'3/5'};
+ const mode=$('mode'),who=$('who');
+ let simulated=null;
+ try{
+  const saved=JSON.parse(localStorage.getItem('saad-now-selection')||'{}');
+  if(saved){if(teacherNames.includes(saved.teacher))selection.teacher=saved.teacher;
+   if(sections.includes(saved.class))selection.class=saved.class;
+   if(saved.mode==='class')mode.value='class';}
+ }catch{}
+ const clock=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Muscat',year:'numeric',month:'2-digit',day:'2-digit',
+  hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+ function liveTime(){
+  const p=Object.fromEntries(clock.formatToParts(new Date()).map(({type,value})=>[type,value]));
+  return {date:[p.year,p.month,p.day].join('-'),time:p.hour+':'+p.minute};
+ }
+ function display(){
+  const when=simulated||liveTime(),day=headings[weekday(when.date)];
+  $('clock').textContent=when.time;
+  $('caption').textContent=' · '+day+' '+when.date+' · '+(simulated?'وضع التجربة':'توقيت عُمان');
+  for(const [id,value] of Object.entries(timeline(teachers,mode.value,who.value,when.date,when.time))) $(id).textContent=value;
+ }
+ function persist(){try{localStorage.setItem('saad-now-selection',JSON.stringify({...selection,mode:mode.value}));}catch{}}
+ function fill(){
+  const teaching=mode.value==='teacher', items=teaching?teacherNames:sections;
+  $('whoLabel').textContent=teaching?'المعلم':'الصف والشعبة';
+  who.replaceChildren(...items.map(value=>new Option(teaching?names[value]||value:sectionLabel(value),value)));
+  who.value=items.includes(selection[mode.value])?selection[mode.value]:items[0];
+  display();
+ }
+ mode.addEventListener('change',()=>{fill();persist();});
+ who.addEventListener('change',()=>{selection[mode.value]=who.value;persist();display();});
+ $('demoDate').value='2026-11-17';$('demoTime').value='07:40';
+ $('preview').addEventListener('click',()=>{
+  if(!$('demoDate').reportValidity()||!$('demoTime').reportValidity())return;
+  simulated={date:$('demoDate').value,time:$('demoTime').value};
+  $('live').setAttribute('aria-pressed','false');
+  $('demoStatus').textContent='تعرض البطاقتان الوقت التجريبي المختار.';
+  display();
+ });
+ $('live').addEventListener('click',()=>{
+  simulated=null;$('live').setAttribute('aria-pressed','true');
+  $('demoStatus').textContent='';display();
+ });
+ fill();
+ window.setInterval(()=>{if(!simulated)display();},15000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!simulated)display();});
+});
+</script>
+</body>
+</html>
