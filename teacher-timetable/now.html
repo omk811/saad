@@ -15,25 +15,36 @@ main,header>div,footer{width:min(1060px,calc(100% - 30px))}body{background:#f5f6
 @media(max-width:500px){.day-lesson{grid-template-columns:32px minmax(0,1fr);gap:10px}.day-lesson small{grid-column:2}.day-heading h2{font-size:1.1rem}.day-actions{gap:8px}}
 @media print{@page{size:A4 portrait;margin:12mm}body{background:white;font-size:10pt}header{background:white;color:#173e41;padding:0 0 10px}header a,main>section[aria-label],.cards,.day-actions,.no-print,main>.note{display:none!important}header h1{font-size:18pt}main{margin:0;width:100%}.day-schedule{border:0;padding:0}.day-lesson{grid-template-columns:30px minmax(0,1fr) auto;padding:8px 0;break-inside:avoid}.day-lesson small{grid-column:auto}.day-lesson strong{font-size:10pt}.day-lesson p{font-size:9pt}.day-schedule .note{font-size:10pt}footer{font-size:8pt}#todayChanges{break-inside:avoid}}
 </style>
-<link rel="stylesheet" href="assets/theme.css?v=20261117"></head>
+<link rel="stylesheet" href="assets/theme.css?v=20261117"><style>
+.school-clock{margin-bottom:16px;text-align:center;padding:22px 16px;border:2px solid #cbdcd6;background:#fff;color:#173e41}.school-clock .clock{display:block;font:700 clamp(3rem,9vw,5.5rem)/1.4 'Saad Arabic',Tahoma,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.03em;margin:8px 0;white-space:nowrap}.clock-date{font-size:clamp(1.05rem,2.5vw,1.5rem);font-weight:700;line-height:1.8}.clock-status{font-weight:700;font-size:clamp(1rem,2vw,1.25rem);margin:2px 0}.clock-zone{font-size:.85rem;margin:6px 0 0;color:inherit}.school-clock[data-state=active]{background:#e7f5ec;border-color:#26854d;color:#126333}.school-clock[data-state=ended]{background:#fff0ef;border-color:#c13d35;color:#a02420}.card#currentCard[data-state=active]{border-color:#26854d}.card#currentCard[data-state=ended]{border-color:#c13d35}.lesson-times{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid #dbe4df}.lesson-times>div{display:flex;flex-direction:column;gap:3px}.lesson-times span,.day-times>span>span{font-size:.85rem;color:#45615b}.lesson-times bdi{font-size:clamp(1.5rem,4vw,2rem);font-weight:700;color:#173e41;font-variant-numeric:tabular-nums}.day-lesson .day-times,.day-times{display:flex;gap:22px;align-items:center}.day-times>span{display:flex;flex-direction:column;gap:2px}.day-times bdi{font-size:clamp(1.15rem,2.5vw,1.45rem);font-weight:700;color:#173e41;font-variant-numeric:tabular-nums;white-space:nowrap}.recess-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;background:#fff4df;border:1px solid #e9cc89;border-radius:12px;padding:16px;margin:8px 0}.recess-row>strong{font-size:1.15rem;color:#79521b}.recess-row .day-times bdi{color:#79521b}
+@media(max-width:500px){.school-clock{padding:18px 12px}.school-clock .clock{font-size:clamp(2.75rem,13vw,4rem)}.day-lesson .day-times{grid-column:2;gap:28px}.day-times bdi{font-size:1.25rem}.recess-row{display:block}.recess-row .day-times{margin-top:10px;gap:28px}.lesson-times bdi{font-size:1.65rem}}
+@media print{.school-clock{display:none!important}.lesson-times bdi,.day-times bdi{font-size:11pt}.day-lesson .day-times{grid-column:auto;gap:12px}.day-times>span>span{font-size:8pt}.recess-row{break-inside:avoid;display:flex;padding:8px;margin:4px 0}.recess-row>strong{font-size:11pt}.lesson-times{margin-top:8px}}
+</style>
+</head>
 <body>
 <header><div><a href="teachers.html">العودة إلى قسم المعلمين</a><h1>يومي الدراسي</h1><p>مدرسة سعد بن معاذ للتعليم الأساسي</p></div></header>
 <main>
+<section id="schoolClock" class="school-clock no-print" data-state="neutral" aria-label="توقيت اليوم الدراسي">
+<div class="clock-date" id="caption"></div>
+<time id="clock" class="clock" dir="ltr" aria-label="الوقت بتوقيت سلطنة عمان"></time>
+<p id="clockStatus" class="clock-status" role="status"></p>
+<p id="clockZone" class="clock-zone">توقيت سلطنة عُمان</p>
+</section>
 <section aria-label="اختيار الجدول والتوقيت">
 <div class="control">
 <label>عرض جدول<select id="mode"><option value="teacher">معلم</option><option value="class">شعبة</option></select></label>
 <label><span id="whoLabel">المعلم</span><select id="who"></select></label>
 </div>
-<div class="meta"><span id="clock" class="clock"></span> <span id="caption"></span></div>
+
 <details><summary>جرّب يومًا ووقتًا</summary><div class="simulation">
 <label>التاريخ<input id="demoDate" type="date" min="2026-11-01" max="2027-03-25" required></label>
-<label>الوقت<input id="demoTime" type="time" required></label>
+<label>الوقت<input id="demoTime" type="time" step="1" required></label>
 </div><div class="demo-actions"><button id="preview" type="button">عرض الوقت التجريبي</button><button id="live" type="button" aria-pressed="true">الوقت الحالي</button></div>
 <p class="note" id="demoStatus" role="status"></p></details>
 </section>
 <div class="cards" aria-live="polite">
-<article class="card"><h2>الآن</h2><strong id="current"></strong><p id="currentDetail"></p></article>
-<article class="card"><h2>الحصة التالية</h2><strong id="next"></strong><p id="nextDetail"></p></article>
+<article class="card" id="currentCard"><h2>الآن</h2><strong id="current"></strong><p id="currentDetail"></p><div class="lesson-times" id="currentTiming" hidden><div><span>البداية</span><bdi id="currentStart" dir="ltr"></bdi></div><div><span>النهاية</span><bdi id="currentEnd" dir="ltr"></bdi></div></div></article>
+<article class="card"><h2>الحصة التالية</h2><strong id="next"></strong><p id="nextDetail"></p><div class="lesson-times" id="nextTiming" hidden><div><span>البداية</span><bdi id="nextStart" dir="ltr"></bdi></div><div><span>النهاية</span><bdi id="nextEnd" dir="ltr"></bdi></div></div></article>
 </div>
 <section class="day-schedule"><div class="day-heading"><h2>حصص اليوم</h2><div class="day-actions"><a href="weekly.html" id="weekLink">الجدول الأسبوعي</a><button type="button" id="printDay">طباعة اليوم</button></div></div><p id="dayLabel" class="note"></p><div id="dayLessons"></div><div class="day-actions no-print"><button type="button" id="refreshMaterials">تحديث المواد</button><span class="note" id="materialStatus" role="status"></span></div></section>
 <section id="todayChanges" hidden><h2>تغييرات اليوم</h2><ul id="changeList"></ul></section>
@@ -49,8 +60,8 @@ const grades={5:'الخامس',6:'السادس',7:'السابع',8:'الثامن
 const names={'خليل عربي':'الأستاذ خليل البلوشي'};
 const changesApi='https://script.google.com/macros/s/AKfycbxaE54AYPy3XPTl7JUUw_nVEjA466BJqwZvwHfwPObBAxUuP_tfSZWgmbbne2xMsnxh/exec';
 const firstDay='2026-11-01',lastDay='2027-03-25';
+const recess=['10:30','10:55'];
 const minutes=time=>Number(time.slice(0,2))*60+Number(time.slice(3,5));
-const windowLabel=slot=>periods[slot].join(' – ');
 const sectionLabel=value=>{
  const [division,grade]=value.split('/');
  return grades[grade]+' — الشعبة '+division;
@@ -66,25 +77,36 @@ function findLesson(teachers, mode, person, day, slot){
   .map(name=>names[name]||name).join('، ');
 }
 
-function timeline(teachers,mode,person,date,time){
- const day=headings[weekday(date)];
- const show=(current,currentDetail,next,nextDetail)=>({current,currentDetail,next,nextDetail});
- if(date<firstDay||date>lastDay) return show('خارج فترة التوقيت الشتوي','','التوقيت غير متاح','');
- if(weekday(date)>4) return show('عطلة نهاية الأسبوع','الجمعة والسبت','لا حصص مجدولة اليوم','');
+function schoolPhase(date,time){
  const now=minutes(time);
+ if(date<firstDay||date>lastDay)return {state:'neutral',kind:'unavailable',label:'خارج فترة التوقيت الشتوي'};
+ if(weekday(date)>4)return {state:'neutral',kind:'weekend',label:'عطلة نهاية الأسبوع'};
  const slot=periods.findIndex(([start,end])=>now>=minutes(start)&&now<minutes(end));
+ if(slot!==-1)return {state:'active',kind:'lesson',label:'الحصة '+(slot+1)+' جارية',slot,start:periods[slot][0],end:periods[slot][1]};
+ if(now>=minutes(recess[0])&&now<minutes(recess[1]))return {state:'ended',kind:'recess',label:'الاستراحة (الفسحة)',start:recess[0],end:recess[1]};
+ if(now>=minutes(periods[7][1]))return {state:'ended',kind:'finished',label:'انتهت الحصة الثامنة · انتهى الدوام'};
+ if(now>=minutes('07:20')&&now<minutes(periods[0][0]))return {state:'neutral',kind:'assembly',label:'الطابور الصباحي',start:'07:20',end:periods[0][0]};
+ const previous=periods.findIndex(([,end],index)=>now>=minutes(end)&&now<minutes(periods[index+1]?.[0]||end));
+ if(previous!==-1)return {state:'ended',kind:'transition',label:'انتهت الحصة '+(previous+1)+' · بانتظار الحصة '+(previous+2),start:periods[previous][1],end:periods[previous+1][0]};
+ return {state:'neutral',kind:'before',label:'قبل بداية الدوام'};
+}
+
+function timeline(teachers,mode,person,date,time){
+ const phase=schoolPhase(date,time),day=headings[weekday(date)];
+ const result={current:phase.label,currentDetail:'',next:'لا حصص متبقية اليوم',nextDetail:'',currentStart:phase.start||'',currentEnd:phase.end||'',nextStart:'',nextEnd:''};
+ if(phase.kind==='unavailable'){result.next='التوقيت غير متاح';return result;}
+ if(phase.kind==='weekend'){result.currentDetail='الجمعة والسبت';result.next='لا حصص مجدولة اليوم';return result;}
  const lesson=index=>findLesson(teachers,mode,person,day,index);
- const upcoming=periods.findIndex(([start],index)=>minutes(start)>now&&lesson(index));
- let current,detail='';
- if(now<minutes('07:20')) current='قبل الدوام';
- else if(now<minutes('07:35')){current='الطابور الصباحي'; detail='07:20 – 07:35';}
- else if(now>=minutes('13:50'))current='انتهى الدوام';
- else if(now>=minutes('10:30')&&now<minutes('10:55')){current='الفسحة';detail='10:30 – 10:55';}
- else if(slot===-1)current='بين حصتين';
- else if(lesson(slot)){current=lesson(slot);detail='الحصة '+(slot+1)+' · '+windowLabel(slot);}
- else{current='لا حصة مجدولة الآن';detail='الحصة '+(slot+1)+' · '+windowLabel(slot);}
- return show(current,detail,upcoming===-1?'لا حصص متبقية اليوم':lesson(upcoming),
-  upcoming===-1?'':'الحصة '+(upcoming+1)+' · '+windowLabel(upcoming));
+ const upcoming=periods.findIndex(([start],index)=>minutes(start)>minutes(time)&&lesson(index));
+ if(phase.kind==='lesson'){
+  result.current=lesson(phase.slot)||'لا حصة مجدولة الآن';
+  result.currentDetail='الحصة '+(phase.slot+1);
+ }
+ if(upcoming!==-1){
+  result.next=lesson(upcoming);result.nextDetail='الحصة '+(upcoming+1);
+  [result.nextStart,result.nextEnd]=periods[upcoming];
+ }
+ return result;
 }
 
 function scheduleWithSwaps(teachers,day,changes){
@@ -135,18 +157,32 @@ document.addEventListener('DOMContentLoaded',()=>{
   }catch{}
  }
  const clock=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Muscat',year:'numeric',month:'2-digit',day:'2-digit',
-  hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+  hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
  function liveTime(){
   const p=Object.fromEntries(clock.formatToParts(new Date()).map(({type,value})=>[type,value]));
-  return {date:[p.year,p.month,p.day].join('-'),time:p.hour+':'+p.minute};
+  return {date:[p.year,p.month,p.day].join('-'),time:p.hour+':'+p.minute+':'+p.second};
  }
+ const dateFormat=new Intl.DateTimeFormat('ar-OM',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Muscat'});
+ let displaySignature='',subjectRevision=0;
  function display(){
   const when=simulated||liveTime(),day=headings[weekday(when.date)];
   refreshChanges(when.date);
-  $('clock').textContent=when.time;
-  $('caption').textContent=' · '+day+' '+when.date+' · '+(simulated?'وضع التجربة':'توقيت عُمان');
+  $('clock').textContent=when.time.length===5?when.time+':00':when.time;
+  $('clock').dateTime=when.date+'T'+$('clock').textContent+'+04:00';
+  const phase=schoolPhase(when.date,when.time);
+  if($('schoolClock').dataset.state!==phase.state)$('schoolClock').dataset.state=phase.state;
+  if($('clockStatus').textContent!==phase.label)$('clockStatus').textContent=phase.label;
+  $('currentCard').dataset.state=phase.state;
+  const signature=JSON.stringify([when.date,when.time.slice(0,5),Boolean(simulated),mode.value,who.value,changes,subjectRevision]);
+  if(signature===displaySignature)return;
+  displaySignature=signature;
+  $('caption').textContent=dateFormat.format(new Date(when.date+'T12:00:00Z'));
+  $('clockZone').textContent=simulated?'وقت تجريبي · توقيت سلطنة عُمان':'توقيت سلطنة عُمان';
   const schedule=scheduleWithSwaps(teachers,day,changes);
-  for(const [id,value] of Object.entries(timeline(schedule,mode.value,who.value,when.date,when.time))) $(id).textContent=value;
+  const currentTimeline=timeline(schedule,mode.value,who.value,when.date,when.time);
+  for(const [id,value] of Object.entries(currentTimeline))$(id).textContent=value;
+  $('currentTiming').hidden=!currentTimeline.currentStart||!currentTimeline.currentEnd;
+  $('nextTiming').hidden=!currentTimeline.nextStart;
   const group=mode.value==='class'?who.value.split('/').reverse().join('/'):'';
   const taughtGroups=new Set([...(teachers[who.value]?.[day]||[]),...(schedule[who.value]?.[day]||[])].filter(Boolean).map(code=>code.split('/').reverse().join('/')));
   const relevant=changes.filter(c=>group?c.group===group:taughtGroups.has(c.group)||(c.type==='swap'&&[c.afterFirst,c.afterSecond].includes(who.value)));
@@ -168,7 +204,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  }
  mode.addEventListener('change',()=>{fill();persist();});
  who.addEventListener('change',()=>{selection[mode.value]=who.value;persist();display();});
- $('demoDate').value=liveTime().date;$('demoTime').value='07:40';
+ $('demoDate').value=liveTime().date;$('demoTime').value='07:40:00';
  $('preview').addEventListener('click',()=>{
   if(!$('demoDate').reportValidity()||!$('demoTime').reportValidity())return;
   simulated={date:$('demoDate').value,time:$('demoTime').value};
@@ -202,8 +238,22 @@ document.addEventListener('DOMContentLoaded',()=>{
    number.className='day-number';number.textContent=String(slot+1);
    const title=document.createElement('strong');title.textContent=lesson.place;
    const detail=document.createElement('p');detail.textContent=[lesson.subject,lesson.names].filter(Boolean).join(' · ');
-   content.append(title,detail);time.textContent=windowLabel(slot);time.dir='ltr';row.append(number,content,time);return row;
+   content.append(title,detail);
+   time.className='day-times';
+   for(const [label,value] of [['البداية',periods[slot][0]],['النهاية',periods[slot][1]]]){
+    const part=document.createElement('span'),caption=document.createElement('span'),valueNode=document.createElement('bdi');
+    caption.textContent=label;valueNode.textContent=value;valueNode.dir='ltr';part.append(caption,valueNode);time.append(part);
+   }
+   row.append(number,content,time);return row;
   }));
+  const breakRow=document.createElement('article');breakRow.className='recess-row';
+  const breakTitle=document.createElement('strong');breakTitle.textContent='الاستراحة (الفسحة)';
+  const breakTime=document.createElement('div');breakTime.className='day-times';
+  for(const [label,value] of [['البداية',recess[0]],['النهاية',recess[1]]]){
+   const part=document.createElement('span'),caption=document.createElement('span'),valueNode=document.createElement('bdi');
+   caption.textContent=label;valueNode.textContent=value;valueNode.dir='ltr';part.append(caption,valueNode);breakTime.append(part);
+  }
+  breakRow.append(breakTitle,breakTime);$('dayLessons').children[3].after(breakRow);
  }
  $('printDay').addEventListener('click',()=>window.print());
  async function refreshMaterials(force=false){
@@ -213,10 +263,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   catch{$('materialStatus').textContent='تعذّر التحديث. تظهر المواد المحفوظة إن توفرت.';}
   finally{$('refreshMaterials').disabled=false;}
  }
- window.SaadSubjects.subscribe(()=>display());
+ window.SaadSubjects.subscribe(()=>{subjectRevision++;display();});
  $('refreshMaterials').addEventListener('click',()=>refreshMaterials(true));
  fill();persist();refreshMaterials();
- window.setInterval(()=>{if(!document.hidden&&!simulated)display();},15000);
+ window.setInterval(()=>{if(!document.hidden&&!simulated)display();},1000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!simulated)display();});
 });
 </script>
