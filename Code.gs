@@ -7,16 +7,98 @@ function sheet(n){const s=ss().getSheetByName(n);if(!s)throw Error('الورقة
 function doGet(e){try{const a=(e.parameter.action||'bootstrap');if(a==='attendance')return attendancePage_();if(a==='readinessPublic')return out({ok:true,...readinessPublic_(e.parameter)});if(a==='schoolChangesPublic')return out({ok:true,...schoolChangesPublic_(e.parameter)});if(a==='ping')return out({ok:true});if(a==='subjects')return out({ok:true,subjects:getSubjects()});if(a==='now')return out({ok:true,...serverNow()});if(a==='teachers'||a==='timetable'||a==='records'||a==='bootstrap')return out({ok:false,error:'الوصول إلى حصص الاحتياط يتطلب تسجيل دخول الإدارة'});if(a==='teachers')return out({ok:true,teachers:getTeachers()});if(a==='timetable')return out({ok:true,timetable:getTimetable()});if(a==='records')return out({ok:true,records:getRecords()});if(a==='bootstrap')return out({ok:true,teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()});return out({ok:false,error:'إجراء غير معروف'})}catch(x){return out({ok:false,error:x.message})}}
 function doPost(e){const lock=LockService.getScriptLock();lock.waitLock(20000);try{const d=JSON.parse(e.postData.contents||'{}');let r;if(d.action==='reserveBootstrap'){verifySubjectAdmin_(d);r={teachers:getTeachers(),timetable:getTimetable(),records:getRecords(),cycles:getCycles(),serverNow:serverNow()};}else if(d.action==='saveDay'){verifySubjectAdmin_(d);r=saveDay(d);}else if(d.action==='saveSubject'){verifySubjectAdmin_(d);r=saveSubject(d);}else if(d.action==='saveSubjectAll'){verifySubjectAdmin_(d);r=saveSubjectAll(d);}else if(d.action==='studentsQuery'){verifyStudentAdmin_(d);r=studentsQuery_(d);}else if(d.action==='studentUpdate'){verifyStudentAdmin_(d);r=studentUpdate_(d);}else if(d.action==='studentsImport'){verifyStudentAdmin_(d);r=studentsImport_(d);}else if(d.action==='guardianVisitSave'){verifyStudentAdmin_(d);r=guardianVisitSave_(d);}else if(d.action==='guardianVisitRecent'){verifyStudentAdmin_(d);r=guardianVisitRecent_(d);}else if(d.action==='updateTeacher'){verifySubjectAdmin_(d);r=updateTeacher(d);}else if(d.action==='readinessPublish'){verifySubjectAdmin_(d);r=readinessPublish_(d);}else if(d.action==='readinessWithdraw'){verifySubjectAdmin_(d);r=readinessWithdraw_(d);}else if(d.action==='schoolPreviewSwap'){verifySubjectAdmin_(d);r=schoolPreviewSwap_(d);}else if(d.action==='schoolPublishChange'){verifySubjectAdmin_(d);r=schoolPublishChange_(d);}else if(d.action==='schoolMeetingCheck'){verifySubjectAdmin_(d);r=schoolMeetingCheck_(d);}else if(d.action==='schoolProgress'){verifySubjectAdmin_(d);r=schoolProgress_(d);}else if(d.action==='startCycle'){verifySubjectAdmin_(d);r=startCycle(d);}else throw Error('إجراء غير معروف');SpreadsheetApp.flush();return out({ok:true,...r})}catch(x){return out({ok:false,error:x.message})}finally{lock.releaseLock()}}
 function serverNow(){const n=new Date(),date=Utilities.formatDate(n,TZ,'yyyy-MM-dd'),dow=+Utilities.formatDate(n,TZ,'u');const days={1:'الإثنين',2:'الثلاثاء',3:'الأربعاء',4:'الخميس',5:'الجمعة',6:'السبت',7:'الأحد'};return{date,day:days[dow],time:Utilities.formatDate(n,TZ,'HH:mm:ss'),timezone:TZ}}
-function getTeachers(){const v=sheet(SH.teachers).getDataRange().getValues();return v.slice(1).filter(r=>r[0]).map(r=>({name:String(r[0]),base:+r[1]||0,reserveCount:+r[2]||0,currentLoad:+r[3]||(+r[1]||0),remaining:+r[4]||0,lastReserve:fmt(r[5]),status:String(r[6]||''),eligible:String(r[7]||'نعم')!=='لا',scheduleName:String(r[8]||r[0])}))}
+function getTeachers(){
+  const rows=sheet(SH.teachers).getDataRange().getValues();
+  return rows.slice(1).filter(r=>r[0]).map(r=>{
+    const name=String(r[0]),base=Number(r[1])||0;
+    const extra=r[2]!==''&&Number.isFinite(Number(r[2]))&&Number(r[2])>=0?Number(r[2]):(RESERVE_ADMIN_LOAD_[name]||0);
+    const reserveCount=Number(r[9])||0;
+    const eligible=String(r[7]||'نعم')!=='لا'&&!FULL_RESERVE_EXCLUSIONS_.includes(name);
+    return {name,base,extra,reserveCount,currentLoad:base+extra+reserveCount,
+      remaining:eligible?Math.max(0,25-base-extra-reserveCount):0,lastReserve:fmt(r[5]),
+      status:String(r[6]||''),eligible,scheduleName:String(r[8]||name)};
+  });
+}
 function getTimetable(){const v=sheet(SH.timetable).getDataRange().getValues();return v.slice(1).filter(r=>r[0]&&r[1]).map(r=>({teacher:String(r[0]),day:String(r[1]),periods:Object.fromEntries([1,2,3,4,5,6,7,8].map((p,i)=>[p,String(r[i+2]||'')])),dailyCount:+r[10]||0}))}
 function fmt(v){return v instanceof Date?Utilities.formatDate(v,TZ,'yyyy-MM-dd'):String(v||'')}
 function getRecords(){const v=sheet(SH.records).getDataRange().getValues();return v.slice(1).filter(r=>r[0]).map(r=>({id:String(r[0]),date:fmt(r[1]),day:String(r[2]),absent:String(r[3]),period:+r[4],reserve:String(r[5]||''),className:String(r[6]||''),approvedAt:fmt(r[7]),notes:String(r[8]||'')}))}
 function getCycles(){const s=ss().getSheetByName(SH.cycles);if(!s)return[];const v=s.getDataRange().getValues();return v.slice(1).filter(r=>r[0]).map(r=>({number:+r[0],start:fmt(r[1]),end:fmt(r[2]),target:+r[3]||0,done:+r[4]||0,progress:r[5],completed:+r[6]||0,status:String(r[7]||''),notes:String(r[8]||'')}))}
-function updateTeacher(d){if(FULL_RESERVE_EXCLUSIONS_.includes(String(d.name).trim()))d.eligible=false;if(!d.name)throw Error('اسم المعلم مطلوب');const s=sheet(SH.teachers),v=s.getDataRange().getValues();let row=v.findIndex((r,i)=>i>0&&String(r[0])===String(d.name));if(row<0){if(!d.create)throw Error('المعلم غير موجود');row=s.getLastRow();s.getRange(row+1,1,1,9).setValues([[d.name,+d.base||0,0,+d.base||0,Math.max(0,25-(+d.base||0)),'','متاح',d.eligible===false?'لا':'نعم',d.scheduleName||d.name]])}else{s.getRange(row+1,2).setValue(+d.base||0);s.getRange(row+1,8).setValue(d.eligible===false?'لا':'نعم');if(d.scheduleName)s.getRange(row+1,9).setValue(d.scheduleName)}return{teachers:getTeachers()}}
+function updateTeacher(d){
+  if(!d.name)throw Error('اسم المعلم مطلوب');
+  const name=String(d.name).trim();
+  const base=Number(d.base);
+  if(!Number.isInteger(base)||base<0||base>25)throw Error('أدخل نصابًا تدريسيًا صحيحًا.');
+  const tab=sheet(SH.teachers), rows=tab.getDataRange().getValues();
+  const index=rows.findIndex((r,i)=>i>0&&String(r[0])===name);
+  const eligible=!FULL_RESERVE_EXCLUSIONS_.includes(name)&&(d.eligible===undefined?index<0||rows[index][7]!=='لا':d.eligible===true);
+  if(index>=0){
+    tab.getRange(index+1,2).setValue(base);
+    tab.getRange(index+1,8).setValue(eligible?'نعم':'لا');
+    if(d.scheduleName)tab.getRange(index+1,9).setValue(d.scheduleName);
+  }else{
+    if(!d.create)throw Error('المعلم غير موجود');
+    const row=tab.getLastRow()+1;
+    const has="COUNTIF('الجدول الأسبوعي'!A:A,A"+row+")";
+    const start=`IFERROR(INT(LOOKUP(2,1/('دورات الاحتياط'!$H$2:$H="نشطة"),'دورات الاحتياط'!$B$2:$B)),1)`;
+    const history=`=SUMPRODUCT(N('سجل الاحتياط'!$F$2:$F=A${row}),N(IFERROR(IF(ISNUMBER('سجل الاحتياط'!$B$2:$B),INT('سجل الاحتياط'!$B$2:$B),DATEVALUE('سجل الاحتياط'!$B$2:$B)),0)>=${start}))`;
+    tab.getRange(row,1,1,12).setValues([[name,base,RESERVE_ADMIN_LOAD_[name]||0,'=B'+row+'+C'+row+'+J'+row,
+      '=MAX(0,L'+row+'-J'+row+')','','=IF(H'+row+'="لا","مستبعد",IF('+has+'=0,"بلا جدول معتمد",IF(D'+row+'>=25,"أكمل النصاب","متاح")))',
+      eligible?'نعم':'لا',d.scheduleName||name,history,'','=IF(OR(H'+row+'="لا",'+has+'=0),0,MAX(0,25-B'+row+'-C'+row+'))']]);
+  }
+  SpreadsheetApp.flush();
+  return {teachers:getTeachers()};
+}
 const FULL_RESERVE_EXCLUSIONS_=["خليل عربي","ياسر الذهلي","راشد المزروعي","عبدالله حسن","سعيد المخمري"];
-function hardValidate(r,teachers,tt,dayRows,batchNames,absentNames){if(FULL_RESERVE_EXCLUSIONS_.includes(String(r.reserve).trim()))throw Error('لا يجوز تكليف هذا المعلم بالاحتياط نظرًا لاستحقاقه تخفيض ساعات العمل');if(String(r.reserve).trim()==='عمر البلوشي'&&!['الأربعاء','الخميس'].includes(String(r.day).trim()))throw Error('عمر البلوشي منتدب ولا يحضر المدرسة إلا الأربعاء والخميس؛ لا يجوز إسناد الاحتياط إليه في الأيام الأخرى');if(String(r.reserve)==='خليل اسلامية'&&String(r.day)==='الأحد')throw Error('خليل إسلامية مرتبط بالتدريب يوم الأحد ولا يجوز تكليفه بالاحتياط');const t=teachers.find(x=>x.name===r.reserve);if(!t||!t.eligible)throw Error('معلم الاحتياط غير مؤهل: '+r.reserve);if(!/^[1-7][/][5-8]$/.test(String(r.className||'').trim()))throw Error('الصف والشعبة غير صالحين للحصة '+r.period+'؛ يرجى إدخالهما مثل 3/5');if(absentNames.has(r.reserve))throw Error('لا يمكن تكليف معلم مسجل غائبًا في هذا اليوم: '+r.reserve);const row=tt.find(x=>x.teacher===r.reserve&&x.day===r.day);if(!row)throw Error('لا يوجد جدول معتمد لـ '+r.reserve);if(row.periods[r.period])throw Error(r.reserve+' لديه حصة أصلية في الحصة '+r.period);if(batchNames.has(r.reserve))throw Error('لا يجوز إسناد أكثر من احتياط للمعلم نفسه في اليوم');batchNames.add(r.reserve);const oldSame=dayRows.filter(x=>x.reserve===r.reserve).length;const hist=t.reserveCount-oldSame;if(t.base+hist+1>25)throw Error(r.reserve+' أكمل نصاب الدورة')}
-function saveDay(d){if(!d.date||!d.day)throw Error('التاريخ واليوم مطلوبان');const incoming=(d.records||[]).map(r=>({...r,date:d.date,day:d.day,period:+r.period}));const assigned=incoming.filter(r=>r.reserve);const all=getRecords(),same=all.filter(r=>r.date===d.date&&r.day===d.day),teachers=getTeachers(),tt=getTimetable(),seen=new Set(),absentNames=new Set(incoming.map(r=>String(r.absent||'')).filter(Boolean));assigned.forEach(r=>hardValidate(r,teachers,tt,same,seen,absentNames));const s=sheet(SH.records),v=s.getDataRange().getValues();s.getRange('G:G').setNumberFormat('@');for(let i=v.length-1;i>=1;i--)if(fmt(v[i][1])===d.date&&String(v[i][2])===d.day)s.deleteRow(i+1);if(incoming.length)s.getRange(s.getLastRow()+1,1,incoming.length,9).setValues(incoming.map(r=>[r.id||Utilities.getUuid(),new Date(r.date+'T12:00:00'),r.day,r.absent,r.period,r.reserve||'',r.className||'',new Date(),r.reserve?(r.exceptional?'استثنائي':''):'غير مسند - لا يوجد متاح']));return{records:getRecords(),teachers:getTeachers()}}
-function startCycle(d){const s=sheet(SH.cycles),cycles=getCycles(),active=cycles.find(x=>x.status==='نشطة');if(active){const row=cycles.findIndex(x=>x.number===active.number)+2;s.getRange(row,3).setValue(new Date());s.getRange(row,8).setValue('مغلقة')}const n=cycles.length?Math.max(...cycles.map(x=>x.number))+1:1;const target=getTeachers().filter(x=>x.eligible).reduce((a,t)=>a+Math.max(0,25-t.base),0);s.appendRow([n,new Date(),' ',target,0,'0%',0,'نشطة',d.notes||'']);return{cycles:getCycles()}}
+const RESERVE_ADMIN_LOAD_={"خليفة قناص":7,"خليفة سعيد":7,"اسماعيل البلوشي":7,"خليل اسلامية":7,"سعيد الحضرمي":7,"ابراهيم الهاشمي":0,"سالم المعمري":5,"علي المعمري":3,"خميس المزروعي":5,"علي العبري":3,"وليد الريسي":3};
+function reserveLimit_(teacher){
+  return Math.max(0,25-teacher.base-(teacher.extra??(RESERVE_ADMIN_LOAD_[teacher.name]||0)));
+}
+
+function hardValidate(r,teachers,tt,usedBeforeDay,batchNames,absentNames){
+  const teacher=teachers.find(t=>t.name===r.reserve);
+  if(!teacher||!teacher.eligible||FULL_RESERVE_EXCLUSIONS_.includes(r.reserve))throw Error('معلم الاحتياط غير مؤهل: '+r.reserve);
+  if(r.reserve==='عمر البلوشي'&&!['الأربعاء','الخميس'].includes(r.day))throw Error('عمر البلوشي منتدب ولا يحضر المدرسة إلا الأربعاء والخميس.');
+  if(r.reserve==='خليل اسلامية'&&r.day==='الأحد')throw Error('خليل إسلامية مرتبط بالتدريب يوم الأحد.');
+  if(!/^[1-7]\/[5-8]$/.test(String(r.className||'').trim())||!Number.isInteger(r.period)||r.period<1||r.period>8)throw Error('الصف والشعبة والحصة يجب أن تكون صالحة.');
+  if(absentNames.has(r.reserve))throw Error('لا يمكن تكليف معلم مسجل غائبًا اليوم.');
+  const row=tt.find(x=>(x.teacher===r.reserve||x.teacher===teacher.scheduleName)&&x.day===r.day);
+  if(!row)throw Error('لا يوجد جدول معتمد لـ '+r.reserve);
+  if(row.periods[r.period])throw Error(r.reserve+' لديه حصة أصلية في الحصة '+r.period);
+  if(batchNames.has(r.reserve))throw Error('لا يجوز إسناد أكثر من احتياط للمعلم نفسه في اليوم.');
+  const original=Object.keys(row.periods).filter(p=>row.periods[p]).map(Number);
+  const occupied=new Set(original);
+  const adjacent=original.some(p=>[1,2,3].every(offset=>occupied.has(p+offset))&&(r.period===p-1||r.period===p+4));
+  if(r.exceptional!==true&&(original.length>=5||adjacent||(r.period===8&&!occupied.has(7)))){
+    throw Error('التكليف يحتاج إلى اعتماد استثنائي وفق شروط العبء اليومي.');
+  }
+  if((usedBeforeDay.get(r.reserve)||0)>=reserveLimit_(teacher))throw Error(r.reserve+' أكمل نصاب الدورة.');
+  batchNames.add(r.reserve);
+}
+function saveDay(d){if(!d.date||!d.day)throw Error('التاريخ واليوم مطلوبان');const incoming=(d.records||[]).map(r=>({...r,date:d.date,day:d.day,period:+r.period}));const assigned=incoming.filter(r=>r.reserve);const all=getRecords(),teachers=getTeachers(),tt=getTimetable(),seen=new Set(),absentNames=new Set(incoming.map(r=>String(r.absent||'')).filter(Boolean));
+ const cycle=getCycles().filter(c=>c.start<=d.date&&(!c.end||d.date<=c.end)).sort((a,b)=>b.number-a.number)[0];
+ const counts=new Map();
+ for(const entry of all){
+   if(!entry.reserve||entry.date===d.date||(cycle&&(entry.date<cycle.start||cycle.end&&entry.date>cycle.end)))continue;
+   counts.set(entry.reserve,(counts.get(entry.reserve)||0)+1);
+ }
+ assigned.forEach(r=>hardValidate(r,teachers,tt,counts,seen,absentNames));const s=sheet(SH.records),v=s.getDataRange().getValues();s.getRange('G:G').setNumberFormat('@');for(let i=v.length-1;i>=1;i--)if(fmt(v[i][1])===d.date&&String(v[i][2])===d.day)s.deleteRow(i+1);if(incoming.length)s.getRange(s.getLastRow()+1,1,incoming.length,9).setValues(incoming.map(r=>[r.id||Utilities.getUuid(),new Date(r.date+'T12:00:00'),r.day,r.absent,r.period,r.reserve||'',r.className||'',new Date(),r.reserve?(r.exceptional?'استثنائي':''):'غير مسند - لا يوجد متاح']));return{records:getRecords(),teachers:getTeachers()}}
+function startCycle(d){
+  const tab=sheet(SH.cycles),cycles=getCycles(),active=cycles.find(x=>x.status==='نشطة');
+  if(active){
+    const oldRow=cycles.findIndex(x=>x.number===active.number)+2;
+    const totals=tab.getRange(oldRow,4,1,4);
+    totals.setValues(totals.getValues());
+    tab.getRange(oldRow,3).setValue(new Date());
+    tab.getRange(oldRow,8).setValue('مغلقة');
+  }
+  const number=cycles.length?Math.max(...cycles.map(x=>x.number))+1:1;
+  const row=tab.getLastRow()+1;
+  tab.appendRow([number,new Date(),'',`=SUM('المعلمون'!L2:L)`,
+    `=SUMIF('المعلمون'!L2:L,">0",'المعلمون'!J2:J)`,'=IFERROR(E'+row+'/D'+row+',0)',
+    `=COUNTIF('المعلمون'!G2:G,"أكمل النصاب")`,'نشطة',d.notes||'']);
+  tab.getRange(row,6).setNumberFormat('0.0%');
+  return {cycles:getCycles()};
+}
 
 function getSubjects(){const v=sheet('مواد المعلمين').getDataRange().getValues(),o={};v.slice(1).forEach(r=>{const n=String(r[0]||''),c=String(r[1]||''),s=String(r[2]||'');if(n&&c&&s)(o[n]||(o[n]={}))[c]=s});return o}
 function saveSubject(d){const n=String(d.teacher||'').trim(),c=String(d.className||'').trim(),subject=String(d.subject||'').trim();if(!n||!c||!subject||subject.length>100)throw Error('بيانات المادة غير مكتملة');const tt=getTimetable();if(!tt.some(t=>t.teacher===n&&Object.values(t.periods).includes(c)))throw Error('المعلم لا يدرس هذه الشعبة في الجدول');const sh=sheet('مواد المعلمين'),v=sh.getDataRange().getValues();let i=v.findIndex((r,k)=>k>0&&String(r[0])===n&&String(r[1])===c);if(i<0)i=sh.getLastRow();sh.getRange(i+1,1,1,4).setValues([[n,c,subject,new Date()]]);return{subjects:getSubjects()}}
