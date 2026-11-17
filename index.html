@@ -56,26 +56,9 @@ footer{text-align:center;color:#637a7b;font-size:.85rem;padding:5px 20px 24px}
 @media(max-width:670px){.shell{width:min(100% - 24px,520px)}.hero{padding:36px 0 83px}.hero h1{font-size:1.62rem}.panel{padding:16px;border-radius:20px}.cards{grid-template-columns:1fr;gap:13px}.service{min-height:220px;padding:20px;border-radius:16px}.service-icon{width:53px;height:53px}.service-icon svg{width:29px;height:29px}.service h3{margin:13px 0 6px}.intro{margin-bottom:18px}.note{font-size:.79rem}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
 @media print{body{background:white}.hero{background:white;color:#123e45;padding:10px 0 35px}.hero p{color:#444}.panel,.service{box-shadow:none}.service{min-height:210px}main{margin-top:0}}
-
-/* Temporary maintenance notice for the homepage. */
-body.maintenance-active{overflow:hidden}
-body.maintenance-active > :not(.maintenance-screen){display:none!important}
-.maintenance-screen{position:fixed;inset:0;z-index:1000;display:flex;overflow:auto;padding:clamp(16px,5vw,48px);background:linear-gradient(135deg,#123e45,#17695f);color:#123e45}
-.maintenance-card{width:min(100%,720px);margin:auto;padding:clamp(24px,6vw,52px);border-radius:24px;background:#fff;text-align:center;box-shadow:0 16px 45px #0b313a55}
-.maintenance-card h1{margin:0;font-size:clamp(1.4rem,4vw,2.25rem);line-height:1.55}
-.maintenance-card p{margin:14px 0 0;color:#146d68;font-size:clamp(1.03rem,3vw,1.3rem);font-weight:700}
-@media print{.maintenance-screen{position:static;background:#fff}.maintenance-card{box-shadow:none}}
 </style>
 </head>
-<body class="maintenance-active">
-<section class="maintenance-screen" role="dialog" aria-modal="true" aria-labelledby="maintenance-title" aria-describedby="maintenance-message">
-<div class="maintenance-card">
-<p style="margin:0 0 12px">عذرا</p>
-<h1 id="maintenance-title">البوابة الرقمية لمدرسة سعد بن معاذ للتعليم الأساسي</h1>
-<p id="maintenance-message">للصيانة البرمجية و إضافة مزايا جديدة</p>
-<p>أ. خليل البلوشي</p>
-</div>
-</section>
+<body>
 <header class="hero"><div class="shell hero-content"><div class="eyebrow">مدرسة سعد بن معاذ للتعليم الأساسي</div><h1>البوابة المدرسية الرئيسية</h1><p>وصول منظم وسريع إلى خدمات إدارة اليوم الدراسي، والجداول والخدمات الرقمية للطلاب والمعلمين.</p></div></header>
 <main class="shell"><section class="panel" aria-labelledby="choices-title"><div class="intro"><h2 id="choices-title">اختر الخدمة المطلوبة</h2><p>الجداول والخدمات اليومية للمدرسة</p>
 <button type="button" class="install-button" id="install-app" aria-expanded="false" aria-controls="install-help" hidden>تثبيت التطبيق</button>
