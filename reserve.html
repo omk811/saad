@@ -36,6 +36,9 @@ body.reserve-locked main.app{display:none!important}
  html,body{width:100%!important;margin:0!important;padding:0!important;font-size:9pt!important}
  .app{width:100%!important;max-width:none!important;padding:0!important;margin:0!important}
  .print-head{margin:0 0 3mm!important}
+ .reserve-letterhead{display:grid;grid-template-columns:minmax(0,1fr) 26mm minmax(0,1fr);align-items:center;gap:3mm;border-bottom:1pt solid #333;padding:0 1mm 2mm;margin:0 0 2mm;color:#111;font-size:9pt;line-height:1.45;break-inside:avoid}
+ .reserve-letterhead img{display:block;width:17mm;height:auto;margin:0 auto}
+
  .print-head h2{font-size:14pt!important;line-height:1.2!important;margin:0 0 1mm!important}
  .print-head p{font-size:9pt!important;margin:1mm 0!important}
  #daily,#daily .card,#daily .tablewrap{overflow:visible!important;max-height:none!important;margin:0!important;padding:0!important;box-shadow:none!important}
@@ -56,7 +59,10 @@ body.reserve-locked main.app{display:none!important}
 
 <section id="daily" class="panel active">
 <div class="card no-print" id="cycleCard" style="margin-bottom:14px"><div class="row"><div><h3 style="margin:0 0 6px">متابعة دورة الاحتياط</h3><div id="cycleSummary" class="muted"></div></div><div style="min-width:220px"><div id="cyclePct" class="stat">0%</div><div style="height:10px;background:#e7edf2;border-radius:99px;overflow:hidden"><div id="cycleBar" style="height:100%;width:0;background:var(--p2)"></div></div></div></div><div id="cycleAlert" style="margin-top:10px"></div><div class="actions"><button class="secondary" id="startCycleBtn">بدء دورة جديدة</button></div></div>
-<div class="print-head"><h2>سجل حصص الاحتياط اليومي</h2><p>مدرسة سعد بن معاذ للتعليم الأساسي</p><p id="printMeta"></p></div>
+<div class="print-head">
+<div class="reserve-letterhead"><div><b>وزارة التعليم</b><div>المديرية العامة للتعليم بمحافظة شمال الباطنة</div></div><div><img src="data:image/png;base64,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" alt="شعار وزارة التعليم"></div><div><b id="reserveSchoolYear"></b><div>مدرسة: سعد بن معاذ للتعليم الأساسي</div></div></div>
+<h2>جدول توزيع حصص الاحتياط اليومي</h2><p id="printMeta"></p>
+</div>
 <div class="grid">
 <div class="card span4 daily-meta"><h3>بيانات اليوم</h3><div class="row"><div><label>اليوم</label><select id="day"></select></div><div><label>التاريخ</label><input id="date" type="date"></div></div>
 <label>المعلم الغائب</label><select id="absent"></select>
@@ -238,6 +244,16 @@ function explainChoice(r,name){
  return reasons;
 }
 function render(){
+ const [year,month]=date.value.split('-').map(Number);
+ const firstYear=month>=8?year:year-1;
+ const academicYear=document.getElementById('reserveSchoolYear');
+ academicYear.replaceChildren('العام الدراسي ');
+ if(Number.isInteger(firstYear)&&firstYear>0){
+   const label=document.createElement('bdi');
+   label.dir='ltr';
+   label.textContent=firstYear+'/'+(firstYear+1);
+   academicYear.append(label);
+ }
  document.getElementById('printMeta').textContent=`اليوم: ${day.value} — التاريخ: ${date.value}`;
  let rs=recForDate().filter(r=>r.day===day.value).sort((a,b)=>a.period-b.period);
  dailyBody.innerHTML=rs.length?rs.map((r,i)=>{
