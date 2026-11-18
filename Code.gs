@@ -54,6 +54,13 @@ function reserveLimit_(teacher){
   return Math.max(0,25-teacher.base-(teacher.extra??(RESERVE_ADMIN_LOAD_[teacher.name]||0)));
 }
 
+const RESERVE_TRAINEES_=['عزام علي','محمد حمد','عبدالرحمن قاسم','أحمد العجمي'];
+function reserveDailyLimit_(name,day){
+  if(!RESERVE_TRAINEES_.includes(name))return 1;
+  if(day==='الأربعاء')return name==='أحمد العجمي'?1:2;
+  return day==='الخميس'?2:0;
+}
+
 function hardValidate(r,teachers,tt,usedBeforeDay,batchNames,absentNames){
   const teacher=teachers.find(t=>t.name===r.reserve);
   if(!teacher||!teacher.eligible||FULL_RESERVE_EXCLUSIONS_.includes(r.reserve))throw Error('معلم الاحتياط غير مؤهل: '+r.reserve);
@@ -64,17 +71,23 @@ function hardValidate(r,teachers,tt,usedBeforeDay,batchNames,absentNames){
   const row=tt.find(x=>(x.teacher===r.reserve||x.teacher===teacher.scheduleName)&&x.day===r.day);
   if(!row)throw Error('لا يوجد جدول معتمد لـ '+r.reserve);
   if(row.periods[r.period])throw Error(r.reserve+' لديه حصة أصلية في الحصة '+r.period);
-  if(batchNames.has(r.reserve))throw Error('لا يجوز إسناد أكثر من احتياط للمعلم نفسه في اليوم.');
+  const dailyLimit=reserveDailyLimit_(r.reserve,r.day);
+  const dailyCount=batchNames.get(r.reserve)||0;
+  const slotKey=r.reserve+'|'+r.period;
+  if(!dailyLimit||(RESERVE_TRAINEES_.includes(r.reserve)&&r.period>6))throw Error('المتدرب متاح للاحتياط الأربعاء والخميس حتى الحصة السادسة فقط.');
+  if(dailyCount>=dailyLimit)throw Error('أكمل المعلم الحد اليومي للاحتياط.');
+  if(batchNames.has(slotKey))throw Error('لا يجوز إسناد حصتين للمعلم في الوقت نفسه.');
   const original=Object.keys(row.periods).filter(p=>row.periods[p]).map(Number);
   const occupied=new Set(original);
   const adjacent=original.some(p=>[1,2,3].every(offset=>occupied.has(p+offset))&&(r.period===p-1||r.period===p+4));
   if(r.exceptional!==true&&(original.length>=5||adjacent||(r.period===8&&!occupied.has(7)))){
     throw Error('التكليف يحتاج إلى اعتماد استثنائي وفق شروط العبء اليومي.');
   }
-  if((usedBeforeDay.get(r.reserve)||0)>=reserveLimit_(teacher))throw Error(r.reserve+' أكمل نصاب الدورة.');
-  batchNames.add(r.reserve);
+  if((usedBeforeDay.get(r.reserve)||0)+dailyCount>=reserveLimit_(teacher))throw Error(r.reserve+' أكمل نصاب الدورة.');
+  batchNames.set(r.reserve,dailyCount+1);
+  batchNames.set(slotKey,true);
 }
-function saveDay(d){if(!d.date||!d.day)throw Error('التاريخ واليوم مطلوبان');const incoming=(d.records||[]).map(r=>({...r,date:d.date,day:d.day,period:+r.period}));const assigned=incoming.filter(r=>r.reserve);const all=getRecords(),teachers=getTeachers(),tt=getTimetable(),seen=new Set(),absentNames=new Set(incoming.map(r=>String(r.absent||'')).filter(Boolean));
+function saveDay(d){if(!d.date||!d.day)throw Error('التاريخ واليوم مطلوبان');const incoming=(d.records||[]).map(r=>({...r,date:d.date,day:d.day,period:+r.period}));const assigned=incoming.filter(r=>r.reserve);const all=getRecords(),teachers=getTeachers(),tt=getTimetable(),seen=new Map(),absentNames=new Set(incoming.map(r=>String(r.absent||'')).filter(Boolean));
  const cycle=getCycles().filter(c=>c.start<=d.date&&(!c.end||d.date<=c.end)).sort((a,b)=>b.number-a.number)[0];
  const counts=new Map();
  for(const entry of all){
