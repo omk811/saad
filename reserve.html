@@ -121,7 +121,7 @@ body.reserve-locked main.app{display:none!important}
 <section id="teachers" class="panel"><div class="card"><h3>إدارة المعلمين والأنصبة</h3><div class="row no-print"><div><label>اسم المعلم</label><input id="newTeacherName" placeholder="اسم المعلم"></div><div><label>الحصص التدريسية</label><input id="newTeacherBase" type="number" min="0" max="25"></div><div><button class="primary" id="addTeacherCloud">إضافة معلم مؤهل</button></div></div><p class="muted">يمكن تعديل الحصص التدريسية مباشرة من الجدول أدناه. تظهر صفة المعلم وتكليفه الإداري تحت اسمه. إضافة معلم جديد تجعله مؤهلًا، لكنه لا يدخل التوزيع الآلي حتى يوجد له جدول أسبوعي معتمد.</p><p class="muted">النصاب المحتسب = الحصص التدريسية + الحصص الإدارية + الاحتياط المسند في الدورة الحالية. تضاف 7 حصص إدارية لكل معلم أول. إبراهيم الهاشمي قائم بالأعمال وإضافته صفر. الاحتياط يُعدّ من سجل الدورة. من بلغ 25 حصة لا يرشّح للاحتياط.</p><p id="adminLoadSummary" class="muted" role="status"></p><div class="tablewrap"><table><thead><tr><th>المعلم والتكليف</th><th>التدريسية</th><th>الإدارية</th><th>احتياط الدورة</th><th>الإجمالي المحتسب</th><th>المتبقي إلى 25</th><th>الحالة</th></tr></thead><tbody id="teachersBody"></tbody></table></div></div></section>
 
 <section id="setup" class="panel"><div class="grid"><div class="card span4"><h3>ضبط حصة أصلية</h3><label>المعلم</label><select id="setupTeacher"></select><div class="row"><div><label>اليوم</label><select id="setupDay"></select></div><div><label>الحصة</label><select id="setupPeriod"></select></div></div><label>الصف / الشعبة</label><input id="setupClass" placeholder="مثال: 7/3"><div class="actions"><button class="secondary" type="button" disabled>الجدول المعتمد 15-11-2026</button></div></div>
-<div class="card span8"><h3>قواعد التوزيع المفعلة</h3><p>ينفذ المتدربون حصص المشرفين المحددة يومي الأربعاء والخميس. ويُرشحون للاحتياط في هذين اليومين حتى الحصة السادسة فقط: الأربعاء حصتان لكل متدرب عدا أحمد العجمي حصة واحدة، والخميس حصتان للجميع. لا تتجاوز هذه الحدود حتى استثنائيًا. يستمر ترشيح المشرفين للاحتياط وفق الجدول الفعلي والقواعد السابقة، مع إبقاء النصاب الأساسي المحتسب للدورة.</p><p>يتم إسناد حصص الاحتياط بحسب توفر المعلمين، ولا يُشترط تغطية جميع حصص الغياب إذا لم يوجد مرشح متاح. حصة احتياط واحدة للمعلم في اليوم، وتجنب التكليف يومين متتاليين قدر المستطاع، والحد الأقصى للنصاب 25. رقم 13 في المثال التوضيحي لا يقيّد سقف الاحتياط. الحصة الثامنة تُسند فقط لمعلم لديه الحصة السابعة ومتفرغ في الثامنة. من لديه 5 حصص تدريسية في اليوم لا يُكلّف بالاحتياط، ومن لديه 4 حصص متتالية لا يُعطى حصة احتياط ملاصقة لها قبلها أو بعدها. وتُقدّم الشعبة نفسها ثم الصف نفسه ضمن المعلمين المؤهلين. ويأتي المعلمون الأوائل والقائم بأعمال المعلم الأول بعد بقية المرشحين. يُراعى احتياط آخر يوم دراسي ثم قرب جدول المعلم من الحصص المتأخرة والأقل نصابًا. ويُستبعد من جميع تكليفات الاحتياط: خليل البلوشي، ياسر الذهلي، راشد المزروعي، عبدالله حسن، وسعيد المخمري، وناصر بريك، وعبدالله المقبالي؛ ويشمل الاستبعاد التوزيع الاستثنائي.</p><p class="muted">الجدول الأسبوعي والأنصبة مدمجان في هذه النسخة من قاعدة المدرسة. يُحفظ التوزيع المعتمد في Google Sheets.</p><div class="actions"><button class="danger" id="resetAll">إعادة ضبط كل البيانات المحلية</button></div></div></div></section>
+<div class="card span8"><h3>قواعد التوزيع المفعلة</h3><p>ينفذ المتدربون حصص المشرفين المحددة يومي الأربعاء والخميس. ويُرشحون للاحتياط في هذين اليومين حتى الحصة السادسة فقط: الأربعاء حصتان لكل متدرب عدا أحمد العجمي حصة واحدة، والخميس حصتان للجميع. الرصيد الكلي لكل متدرب 4 حصص احتياط في الدورة. لا تتجاوز هذه الحدود حتى استثنائيًا. يستمر ترشيح المشرفين للاحتياط وفق الجدول الفعلي والقواعد السابقة، مع إبقاء النصاب الأساسي المحتسب للدورة.</p><p>يتم إسناد حصص الاحتياط بحسب توفر المعلمين، ولا يُشترط تغطية جميع حصص الغياب إذا لم يوجد مرشح متاح. حصة احتياط واحدة للمعلم في اليوم، وتجنب التكليف يومين متتاليين قدر المستطاع، والحد الأقصى للنصاب 25. رقم 13 في المثال التوضيحي لا يقيّد سقف الاحتياط. الحصة الثامنة تُسند فقط لمعلم لديه الحصة السابعة ومتفرغ في الثامنة. من لديه 5 حصص تدريسية في اليوم لا يُكلّف بالاحتياط، ومن لديه 4 حصص متتالية لا يُعطى حصة احتياط ملاصقة لها قبلها أو بعدها. وتُقدّم الشعبة نفسها ثم الصف نفسه ضمن المعلمين المؤهلين. ويأتي المعلمون الأوائل والقائم بأعمال المعلم الأول بعد بقية المرشحين. يُراعى احتياط آخر يوم دراسي ثم قرب جدول المعلم من الحصص المتأخرة والأقل نصابًا. ويُستبعد من جميع تكليفات الاحتياط: خليل البلوشي، ياسر الذهلي، راشد المزروعي، عبدالله حسن، وسعيد المخمري، وناصر بريك، وعبدالله المقبالي؛ ويشمل الاستبعاد التوزيع الاستثنائي.</p><p class="muted">الجدول الأسبوعي والأنصبة مدمجان في هذه النسخة من قاعدة المدرسة. يُحفظ التوزيع المعتمد في Google Sheets.</p><div class="actions"><button class="danger" id="resetAll">إعادة ضبط كل البيانات المحلية</button></div></div></div></section>
 <footer class="credit no-print">إعداد وتطوير: الأستاذ خليل البلوشي · مدرسة سعد بن معاذ</footer></main>
 <dialog id="reservePrintDialog" aria-labelledby="reservePrintHeading">
 <form id="reservePrintForm">
@@ -242,6 +242,12 @@ const FIRST_TEACHERS=new Set(["خليفة قناص","خليفة سعيد","اس�
 function trainingReason(name,dayName){const x=TRAINING_EXCLUSIONS.find(p=>p.name===name&&p.day===dayName);return x?x.reason:'';}
 function isFirstTeacher(name){return FIRST_TEACHERS.has(name);}
 const FULL_RESERVE_EXCLUSIONS=new Set(["خليل عربي","ياسر الذهلي","راشد المزروعي","عبدالله حسن","سعيد المخمري","ناصر بريك","عبدالله المقبالي"]);
+function reserveCycleLimit(t){
+ return RESERVE_TRAINEES.has(t.name)?4:Math.max(0,25-t.base-t.extra);
+}
+function reserveUsed(t,excludingId){
+ return adjusted(t,excludingId)-t.base-t.extra;
+}
 function reserveDailyLimit(name,day){
  if(!RESERVE_TRAINEES.has(name))return 1;
  if(day==='الأربعاء')return name==='أحمد العجمي'?1:2;
@@ -256,7 +262,7 @@ function hardBlocked(t,r){
  if(!S.schedule?.[t.name]?.[r.day])return 'لا يوجد جدول معتمد';
  if(isAbsentToday(t.name))return 'المعلم غائب اليوم';
  if(isBusy(t.name,r.day,r.period))return 'لديه حصة أصلية';
- if(adjusted(t,r.id)>=25)return 'أكمل نصاب الدورة';
+ if(reserveUsed(t,r.id)>=reserveCycleLimit(t))return 'أكمل رصيد الاحتياط للدورة';
  if(recForDate().filter(z=>z.reserve===t.name&&z.day===r.day&&z.id!==r.id).length>=reserveDailyLimit(t.name,r.day))return 'أكمل الحد اليومي للاحتياط';
  return '';
 }
@@ -271,11 +277,11 @@ function exceptionalCandidates(r){
 }
 function cycleStats(){
  const eligible=S.teachers.filter(t=>t.eligible!==false&&!FULL_RESERVE_EXCLUSIONS.has(t.name)&&S.schedule?.[t.name]);
- const total=eligible.reduce((s,t)=>s+Math.max(0,25-t.base-t.extra),0);
- const names=new Set(eligible.filter(t=>t.base+t.extra<25).map(t=>t.name));
+ const total=eligible.reduce((sum,t)=>sum+reserveCycleLimit(t),0);
+ const names=new Set(eligible.filter(t=>reserveCycleLimit(t)>0).map(t=>t.name));
  const done=S.records.filter(r=>names.has(r.reserve)&&(!S.cycleStart||r.date>=S.cycleStart)).length;
  const pct=total?Math.min(100,done/total*100):0;
- const completed=eligible.filter(t=>adjusted(t)>=25).length;
+ const completed=eligible.filter(t=>reserveUsed(t)>=reserveCycleLimit(t)).length;
  return {total,done,pct,completed,eligible:eligible.length};
 }
 function previousSchoolDate(value){
@@ -305,7 +311,7 @@ function explainChoice(r,name){
  const taught=taughtClasses(name).map(x=>String(x||'').trim()), cls=String(r.className||'').trim(), cp=cls.split('/'), grade=(cp[1]||cp[0]).trim();
  if(cls&&taught.includes(cls))reasons.push('يدرّس الشعبة نفسها '+cls);
  else if(grade&&taught.some(x=>{const p=x.split('/');return (p[1]||p[0]).trim()===grade}))reasons.push('يدرّس الصف نفسه');
- reasons.push('نصابه الحالي '+adjusted(t)+' من 25');
+ reasons.push('المسند من احتياط الدورة '+reserveUsed(t)+' من '+reserveCycleLimit(t)+' حصة');
  if(!recForDate().some(x=>x.reserve===name&&x.id!==r.id))reasons.push('لم يُسند إليه احتياط آخر اليوم');
  const dp=dayPeriods(name,r.day);
  if(dp.length<5)reasons.push('لديه '+dp.length+' حصص أصلية فقط اليوم');
@@ -334,7 +340,7 @@ function render(){
  let cand=candidates(r); let allowed=cand.map(x=>x.t); if(r.reserve&&!allowed.some(t=>t.name===r.reserve)){let cur=S.teachers.find(t=>t.name===r.reserve);if(cur)allowed.unshift(cur)} let choices=['<option value="">— اختر —</option>',...allowed.map(t=>`<option ${r.reserve===t.name?'selected':''}>${t.name}</option>`)].join('');
  const tt=S.teachers.find(t=>t.name===r.reserve);
  const teachingLoad=tt?tt.base:'—';
- const reserveRemaining=tt?Math.max(0,25-adjusted(tt)):'—';
+ const reserveRemaining=tt?Math.max(0,reserveCycleLimit(tt)-reserveUsed(tt)):'—';
  let ex=exceptionalCandidates(r); let exBtn=!cand.length&&ex.length?`<button class="secondary exceptionBtn" data-id="${r.id}" style="margin-top:5px;padding:6px 9px">خيارات استثنائية</button>`:''; 
  return `<tr class="${i>0&&r.absent!==rs[i-1].absent?'absent-group-start':''}"><td>${i+1}</td><td>${r.absent}</td><td>${r.period}</td><td><input class="classEdit no-print" data-id="${r.id}" value="${r.className||''}" dir="ltr" style="min-width:75px;padding:6px;text-align:center"><span class="print-only">${r.className||'—'}</span></td><td><select class="reserveSel no-print" data-id="${r.id}">${choices}</select>${exBtn}<span class="print-only">${r.reserve||'—'}</span></td><td>${teachingLoad}</td><td>${reserveRemaining}</td><td class="no-print">${r.reserve?'<span class="badge ok">مسندة</span><br><button class="secondary whyBtn" data-id="'+r.id+'" style="margin-top:5px;padding:6px 9px">لماذا اختاره النظام؟</button>':cand.length?'<span class="badge warn">بانتظار التوزيع</span>':'<span class="badge off">يحتاج تدخلاً</span>'}</td><td class="sig"></td><td class="no-print"><button class="danger del" data-id="${r.id}">×</button></td></tr>`
  }).join(''):`<tr><td colspan="10" class="empty">لا توجد حصص غياب مضافة لهذا اليوم.</td></tr>`;
@@ -346,7 +352,7 @@ function render(){
  teachersBody.onchange=async(event)=>{const x=event.target.closest('.baseEdit');if(!x)return;let t=S.teachers.find(z=>z.name===x.dataset.name),v=+x.value;if(!t||!Number.isFinite(v)||v<0||v>25)return;let old=t.base;t.base=v;save();render();try{await apiPost({action:'updateTeacher',name:t.name,base:v,eligible:t.eligible});setCloud('تم تحديث النصاب في Google Sheets','ok')}catch(e){t.base=old;save();render();alert('تعذر حفظ تعديل النصاب سحابيًا. حدّث Apps Script إلى الإصدار الجديد.')}};
  let cs=cycleStats();cyclePct.textContent=cs.pct.toFixed(1)+'%';cycleBar.style.width=cs.pct+'%';cycleSummary.textContent=`المنفذ ${cs.done} من ${cs.total} حصة مستهدفة — أكمل النصاب ${cs.completed} من ${cs.eligible} معلمًا مؤهلًا`;cycleAlert.innerHTML=cs.pct>=95?'<span class="badge off">تنبيه 95%: يوصى بمراجعة إنهاء الدورة وبدء دورة جديدة بقرار المسؤول.</span>':cs.pct>=90?'<span class="badge warn">تنبيه 90%: الدورة قاربت الاكتمال، راجع العبء قبل الاستمرار.</span>':'<span class="badge ok">الدورة ضمن النطاق الطبيعي</span>';
  const assignedAdmins=S.teachers.filter(t=>t.extra>0);document.getElementById('adminLoadSummary').textContent=`عدد المعلمين ذوي التكليفات الإدارية المسجلة: ${assignedAdmins.length}، بإجمالي ${assignedAdmins.reduce((n,t)=>n+t.extra,0)} حصة إدارية.`;
- teachersBody.innerHTML=S.teachers.map(t=>{let rc=reserveCount(t.name),a=t.base+t.extra+rc,rem=t.eligible===false||FULL_RESERVE_EXCLUSIONS.has(t.name)||!S.schedule?.[t.name]?0:Math.max(0,25-a);const task=ADMIN_ASSIGNMENTS[t.name]||(RESERVE_TRAINEES.has(t.name)?{role:"معلم متدرب — الاحتياط حتى الحصة السادسة"}:null), hasSchedule=Boolean(S.schedule?.[t.name]), excluded=FULL_RESERVE_EXCLUSIONS.has(t.name)||t.eligible===false;return `<tr><td><strong>${t.name}</strong>${task?`<div class="muted">${task.role}</div>`:''}</td><td><input class="baseEdit no-print" data-name="${t.name}" type="number" min="0" max="25" value="${t.base}" style="width:75px;padding:6px"><span class="print-only">${t.base}</span></td><td><strong>${t.extra}</strong></td><td>${rc}</td><td><b>${a}</b></td><td>${rem}</td><td>${excluded?'<span class="badge off">مستبعد</span>':!hasSchedule?'<span class="badge warn">بلا جدول معتمد</span>':a>=25?'<span class="badge off">أكمل النصاب</span>':'<span class="badge ok">متاح</span>'}</td></tr>`}).join('');
+ teachersBody.innerHTML=S.teachers.map(t=>{let rc=reserveCount(t.name),a=t.base+t.extra+rc,rem=t.eligible===false||FULL_RESERVE_EXCLUSIONS.has(t.name)||!S.schedule?.[t.name]?0:Math.max(0,reserveCycleLimit(t)-rc);const task=ADMIN_ASSIGNMENTS[t.name]||(RESERVE_TRAINEES.has(t.name)?{role:"معلم متدرب — الاحتياط حتى الحصة السادسة"}:null), hasSchedule=Boolean(S.schedule?.[t.name]), excluded=FULL_RESERVE_EXCLUSIONS.has(t.name)||t.eligible===false;return `<tr><td><strong>${t.name}</strong>${task?`<div class="muted">${task.role}</div>`:''}</td><td><input class="baseEdit no-print" data-name="${t.name}" type="number" min="0" max="25" value="${t.base}" style="width:75px;padding:6px"><span class="print-only">${t.base}</span></td><td><strong>${t.extra}</strong></td><td>${rc}</td><td><b>${a}</b></td><td>${rem}</td><td>${excluded?'<span class="badge off">مستبعد</span>':!hasSchedule?'<span class="badge warn">بلا جدول معتمد</span>':rc>=reserveCycleLimit(t)?'<span class="badge off">أكمل النصاب</span>':'<span class="badge ok">متاح</span>'}</td></tr>`}).join('');
 }
 function extractAbsentLessons(){
  const name=absent.value,d=day.value,ds=S.schedule?.[name]?.[d];
