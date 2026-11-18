@@ -50,12 +50,13 @@ body.reserve-locked main.app{display:none!important}
  #daily tbody tr{break-inside:avoid!important}
  #daily thead{display:table-header-group!important}
  #daily th:nth-child(1){width:5%}
- #daily th:nth-child(2){width:20%}
- #daily th:nth-child(3){width:7%}
- #daily th:nth-child(4){width:10%}
- #daily th:nth-child(5){width:22%}
+ #daily th:nth-child(2){width:18%}
+ #daily th:nth-child(3){width:6%}
+ #daily th:nth-child(4){width:9%}
+ #daily th:nth-child(5){width:20%}
  #daily th:nth-child(6){width:12%}
- #daily th:nth-child(8){width:24%}
+ #daily th:nth-child(7){width:12%}
+ #daily th:nth-child(9){width:18%}
  .reserve-letterhead{grid-template-columns:minmax(0,1fr) 22mm minmax(0,1fr);gap:2mm;font-size:8pt}
 
  .print-head{display:block!important}
@@ -114,7 +115,7 @@ body.reserve-locked main.app{display:none!important}
 <div class="actions"><button class="primary" id="loadAbsent">استخراج حصص الغائب</button><button class="secondary" id="addAbs">إضافة حصة يدويًا</button></div>
 <p class="muted">عند اختيار المعلم الغائب تُستخرج حصصه تلقائيًا من الجدول المعتمد لليوم المحدد، ويمكن بعدها الحذف أو الإضافة والتعديل يدويًا.</p></div>
 <div class="card span8"><div class="row"><div><h3 class="screen-title">جدول الاحتياط المقترح</h3><span id="cloudState" class="badge warn no-print">جارٍ الاتصال...</span></div><div class="no-print actions"><button class="primary" id="auto">توزيع آلي</button><button class="primary" id="approveCloud">اعتماد وحفظ</button><button class="secondary" id="openReservePrint" type="button">طباعة A4</button><button class="danger" id="clearDay">مسح اليوم</button></div></div>
-<div class="tablewrap"><table><thead><tr><th>م</th><th>المعلم الغائب</th><th>الحصة</th><th>الصف/الشعبة</th><th>معلم الاحتياط</th><th>النصاب بعد الاحتياط</th><th class="no-print">الحالة</th><th>التوقيع</th><th class="no-print">حذف</th></tr></thead><tbody id="dailyBody"></tbody></table></div></div>
+<div class="tablewrap"><table><thead><tr><th>م</th><th>المعلم الغائب</th><th>الحصة</th><th>الصف/الشعبة</th><th>معلم الاحتياط</th><th>نصاب المعلم التدريسي</th><th>المتبقي من رصيد الاحتياط</th><th class="no-print">الحالة</th><th>التوقيع</th><th class="no-print">حذف</th></tr></thead><tbody id="dailyBody"></tbody></table></div></div>
 </div></section>
 
 <section id="teachers" class="panel"><div class="card"><h3>إدارة المعلمين والأنصبة</h3><div class="row no-print"><div><label>اسم المعلم</label><input id="newTeacherName" placeholder="اسم المعلم"></div><div><label>الحصص التدريسية</label><input id="newTeacherBase" type="number" min="0" max="25"></div><div><button class="primary" id="addTeacherCloud">إضافة معلم مؤهل</button></div></div><p class="muted">يمكن تعديل الحصص التدريسية مباشرة من الجدول أدناه. تظهر صفة المعلم وتكليفه الإداري تحت اسمه. إضافة معلم جديد تجعله مؤهلًا، لكنه لا يدخل التوزيع الآلي حتى يوجد له جدول أسبوعي معتمد.</p><p class="muted">النصاب المحتسب = الحصص التدريسية + الحصص الإدارية + الاحتياط المسند في الدورة الحالية. تضاف 7 حصص إدارية لكل معلم أول. إبراهيم الهاشمي قائم بالأعمال وإضافته صفر. الاحتياط يُعدّ من سجل الدورة. من بلغ 25 حصة لا يرشّح للاحتياط.</p><p id="adminLoadSummary" class="muted" role="status"></p><div class="tablewrap"><table><thead><tr><th>المعلم والتكليف</th><th>التدريسية</th><th>الإدارية</th><th>احتياط الدورة</th><th>الإجمالي المحتسب</th><th>المتبقي إلى 25</th><th>الحالة</th></tr></thead><tbody id="teachersBody"></tbody></table></div></div></section>
@@ -331,10 +332,12 @@ function render(){
  let rs=recForDate().filter(r=>r.day===day.value).sort(compareAbsentLessons);
  dailyBody.innerHTML=rs.length?rs.map((r,i)=>{
  let cand=candidates(r); let allowed=cand.map(x=>x.t); if(r.reserve&&!allowed.some(t=>t.name===r.reserve)){let cur=S.teachers.find(t=>t.name===r.reserve);if(cur)allowed.unshift(cur)} let choices=['<option value="">— اختر —</option>',...allowed.map(t=>`<option ${r.reserve===t.name?'selected':''}>${t.name}</option>`)].join('');
- let tt=S.teachers.find(t=>t.name===r.reserve), total=tt?adjusted(tt):'—';
+ const tt=S.teachers.find(t=>t.name===r.reserve);
+ const teachingLoad=tt?tt.base:'—';
+ const reserveRemaining=tt?Math.max(0,25-adjusted(tt)):'—';
  let ex=exceptionalCandidates(r); let exBtn=!cand.length&&ex.length?`<button class="secondary exceptionBtn" data-id="${r.id}" style="margin-top:5px;padding:6px 9px">خيارات استثنائية</button>`:''; 
- return `<tr class="${i>0&&r.absent!==rs[i-1].absent?'absent-group-start':''}"><td>${i+1}</td><td>${r.absent}</td><td>${r.period}</td><td><input class="classEdit no-print" data-id="${r.id}" value="${r.className||''}" dir="ltr" style="min-width:75px;padding:6px;text-align:center"><span class="print-only">${r.className||'—'}</span></td><td><select class="reserveSel no-print" data-id="${r.id}">${choices}</select>${exBtn}<span class="print-only">${r.reserve||'—'}</span></td><td>${total}</td><td class="no-print">${r.reserve?'<span class="badge ok">مسندة</span><br><button class="secondary whyBtn" data-id="'+r.id+'" style="margin-top:5px;padding:6px 9px">لماذا اختاره النظام؟</button>':cand.length?'<span class="badge warn">بانتظار التوزيع</span>':'<span class="badge off">يحتاج تدخلاً</span>'}</td><td class="sig"></td><td class="no-print"><button class="danger del" data-id="${r.id}">×</button></td></tr>`
- }).join(''):`<tr><td colspan="9" class="empty">لا توجد حصص غياب مضافة لهذا اليوم.</td></tr>`;
+ return `<tr class="${i>0&&r.absent!==rs[i-1].absent?'absent-group-start':''}"><td>${i+1}</td><td>${r.absent}</td><td>${r.period}</td><td><input class="classEdit no-print" data-id="${r.id}" value="${r.className||''}" dir="ltr" style="min-width:75px;padding:6px;text-align:center"><span class="print-only">${r.className||'—'}</span></td><td><select class="reserveSel no-print" data-id="${r.id}">${choices}</select>${exBtn}<span class="print-only">${r.reserve||'—'}</span></td><td>${teachingLoad}</td><td>${reserveRemaining}</td><td class="no-print">${r.reserve?'<span class="badge ok">مسندة</span><br><button class="secondary whyBtn" data-id="'+r.id+'" style="margin-top:5px;padding:6px 9px">لماذا اختاره النظام؟</button>':cand.length?'<span class="badge warn">بانتظار التوزيع</span>':'<span class="badge off">يحتاج تدخلاً</span>'}</td><td class="sig"></td><td class="no-print"><button class="danger del" data-id="${r.id}">×</button></td></tr>`
+ }).join(''):`<tr><td colspan="10" class="empty">لا توجد حصص غياب مضافة لهذا اليوم.</td></tr>`;
  document.querySelectorAll('.reserveSel').forEach(s=>s.onchange=()=>{let r=S.records.find(x=>x.id==s.dataset.id);r.reserve=s.value;r.exceptional=false;save();render()});
  document.querySelectorAll('.whyBtn').forEach(b=>b.onclick=()=>{let r=S.records.find(x=>x.id==b.dataset.id);if(!r||!r.reserve)return;let reasons=explainChoice(r,r.reserve);alert('سبب اختيار '+r.reserve+':\n\n• '+reasons.join('\n• '));});
  document.querySelectorAll('.classEdit').forEach(x=>x.onchange=()=>{let r=S.records.find(z=>z.id==x.dataset.id);r.className=x.value.trim();save();render()});
