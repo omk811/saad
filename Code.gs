@@ -15,7 +15,7 @@ function getTeachers(){
     const reserveCount=Number(r[9])||0;
     const eligible=String(r[7]||'نعم')!=='لا'&&!FULL_RESERVE_EXCLUSIONS_.includes(name);
     return {name,base,extra,reserveCount,currentLoad:base+extra+reserveCount,
-      remaining:eligible?Math.max(0,25-base-extra-reserveCount):0,lastReserve:fmt(r[5]),
+      remaining:eligible?Math.max(0,reserveLimit_({name,base,extra})-reserveCount):0,lastReserve:fmt(r[5]),
       status:String(r[6]||''),eligible,scheduleName:String(r[8]||name)};
   });
 }
@@ -51,6 +51,7 @@ function updateTeacher(d){
 const FULL_RESERVE_EXCLUSIONS_=["خليل عربي","ياسر الذهلي","راشد المزروعي","عبدالله حسن","سعيد المخمري","ناصر بريك","عبدالله المقبالي"];
 const RESERVE_ADMIN_LOAD_={"خليفة قناص":7,"خليفة سعيد":7,"اسماعيل البلوشي":7,"خليل اسلامية":7,"سعيد الحضرمي":7,"ابراهيم الهاشمي":0,"سالم المعمري":5,"علي المعمري":3,"خميس المزروعي":5,"علي العبري":3,"وليد الريسي":3};
 function reserveLimit_(teacher){
+  if(RESERVE_TRAINEES_.includes(teacher.name))return 4;
   return Math.max(0,25-teacher.base-(teacher.extra??(RESERVE_ADMIN_LOAD_[teacher.name]||0)));
 }
 
