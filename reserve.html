@@ -60,7 +60,33 @@ body.reserve-locked main.app{display:none!important}
 
  .print-head{display:block!important}
 }
-</style><link rel="stylesheet" href="teacher-timetable/assets/theme.css?v=20261117"></head>
+</style><link rel="stylesheet" href="teacher-timetable/assets/theme.css?v=20261117">
+<style id="reserve-print-options">
+@font-face{font-family:"Saad Print Arabic";src:url("teacher-timetable/assets/fonts/noto-sans-arabic-regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Saad Print Arabic";src:url("teacher-timetable/assets/fonts/noto-sans-arabic-bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+#reservePrintDialog{width:min(560px,calc(100% - 28px));max-height:calc(100dvh - 28px);overflow:auto;border:1px solid #bdd3cd;border-radius:18px;padding:24px;color:#173e46;background:white;direction:rtl}
+#reservePrintDialog::backdrop{background:#0e333db3}
+#reservePrintDialog h2{margin:0 0 14px;font-size:1.35rem}
+.reserve-print-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.reserve-print-fields label{display:block;font-weight:700}
+.reserve-print-fields .full{grid-column:1/-1}
+#reservePrintDialog select,#reservePrintDialog input{width:100%;min-height:46px;font:inherit;padding:8px;border:1px solid #a9c2bb;border-radius:9px}
+#printFontPreview{margin:16px 0;padding:12px;border:1px solid #d3e2de;border-radius:10px;overflow-wrap:anywhere;background:#f4f9f7}
+#printFontPreview p{margin:6px 0}
+#printSettingsError{color:#992b32;min-height:1.5em}
+#reservePrintDialog .print-help{color:#45615f;font-size:.9rem}
+@media(max-width:440px){.reserve-print-fields{grid-template-columns:1fr}#reservePrintDialog{padding:16px}}
+@media print{
+ #reservePrintDialog{display:none!important}
+ #daily,#daily table,#daily th,#daily td,.print-head{font-family:var(--reserve-print-family,Tahoma,Arial,sans-serif)!important}
+ #daily table,#daily th,#daily td{font-size:var(--reserve-print-size,8pt)!important;line-height:1.4!important}
+ .print-head .reserve-letterhead{font-size:var(--reserve-print-header,8pt)!important}
+ .print-head h2{font-size:var(--reserve-print-title,14pt)!important;line-height:1.4!important}
+ .print-head p{font-size:var(--reserve-print-header,9pt)!important}
+ #daily th{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
+</style>
+</head>
 <body class="reserve-locked"><div id="reserveGate" role="dialog" aria-modal="true" aria-label="دخول إدارة حصص الاحتياط"><form id="reserveLoginForm" class="gate-card"><h2>إدارة حصص الاحتياط</h2><p>هذه الصفحة مخصصة للمسؤولين. أدخل <strong>رمز الإدارة نفسه المستخدم في إدارة مواد المعلمين</strong>.</p><label for="reserveAdminPassword">رمز الإدارة</label><input type="password" id="reserveAdminPassword" autocomplete="current-password" required><button id="reserveLoginButton" type="submit">دخول آمن</button><div id="reserveLoginError" class="gate-error" role="alert"></div></form></div><main class="app">
 <section class="hero"><span class="brand-label">مدرسة سعد بن معاذ · إدارة اليوم الدراسي</span><h1>نظام توزيع حصص الاحتياط</h1><p>خطّط للاحتياط، راجع التكليفات، واعتمد جدول اليوم من مكان واحد.</p><nav class="hero-nav" aria-label="خدمات المدرسة"><a href="teacher-timetable/index.html">البوابة المدرسية ↗</a><a href="teacher-timetable/emergency.html">خطة الطوارئ ↗</a><a href="teacher-timetable/weekly.html">جداول المعلمين ↗</a></nav></section><div class="summary-strip no-print" aria-label="ملخص جدول اليوم"><div class="summary-item"><strong data-summary>0</strong><span>حصص الغياب</span></div><div class="summary-item"><strong data-summary>0</strong><span>حصص أُسندت</span></div><div class="summary-item"><strong data-summary>0</strong><span>بانتظار الإسناد</span></div></div>
 <nav class="tabs no-print">
@@ -79,7 +105,7 @@ body.reserve-locked main.app{display:none!important}
 <div class="row"><div><label>الحصة</label><select id="period"></select></div><div><label>الصف / الشعبة</label><input id="className" placeholder="مثال: 5/1"></div></div>
 <div class="actions"><button class="primary" id="loadAbsent">استخراج حصص الغائب</button><button class="secondary" id="addAbs">إضافة حصة يدويًا</button></div>
 <p class="muted">عند اختيار المعلم الغائب تُستخرج حصصه تلقائيًا من الجدول المعتمد لليوم المحدد، ويمكن بعدها الحذف أو الإضافة والتعديل يدويًا.</p></div>
-<div class="card span8"><div class="row"><div><h3 class="screen-title">جدول الاحتياط المقترح</h3><span id="cloudState" class="badge warn no-print">جارٍ الاتصال...</span></div><div class="no-print actions"><button class="primary" id="auto">توزيع آلي</button><button class="primary" id="approveCloud">اعتماد وحفظ</button><button class="secondary" onclick="window.print()">طباعة A4</button><button class="danger" id="clearDay">مسح اليوم</button></div></div>
+<div class="card span8"><div class="row"><div><h3 class="screen-title">جدول الاحتياط المقترح</h3><span id="cloudState" class="badge warn no-print">جارٍ الاتصال...</span></div><div class="no-print actions"><button class="primary" id="auto">توزيع آلي</button><button class="primary" id="approveCloud">اعتماد وحفظ</button><button class="secondary" id="openReservePrint" type="button">طباعة A4</button><button class="danger" id="clearDay">مسح اليوم</button></div></div>
 <div class="tablewrap"><table><thead><tr><th>م</th><th>المعلم الغائب</th><th>الحصة</th><th>الصف/الشعبة</th><th>معلم الاحتياط</th><th>النصاب بعد الاحتياط</th><th class="no-print">الحالة</th><th>التوقيع</th><th class="no-print">حذف</th></tr></thead><tbody id="dailyBody"></tbody></table></div></div>
 </div></section>
 
@@ -88,6 +114,25 @@ body.reserve-locked main.app{display:none!important}
 <section id="setup" class="panel"><div class="grid"><div class="card span4"><h3>ضبط حصة أصلية</h3><label>المعلم</label><select id="setupTeacher"></select><div class="row"><div><label>اليوم</label><select id="setupDay"></select></div><div><label>الحصة</label><select id="setupPeriod"></select></div></div><label>الصف / الشعبة</label><input id="setupClass" placeholder="مثال: 7/3"><div class="actions"><button class="secondary" type="button" disabled>الجدول المعتمد 15-11-2026</button></div></div>
 <div class="card span8"><h3>قواعد التوزيع المفعلة</h3><p>ينفذ المتدربون حصص المشرفين المحددة يومي الأربعاء والخميس. ويُرشحون للاحتياط في هذين اليومين حتى الحصة السادسة فقط: الأربعاء حصتان لكل متدرب عدا أحمد العجمي حصة واحدة، والخميس حصتان للجميع. لا تتجاوز هذه الحدود حتى استثنائيًا. يستمر ترشيح المشرفين للاحتياط وفق الجدول الفعلي والقواعد السابقة، مع إبقاء النصاب الأساسي المحتسب للدورة.</p><p>يتم إسناد حصص الاحتياط بحسب توفر المعلمين، ولا يُشترط تغطية جميع حصص الغياب إذا لم يوجد مرشح متاح. حصة احتياط واحدة للمعلم في اليوم، وتجنب التكليف يومين متتاليين قدر المستطاع، والحد الأقصى للنصاب 25. رقم 13 في المثال التوضيحي لا يقيّد سقف الاحتياط. الحصة الثامنة تُسند فقط لمعلم لديه الحصة السابعة ومتفرغ في الثامنة. من لديه 5 حصص تدريسية في اليوم لا يُكلّف بالاحتياط، ومن لديه 4 حصص متتالية لا يُعطى حصة احتياط ملاصقة لها قبلها أو بعدها. وتُقدّم الشعبة نفسها ثم الصف نفسه ضمن المعلمين المؤهلين. ويأتي المعلمون الأوائل والقائم بأعمال المعلم الأول بعد بقية المرشحين. يُراعى احتياط آخر يوم دراسي ثم قرب جدول المعلم من الحصص المتأخرة والأقل نصابًا. ويُستبعد من جميع تكليفات الاحتياط: خليل البلوشي، ياسر الذهلي، راشد المزروعي، عبدالله حسن، وسعيد المخمري، وناصر بريك، وعبدالله المقبالي؛ ويشمل الاستبعاد التوزيع الاستثنائي.</p><p class="muted">الجدول الأسبوعي والأنصبة مدمجان في هذه النسخة من قاعدة المدرسة. يُحفظ التوزيع المعتمد في Google Sheets.</p><div class="actions"><button class="danger" id="resetAll">إعادة ضبط كل البيانات المحلية</button></div></div></div></section>
 <footer class="credit no-print">إعداد وتطوير: الأستاذ خليل البلوشي · مدرسة سعد بن معاذ</footer></main>
+<dialog id="reservePrintDialog" aria-labelledby="reservePrintHeading">
+<form id="reservePrintForm">
+<h2 id="reservePrintHeading">إعدادات طباعة A4</h2>
+<div class="reserve-print-fields">
+<label class="full" for="reservePrintFont">نوع الخط<select id="reservePrintFont">
+<option value="noto">Noto Sans Arabic — نوتو العربي</option><option value="tahoma">Tahoma — تاهوما</option><option value="arial">Arial — أريال</option>
+</select></label>
+<label for="reservePrintSize">حجم خط الجدول بالنقطة<input id="reservePrintSize" type="number" min="8" max="16" step="1" required></label>
+<label for="reservePrintHeaderSize">حجم خط الترويسة بالنقطة<input id="reservePrintHeaderSize" type="number" min="8" max="14" step="1" required></label>
+<label class="full" for="reservePrintTitleSize">حجم عنوان التقرير بالنقطة<input id="reservePrintTitleSize" type="number" min="12" max="24" step="1" required></label>
+</div>
+<div id="printFontPreview" aria-label="معاينة الخط"><strong id="reservePreviewTitle">جدول توزيع حصص الاحتياط اليومي</strong><p id="reservePreviewHeader">مدرسة سعد بن معاذ للتعليم الأساسي</p><p id="reservePreviewBody">اسم المعلم · الصف والشعبة · الحصة ٣</p></div>
+<p class="print-help">الورقة A4 عمودية. يعتمد عدد الصفحات على حجم الخط وعدد الحصص. للطباعة أو حفظ PDF اختر المقاس A4 والمقياس ١٠٠٪ من نافذة الطباعة.</p>
+<p class="print-help">تُحفظ اختياراتك على هذا الجهاز. توفر خطوط Tahoma وArial يعتمد على الجهاز المستخدم.</p>
+<p id="printSettingsError" role="status"></p>
+<div class="actions"><button class="primary" id="confirmReservePrint" type="submit">طباعة / حفظ PDF</button><button class="secondary" id="cancelReservePrint" type="button">إلغاء</button></div>
+</form>
+</dialog>
+
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbxaE54AYPy3XPTl7JUUw_nVEjA466BJqwZvwHfwPObBAxUuP_tfSZWgmbbne2xMsnxh/exec';
 let reserveAdminKey=sessionStorage.getItem('saad-reserve-admin-session')||'';
@@ -326,6 +371,89 @@ setWorkingDate(new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Muscat',year:'num
 date.onchange=()=>{const requested=date.value;if(!requested)return;setWorkingDate(requested);if(date.value!==requested)alert('تم اختيار الأحد التالي؛ أيام العمل من الأحد إلى الخميس.');render()};
 day.onchange=()=>{const d=new Date(date.value+'T12:00:00Z');if(Number.isNaN(d.getTime()))return;d.setUTCDate(d.getUTCDate()+DAYS.indexOf(day.value)-d.getUTCDay());date.value=d.toISOString().slice(0,10);render()};
 const st=document.createElement('style');st.textContent='.print-only{display:none}@media print{.print-only{display:inline}.reserveSel{display:none!important}}';document.head.appendChild(st);
+
+const RESERVE_PRINT_FONTS={
+ noto:'"Saad Print Arabic",Tahoma,Arial,sans-serif',
+ tahoma:'Tahoma,"Saad Print Arabic",Arial,sans-serif',
+ arial:'Arial,"Saad Print Arabic",sans-serif'
+};
+const RESERVE_PRINT_DEFAULT={font:'tahoma',size:8,header:8,title:14};
+function validReservePrintSettings(value){
+ const integer=(n,min,max)=>Number.isInteger(n)&&n>=min&&n<=max;
+ return value&&Object.prototype.hasOwnProperty.call(RESERVE_PRINT_FONTS,value.font)&&
+  integer(value.size,8,16)&&integer(value.header,8,14)&&integer(value.title,12,24);
+}
+let reservePrintSettings={...RESERVE_PRINT_DEFAULT};
+try{
+ const stored=JSON.parse(localStorage.getItem('saad-reserve-print-options'));
+ if(validReservePrintSettings(stored))reservePrintSettings=stored;
+}catch{}
+const printDialog=document.getElementById('reservePrintDialog');
+const printFont=document.getElementById('reservePrintFont');
+const printSize=document.getElementById('reservePrintSize');
+const printHeaderSize=document.getElementById('reservePrintHeaderSize');
+const printTitleSize=document.getElementById('reservePrintTitleSize');
+const printError=document.getElementById('printSettingsError');
+const printConfirm=document.getElementById('confirmReservePrint');
+function readReservePrintSettings(){
+ return {font:printFont.value,size:Number(printSize.value),header:Number(printHeaderSize.value),title:Number(printTitleSize.value)};
+}
+function applyReservePrintSettings(settings){
+ const style=document.documentElement.style;
+ style.setProperty('--reserve-print-family',RESERVE_PRINT_FONTS[settings.font]);
+ style.setProperty('--reserve-print-size',settings.size+'pt');
+ style.setProperty('--reserve-print-header',settings.header+'pt');
+ style.setProperty('--reserve-print-title',settings.title+'pt');
+}
+function previewReservePrint(){
+ const settings=readReservePrintSettings();
+ if(!validReservePrintSettings(settings))return;
+ document.getElementById('printFontPreview').style.fontFamily=RESERVE_PRINT_FONTS[settings.font];
+ document.getElementById('reservePreviewBody').style.fontSize=settings.size+'pt';
+ document.getElementById('reservePreviewHeader').style.fontSize=settings.header+'pt';
+ document.getElementById('reservePreviewTitle').style.fontSize=settings.title+'pt';
+ printError.textContent='';
+}
+document.getElementById('openReservePrint').addEventListener('click',()=>{
+ printFont.value=reservePrintSettings.font;
+ printSize.value=reservePrintSettings.size;
+ printHeaderSize.value=reservePrintSettings.header;
+ printTitleSize.value=reservePrintSettings.title;
+ printError.textContent='';
+ previewReservePrint();
+ printDialog.showModal();
+});
+for(const input of [printFont,printSize,printHeaderSize,printTitleSize])input.addEventListener('input',previewReservePrint);
+document.getElementById('cancelReservePrint').addEventListener('click',()=>printDialog.close());
+document.getElementById('reservePrintForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ const settings=readReservePrintSettings();
+ if(!validReservePrintSettings(settings)){printError.textContent='اختر أحجامًا ضمن الحدود المعروضة.';return;}
+ printConfirm.disabled=true;
+ try{
+  printError.textContent='جارٍ تجهيز الخط للطباعة…';
+  const fontSize=settings.size+'pt';
+  const family=settings.font==='tahoma'?'Tahoma':settings.font==='arial'?'Arial':'"Saad Print Arabic"';
+  if(document.fonts){
+   const loaded=await Promise.all([
+    document.fonts.load('400 '+fontSize+' "Saad Print Arabic"','توزيع حصص الاحتياط'),
+    document.fonts.load('700 '+fontSize+' "Saad Print Arabic"','توزيع حصص الاحتياط'),
+    document.fonts.load('400 '+fontSize+' '+family,'توزيع حصص الاحتياط')
+   ]);
+   if(settings.font==='noto'&&(!loaded[0].length||!loaded[1].length))throw Error('تعذّر تحميل الخط العربي. أعد المحاولة أو اختر خطًا آخر.');
+   await document.fonts.ready;
+  }
+  reservePrintSettings=settings;
+  applyReservePrintSettings(settings);
+  try{localStorage.setItem('saad-reserve-print-options',JSON.stringify(settings));}catch{}
+  printDialog.close();
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  window.print();
+ }catch(error){printError.textContent=error.message||'تعذّر تجهيز الطباعة. أعد المحاولة.';}
+ finally{printConfirm.disabled=false;}
+});
+applyReservePrintSettings(reservePrintSettings);
+
 async function unlockReserve(key){const err=document.getElementById('reserveLoginError'),btn=document.getElementById('reserveLoginButton');reserveAdminKey=key;btn.disabled=true;err.textContent='جارٍ التحقق...';try{await syncCloud();sessionStorage.setItem('saad-reserve-admin-session',key);document.body.classList.remove('reserve-locked');document.getElementById('reserveGate').hidden=true;err.textContent='';render();}catch(e){reserveAdminKey='';sessionStorage.removeItem('saad-reserve-admin-session');err.textContent=e.message||'تعذر التحقق من رمز الإدارة';}finally{btn.disabled=false;}}
 document.getElementById('reserveLoginForm').addEventListener('submit',e=>{e.preventDefault();unlockReserve(document.getElementById('reserveAdminPassword').value.trim())});
 if(reserveAdminKey)unlockReserve(reserveAdminKey);
