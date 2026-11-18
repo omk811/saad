@@ -48,7 +48,7 @@ function updateTeacher(d){
   SpreadsheetApp.flush();
   return {teachers:getTeachers()};
 }
-const FULL_RESERVE_EXCLUSIONS_=["خليل عربي","ياسر الذهلي","راشد المزروعي","عبدالله حسن","سعيد المخمري"];
+const FULL_RESERVE_EXCLUSIONS_=["خليل عربي","ياسر الذهلي","راشد المزروعي","عبدالله حسن","سعيد المخمري","ناصر بريك","عبدالله المقبالي"];
 const RESERVE_ADMIN_LOAD_={"خليفة قناص":7,"خليفة سعيد":7,"اسماعيل البلوشي":7,"خليل اسلامية":7,"سعيد الحضرمي":7,"ابراهيم الهاشمي":0,"سالم المعمري":5,"علي المعمري":3,"خميس المزروعي":5,"علي العبري":3,"وليد الريسي":3};
 function reserveLimit_(teacher){
   return Math.max(0,25-teacher.base-(teacher.extra??(RESERVE_ADMIN_LOAD_[teacher.name]||0)));
