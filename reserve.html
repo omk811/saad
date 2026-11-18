@@ -84,6 +84,12 @@ body.reserve-locked main.app{display:none!important}
  .print-head h2{font-size:var(--reserve-print-title,14pt)!important;line-height:1.4!important}
  .print-head p{font-size:var(--reserve-print-header,9pt)!important}
  #daily th{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ #daily th:nth-child(2){background:#eee5d8!important;color:#49351f!important;border-bottom:2pt solid #796042!important}
+ #daily td:nth-child(2){background:#faf6ef!important;color:#30281d!important}
+ #daily th:nth-child(5){background:#dceee7!important;color:#174e41!important;border-bottom:3pt double #245c4d!important}
+ #daily td:nth-child(5){background:#edf6f2!important;color:#123f35!important;font-weight:700!important}
+ #daily th:nth-child(5),#daily td:nth-child(5){border-inline-start:2pt solid #333!important}
+ #daily th:nth-child(2),#daily td:nth-child(2),#daily th:nth-child(5),#daily td:nth-child(5){print-color-adjust:exact;-webkit-print-color-adjust:exact}
 }
 </style>
 </head>
